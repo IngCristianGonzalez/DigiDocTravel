@@ -1,0 +1,438 @@
+<!-- Navbar -->
+<header class="navbar">
+  <div class="navbar__container">
+    <a class="navbar__brand" routerLink="/">
+      <img src="assets/images/logo-teal.jpeg" alt="SL Global" class="navbar__logo" width="36" height="36" />
+      <div class="navbar__brand-text">
+        <span class="navbar__brand-name">SL Global</span>
+        <span class="navbar__brand-product">DigiDoc Travel</span>
+      </div>
+    </a>
+
+    <nav class="navbar__nav" aria-label="Navegacion principal">
+      <a href="#features" class="navbar__link">Funcionalidades</a>
+      <a href="#how" class="navbar__link">Como funciona</a>
+      <a href="#stats" class="navbar__link">Resultados</a>
+      <a href="#testimonials" class="navbar__link">Clientes</a>
+    </nav>
+
+    <div class="navbar__actions">
+      <p-button label="Iniciar sesion" routerLink="/auth/login" styleClass="p-button-text navbar__btn-login" [text]="true" />
+      <p-button label="Registrarse" routerLink="/auth/register" styleClass="navbar__btn-register" />
+    </div>
+
+    <button class="navbar__hamburger" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Menu">
+      <i [class]="mobileMenuOpen ? 'pi pi-times' : 'pi pi-bars'"></i>
+    </button>
+  </div>
+
+  @if (mobileMenuOpen) {
+    <div class="navbar__mobile">
+      <nav class="navbar__mobile-nav">
+        <a href="#features" class="navbar__mobile-link" (click)="mobileMenuOpen = false">Funcionalidades</a>
+        <a href="#how" class="navbar__mobile-link" (click)="mobileMenuOpen = false">Como funciona</a>
+        <a href="#stats" class="navbar__mobile-link" (click)="mobileMenuOpen = false">Resultados</a>
+        <a href="#testimonials" class="navbar__mobile-link" (click)="mobileMenuOpen = false">Clientes</a>
+      </nav>
+      <div class="navbar__mobile-actions">
+        <p-button label="Iniciar sesion" routerLink="/auth/login" styleClass="p-button-outlined" [outlined]="true" />
+        <p-button label="Registrarse" routerLink="/auth/register" />
+      </div>
+    </div>
+  }
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero__container">
+    <div class="hero__content">
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        Plataforma de gestion documental educativa
+      </div>
+
+      <h1 class="hero__title">
+        Gestion documental
+        <span class="hero__title-accent">sin fricciones</span>
+        para educacion internacional
+      </h1>
+
+      <p class="hero__description">
+        Centraliza, automatiza y da seguimiento a todos los procesos documentales
+        de tus programas educativos. Desde solicitudes hasta aprobaciones, en una sola plataforma.
+      </p>
+
+      <div class="hero__cta">
+        <p-button label="Comenzar ahora" icon="pi pi-arrow-right" iconPos="right" routerLink="/auth/register" styleClass="hero__btn-primary" />
+        <p-button label="Ver demostracion" icon="pi pi-play" iconPos="left" styleClass="hero__btn-secondary p-button-outlined" [outlined]="true" />
+      </div>
+
+      <div class="hero__trust">
+        <div class="hero__trust-avatars">
+          <span class="hero__avatar hero__avatar--1">A</span>
+          <span class="hero__avatar hero__avatar--2">M</span>
+          <span class="hero__avatar hero__avatar--3">R</span>
+          <span class="hero__avatar hero__avatar--4">L</span>
+        </div>
+        <p class="hero__trust-text">
+          <strong>2,400+</strong> documentos procesados este mes
+        </p>
+      </div>
+    </div>
+
+    <div class="hero__visual">
+      <div class="hero__card hero__card--main">
+        <div class="hero__card-header">
+          <span class="hero__card-dot hero__card-dot--green"></span>
+          <span>Solicitud de viaje #2847</span>
+          <span class="hero__card-status hero__card-status--approved">Aprobada</span>
+        </div>
+        <div class="hero__card-body">
+          <div class="hero__card-row">
+            <span class="hero__card-label">Estudiante</span>
+            <span class="hero__card-value">Maria Garcia</span>
+          </div>
+          <div class="hero__card-row">
+            <span class="hero__card-label">Programa</span>
+            <span class="hero__card-value">Intercambio Europa 2026</span>
+          </div>
+          <div class="hero__card-row">
+            <span class="hero__card-label">Documentos</span>
+            <span class="hero__card-value">4/4 completados</span>
+          </div>
+        </div>
+        <div class="hero__card-progress">
+          <div class="hero__card-progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="hero__card hero__card--float hero__card--stats">
+        <div class="hero__card-icon">
+          <i class="pi pi-chart-bar"></i>
+        </div>
+        <div>
+          <span class="hero__card-stat">98.6%</span>
+          <span class="hero__card-stat-label">Tasa de aprobacion</span>
+        </div>
+      </div>
+
+      <div class="hero__card hero__card--float hero__card--docs">
+        <div class="hero__card-icon hero__card-icon--teal">
+          <i class="pi pi-file-edit"></i>
+        </div>
+        <div>
+          <span class="hero__card-stat">1,240</span>
+          <span class="hero__card-stat-label">Documentos este mes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Clients -->
+<section class="clients">
+  <div class="clients__container">
+    <p class="clients__label">Instituciones que confian en nosotros</p>
+    <div class="clients__grid">
+      <div class="clients__item">Universidad Nacional</div>
+      <div class="clients__item">Instituto Tecnologico</div>
+      <div class="clients__item">Colegio Internacional</div>
+      <div class="clients__item">Fundacion Educativa</div>
+      <div class="clients__item">Red de Universidades</div>
+      <div class="clients__item">Centro de Estudios</div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="features">
+  <div class="features__container">
+    <div class="features__header">
+      <span class="features__label">Funcionalidades</span>
+      <h2 class="features__title">Todo lo que necesitas para gestionar documentos</h2>
+      <p class="features__subtitle">
+        Herramientas disenadas para instituciones educativas que manejan
+        programas de intercambio, viajes y movilidad internacional.
+      </p>
+    </div>
+
+    <div class="features__grid">
+      <div class="features__card">
+        <div class="features__icon">
+          <i class="pi pi-folder-open"></i>
+        </div>
+        <h3 class="features__card-title">Repositorio centralizado</h3>
+        <p class="features__card-desc">
+          Almacena y organiza todos los documentos de viaje, consentimientos,
+          certificados y formularios en un solo lugar seguro.
+        </p>
+      </div>
+
+      <div class="features__card">
+        <div class="features__icon features__icon--teal">
+          <i class="pi pi-sync"></i>
+        </div>
+        <h3 class="features__card-title">Flujos automatizados</h3>
+        <p class="features__card-desc">
+          Configura cadenas de aprobacion personalizadas. Cada documento
+          avanza automaticamente al siguiente responsable.
+        </p>
+      </div>
+
+      <div class="features__card">
+        <div class="features__icon features__icon--amber">
+          <i class="pi pi-shield"></i>
+        </div>
+        <h3 class="features__card-title">Cumplimiento normativo</h3>
+        <p class="features__card-desc">
+          Validacion automatica de requisitos documentales segun pais
+          destino, tipo de programa y normativa vigente.
+        </p>
+      </div>
+
+      <div class="features__card">
+        <div class="features__icon features__icon--dark">
+          <i class="pi pi-chart-line"></i>
+        </div>
+        <h3 class="features__card-title">Dashboard en tiempo real</h3>
+        <p class="features__card-desc">
+          Visualiza el estado de todas las solicitudes, identifica
+          cuellos de botella y toma decisiones basadas en datos.
+        </p>
+      </div>
+
+      <div class="features__card">
+        <div class="features__icon features__icon--red">
+          <i class="pi pi-bell"></i>
+        </div>
+        <h3 class="features__card-title">Notificaciones inteligentes</h3>
+        <p class="features__card-desc">
+          Alertas automaticas por vencimientos, documentos pendientes
+          y cambios de estado. Email y notificaciones in-app.
+        </p>
+      </div>
+
+      <div class="features__card">
+        <div class="features__icon features__icon--purple">
+          <i class="pi pi-users"></i>
+        </div>
+        <h3 class="features__card-title">Gestion de roles</h3>
+        <p class="features__card-desc">
+          Control granular de acceso por roles: coordinadores, tutores,
+          administradores, directivos. Cada quien ve lo que le corresponde.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how" class="how">
+  <div class="how__container">
+    <div class="how__header">
+      <span class="how__label">Como funciona</span>
+      <h2 class="how__title">De la solicitud al viaje en 4 pasos</h2>
+    </div>
+
+    <div class="how__steps">
+      <div class="how__step">
+        <div class="how__step-number">01</div>
+        <div class="how__step-content">
+          <h3>Solicitud</h3>
+          <p>El estudiante o coordinador crea la solicitud con los datos del viaje y programa.</p>
+        </div>
+      </div>
+      <div class="how__step-line"></div>
+      <div class="how__step">
+        <div class="how__step-number">02</div>
+        <div class="how__step-content">
+          <h3>Documentacion</h3>
+          <p>Se cargan los documentos requeridos. El sistema valida requisitos automaticamente.</p>
+        </div>
+      </div>
+      <div class="how__step-line"></div>
+      <div class="how__step">
+        <div class="how__step-number">03</div>
+        <div class="how__step-content">
+          <h3>Aprobacion</h3>
+          <p>Cada responsable revisa y aprueba en su turno. Notificaciones en tiempo real.</p>
+        </div>
+      </div>
+      <div class="how__step-line"></div>
+      <div class="how__step">
+        <div class="how__step-number">04</div>
+        <div class="how__step-content">
+          <h3>Viaje</h3>
+          <p>Documento completo. El estudiante viaja con todo en regla.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section id="stats" class="stats">
+  <div class="stats__container">
+    <div class="stats__grid">
+      <div class="stats__item">
+        <span class="stats__number">2,400+</span>
+        <span class="stats__label">Documentos procesados</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__number">98.6%</span>
+        <span class="stats__label">Tasa de aprobacion</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__number">-65%</span>
+        <span class="stats__label">Reduccion en tiempos</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__number">15+</span>
+        <span class="stats__label">Instituciones activas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section id="testimonials" class="testimonials">
+  <div class="testimonials__container">
+    <div class="testimonials__header">
+      <span class="testimonials__label">Clientes</span>
+      <h2 class="testimonials__title">Lo que dicen nuestras instituciones</h2>
+    </div>
+
+    <div class="testimonials__grid">
+      <div class="testimonials__card">
+        <div class="testimonials__stars">
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+        </div>
+        <p class="testimonials__text">
+          "Reducimos el tiempo de procesamiento documental de 2 semanas a 2 dias.
+          La automatizacion de aprobaciones cambio nuestra operacion."
+        </p>
+        <div class="testimonials__author">
+          <span class="testimonials__avatar">CL</span>
+          <div>
+            <span class="testimonials__name">Carlos Lopez</span>
+            <span class="testimonials__role">Coordinador de Movilidad, Universidad Nacional</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonials__card">
+        <div class="testimonials__stars">
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+        </div>
+        <p class="testimonials__text">
+          "El dashboard nos da visibilidad completa. Sabemos exactamente
+          donde esta cada solicitud y que falta para completarla."
+        </p>
+        <div class="testimonials__author">
+          <span class="testimonials__avatar testimonials__avatar--teal">AR</span>
+          <div>
+            <span class="testimonials__name">Ana Rodriguez</span>
+            <span class="testimonials__role">Directora Academica, Instituto Tecnologico</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonials__card">
+        <div class="testimonials__stars">
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+          <i class="pi pi-star-fill"></i>
+        </div>
+        <p class="testimonials__text">
+          "La validacion automatica de requisitos nos ahorró muchos errores.
+          Antes revisabamos manualmente cada expediente."
+        </p>
+        <div class="testimonials__author">
+          <span class="testimonials__avatar testimonials__avatar--amber">MG</span>
+          <div>
+            <span class="testimonials__name">Maria Garcia</span>
+            <span class="testimonials__role">Jefa de Departmento, Colegio Internacional</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta__container">
+    <h2 class="cta__title">Comienza a gestionar tus documentos hoy</h2>
+    <p class="cta__description">
+      Unete a las instituciones que ya optimizaron sus procesos documentales.
+      Configuracion en menos de 24 horas.
+    </p>
+    <div class="cta__actions">
+      <p-button label="Crear cuenta gratuita" icon="pi pi-arrow-right" iconPos="right" routerLink="/auth/register" styleClass="cta__btn-primary" />
+      <p-button label="Hablar con ventas" styleClass="cta__btn-secondary p-button-outlined" [outlined]="true" />
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer__container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__brand-row">
+          <img src="assets/images/logo-orange.jpeg" alt="SL Global" class="footer__logo" width="32" height="32" />
+          <div>
+            <span class="footer__brand-name">SL Global</span>
+            <span class="footer__brand-tagline">Educacion sin limites</span>
+          </div>
+        </div>
+        <p class="footer__brand-desc">
+          Plataforma de gestion documental para programas de educacion internacional.
+        </p>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__col-title">Producto</h4>
+        <a href="#features" class="footer__link">Funcionalidades</a>
+        <a href="#how" class="footer__link">Como funciona</a>
+        <a href="#stats" class="footer__link">Resultados</a>
+        <a href="#" class="footer__link">Precios</a>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__col-title">Soporte</h4>
+        <a href="#" class="footer__link">Centro de ayuda</a>
+        <a href="#" class="footer__link">Documentacion</a>
+        <a href="#" class="footer__link">Estado del sistema</a>
+        <a href="#" class="footer__link">Contacto</a>
+      </div>
+
+      <div class="footer__col">
+        <h4 class="footer__col-title">Legal</h4>
+        <a href="#" class="footer__link">Privacidad</a>
+        <a href="#" class="footer__link">Terminos</a>
+        <a href="#" class="footer__link">Cookies</a>
+        <a href="#" class="footer__link">RGPD</a>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>&copy; 2026 SL Global. Todos los derechos reservados.</p>
+      <div class="footer__social">
+        <a href="#" class="footer__social-link" aria-label="LinkedIn"><i class="pi pi-linkedin"></i></a>
+        <a href="#" class="footer__social-link" aria-label="Twitter"><i class="pi pi-twitter"></i></a>
+        <a href="#" class="footer__social-link" aria-label="GitHub"><i class="pi pi-github"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
