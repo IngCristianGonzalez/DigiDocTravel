@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.env
+*.log
+.DS_Store
+digidoc-travel-docs/.git/
+digidoc-travel-backend/node_modules/
+digidoc-travel-backend/dist/
+digidoc-travel-backend/coverage/
+digidoc-travel-frontend/node_modules/
+digidoc-travel-frontend/dist/
+digidoc-travel-frontend/.angular/
+digidoc-travel-frontend/coverage/
+digidoc-travel-docs/
