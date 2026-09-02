@@ -1,0 +1,28 @@
+name: Full Stack CI/CD
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  backend:
+    uses: ./.github/workflows/backend.yml
+
+  frontend:
+    uses: ./.github/workflows/frontend.yml
+
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy stack
+        run: |
+          echo "Deploy full stack"
+          # docker-compose -f docker-compose.prod.yml up -d

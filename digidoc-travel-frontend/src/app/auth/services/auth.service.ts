@@ -1,13 +1,17 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import {
   LoginRequest,
   LoginResponse,
   RefreshTokenResponse,
   User,
 } from '../../shared/interfaces/auth.interface';
+
+function unwrap<T>(res: any): T {
+  return res?.data ?? res;
+}
 
 export interface RegisterRequest {
   fullName: string;
@@ -49,6 +53,7 @@ export class AuthService {
     return this.http
       .post<LoginResponse>(`${this.API_URL}/login`, credentials)
       .pipe(
+        map((res: any) => unwrap<LoginResponse>(res)),
         tap((response) => {
           this.setSession(response);
           this._loading.set(false);
@@ -103,6 +108,7 @@ export class AuthService {
     return this.http
       .post<RefreshTokenResponse>(`${this.API_URL}/refresh`, { refreshToken })
       .pipe(
+        map((res: any) => unwrap<RefreshTokenResponse>(res)),
         tap((response) => {
           this._token.set(response.accessToken);
           this.getStorage()?.setItem('access_token', response.accessToken);
@@ -116,6 +122,7 @@ export class AuthService {
 
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/profile`).pipe(
+      map((res: any) => unwrap<User>(res)),
       tap((user) => {
         this._user.set(user);
         this.getStorage()?.setItem('user', JSON.stringify(user));
