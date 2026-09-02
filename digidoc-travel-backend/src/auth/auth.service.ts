@@ -247,7 +247,6 @@ export class AuthService {
         expiresIn: '15m',
         issuer: 'digidoc.travel',
         audience: 'digidoc-frontend',
-        jwtid: jti,
       }),
       this.jwtService.signAsync(payload, {
         secret:
@@ -256,7 +255,6 @@ export class AuthService {
         expiresIn: '7d',
         issuer: 'digidoc.travel',
         audience: 'digidoc-frontend',
-        jwtid: jti,
       }),
     ]);
 

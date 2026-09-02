@@ -75,7 +75,7 @@ import { ToastService } from '../../core/services/toast.service';
             <label class="block text-sm font-medium text-slate-600 mb-1">Archivo (PDF, JPG, PNG — máx 10MB)</label>
             <input type="file" (change)="onFile($event)" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700">
             <p *ngIf="fileError()" class="text-xs text-red-500 mt-1">{{ fileError() }}</p>
-            <p *ngIf="form().fileUrl" class="text-xs text-emerald-600 mt-1 truncate">✓ {{ form().fileUrl }} ({{ form().fileType }} - {{ form().fileSize }} bytes)</p>
+            <p *ngIf="form().fileUrl" class="text-xs text-emerald-600 mt-1 truncate"><i class="fa-solid fa-circle-check"></i> {{ form().fileUrl }} ({{ form().fileType }} - {{ form().fileSize }} bytes)</p>
           </div>
         </div>
         <button (click)="create()" [disabled]="loading()" class="mt-4 bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-medium px-6 py-2 rounded-lg transition-colors">

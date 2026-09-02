@@ -25,8 +25,17 @@ export class SanitizeInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     if (request.body) request.body = sanitizeValue(request.body);
-    if (request.query) request.query = sanitizeValue(request.query);
-    if (request.params) request.params = sanitizeValue(request.params);
+    // Express 5: request.query is getter-only, mutate in place
+    if (request.query) {
+      const sanitizedQuery = sanitizeValue(request.query);
+      for (const key of Object.keys(request.query)) delete request.query[key];
+      Object.assign(request.query, sanitizedQuery);
+    }
+    if (request.params) {
+      const sanitizedParams = sanitizeValue(request.params);
+      for (const key of Object.keys(request.params)) delete request.params[key];
+      Object.assign(request.params, sanitizedParams);
+    }
     return next.handle();
   }
 }
