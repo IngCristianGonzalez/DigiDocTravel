@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { DashboardService } from './dashboard.service';
 
-describe('DashboardService - RF-051 a RF-056', () => {
+describe('DashboardService', () => {
   let service: DashboardService; let httpMock: HttpTestingController;
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [DashboardService, provideHttpClient(), provideHttpClientTesting()] });
@@ -11,7 +11,7 @@ describe('DashboardService - RF-051 a RF-056', () => {
   });
   afterEach(() => httpMock.verify());
   it('should be created', () => expect(service).toBeTruthy());
-  it('RF-051 getSummary', () => {
+  it('getSummary', () => {
     service.getSummary().subscribe(res => {
       expect(res.students).toBeDefined();
       expect(res.visas.expiringIn90Days).toBeDefined();

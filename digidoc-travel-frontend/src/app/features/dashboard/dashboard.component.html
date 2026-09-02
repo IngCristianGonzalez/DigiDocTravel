@@ -1,0 +1,328 @@
+<div class="dashboard">
+  <!-- Header -->
+  <div class="dashboard__header">
+    <div class="dashboard__header-top">
+      <div class="dashboard__header-left">
+        <div class="dashboard__icon-box">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+          <h1 class="dashboard__title">Dashboard</h1>
+          <p class="dashboard__subtitle">Panel de control — Resumen general</p>
+        </div>
+      </div>
+      <div class="dashboard__header-actions">
+        <span class="dashboard__updated">
+          <i class="fa-solid fa-clock"></i> Actualizado ahora
+        </span>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="load()">
+        </p-button>
+        <p-button
+          icon="pi pi-chart-bar"
+          label="Ver reportes"
+          routerLink="/reports"
+          size="small">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Quick stats bar -->
+    @if (!loading() && summary(); as s) {
+      <div class="dashboard__quick-stats">
+        <div class="dashboard__quick-stat dashboard__quick-stat--slate">
+          <div class="dashboard__quick-stat-icon dashboard__quick-stat-icon--slate"><i class="fa-solid fa-users"></i></div>
+          <div>
+            <p class="dashboard__quick-stat-label">Usuarios</p>
+            <p class="dashboard__quick-stat-value">{{ safeNumber(s.users?.total) }}</p>
+          </div>
+        </div>
+        <div class="dashboard__quick-stat dashboard__quick-stat--sky">
+          <div class="dashboard__quick-stat-icon dashboard__quick-stat-icon--sky"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div>
+            <p class="dashboard__quick-stat-label">Estudiantes</p>
+            <p class="dashboard__quick-stat-value">{{ safeNumber(s.students.total) }}</p>
+          </div>
+        </div>
+        <div class="dashboard__quick-stat dashboard__quick-stat--amber">
+          <div class="dashboard__quick-stat-icon dashboard__quick-stat-icon--amber"><i class="fa-solid fa-file-lines"></i></div>
+          <div>
+            <p class="dashboard__quick-stat-label">Documentos</p>
+            <p class="dashboard__quick-stat-value">{{ safeNumber(s.documents.total) }}</p>
+          </div>
+        </div>
+        <div class="dashboard__quick-stat dashboard__quick-stat--emerald">
+          <div class="dashboard__quick-stat-icon dashboard__quick-stat-icon--emerald"><i class="fa-solid fa-calendar-days"></i></div>
+          <div>
+            <p class="dashboard__quick-stat-label">Eventos</p>
+            <p class="dashboard__quick-stat-value">{{ safeNumber(s.events.total) }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando resumen del dashboard..."></app-loading>
+  <app-error [message]="error()" (retry)="load()"></app-error>
+
+  <!-- Skeleton - usando p-skeleton de PrimeNG -->
+  @if (loading()) {
+    <div class="dashboard__skeleton-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="dashboard__skeleton-card">
+          <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+            <p-skeleton shape="circle" size="48px"></p-skeleton>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <p-skeleton height="1rem" width="75%"></p-skeleton>
+              <p-skeleton height="0.75rem" width="50%"></p-skeleton>
+            </div>
+          </div>
+          <p-skeleton height="2rem" width="40%" styleClass="mb-2"></p-skeleton>
+          <p-skeleton height="0.75rem" width="65%"></p-skeleton>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- KPIs Grid -->
+  @if (!loading() && summary(); as s) {
+    <div class="dashboard__kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Indicadores Generales</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon kpi-card__icon--indigo">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value">{{ safeNumber(s.users?.total) }}</p>
+            <p class="kpi-card__desc">Total usuarios registrados</p>
+            <div class="kpi-card__meta">
+              <span class="kpi-card__badge"><i class="fa-solid fa-users" style="font-size:11px; color:var(--sl-gray-400)"></i> {{ safeNumber(s.students.active) }} activos</span>
+              <span class="kpi-card__separator">/</span>
+              <span style="color:var(--sl-gray-600); font-size:0.75rem;">{{ safeNumber(s.students.total) }} estudiantes</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card__footer">
+          <a routerLink="/users" class="kpi-card__link kpi-card__link--indigo">Ver usuarios <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <span class="kpi-card__hint">Sistema</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Estudiantes Activos</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon kpi-card__icon--sky">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value">{{ safeNumber(s.students.active) }} <span>/ {{ safeNumber(s.students.total) }}</span></p>
+            <p class="kpi-card__desc">Activos / Totales</p>
+            <div class="kpi-card__meta">
+              <span style="width:8px; height:8px; background:#10b981; border-radius:50%; display:inline-block; animation:pulse 1.5s infinite;"></span>
+              <span style="font-size:0.75rem; color:var(--sl-gray-600);">Nuevos este mes:</span>
+              <span class="kpi-card__badge kpi-card__badge--emerald">+{{ safeNumber(s.students.newThisMonth) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card__progress">
+          <div class="kpi-card__progress-header"><span>Progreso</span><strong>{{ getStudentsProgress(s) }}%</strong></div>
+          <div class="kpi-card__progress-track"><div class="kpi-card__progress-fill" [style.width.%]="getStudentsProgress(s)"></div></div>
+        </div>
+        <a routerLink="/students" class="kpi-card__link kpi-card__link--sky" style="margin-top:16px;">Gestionar estudiantes <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Documentos Pendientes</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon" [ngClass]="s.documents.pending > 0 ? 'kpi-card__icon--amber alert' : 'kpi-card__icon--emerald'">
+            <i class="fa-solid" [ngClass]="s.documents.pending > 0 ? 'fa-file-circle-exclamation' : 'fa-file-circle-check'"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value" [ngClass]="s.documents.pending > 0 ? 'kpi-card__value--amber' : 'kpi-card__value--emerald'">{{ safeNumber(s.documents.pending) }}</p>
+            <p class="kpi-card__desc">Pendientes por revisar</p>
+            <p style="font-size:0.75rem; color:var(--sl-gray-400); margin-top:4px;">Total: <strong style="color:var(--sl-gray-700)">{{ safeNumber(s.documents.total) }}</strong> documentos</p>
+          </div>
+        </div>
+        <div class="kpi-card__footer">
+          <span class="kpi-card__badge" [ngClass]="s.documents.pending > 0 ? 'kpi-card__badge--amber' : 'kpi-card__badge--emerald'">
+            <i class="fa-solid" [ngClass]="s.documents.pending > 0 ? 'fa-triangle-exclamation' : 'fa-circle-check'" style="font-size:11px;"></i> {{ s.documents.pending > 0 ? 'Requiere atención' : 'Al día' }}
+          </span>
+          <a routerLink="/documents" class="kpi-card__link">Ver documentos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Visas por Vencer</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon kpi-card__icon--orange">
+            <i class="fa-solid fa-passport"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value kpi-card__value--orange">{{ safeNumber(s.visas.expiringIn90Days) }}</p>
+            <p class="kpi-card__desc">Expiran en 90 días</p>
+            <div class="kpi-card__meta">
+              <span style="font-size:0.75rem; color:var(--sl-gray-500);">Vencidas:</span>
+              <span class="kpi-card__badge" [ngClass]="s.visas.expired > 0 ? 'kpi-card__badge--red' : 'kpi-card__badge--slate'">{{ safeNumber(s.visas.expired) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card__footer">
+          @if (s.visas.expired > 0) {
+            <span class="kpi-card__badge kpi-card__badge--red"><i class="fa-solid fa-circle-exclamation" style="font-size:11px;"></i> Acción requerida</span>
+          } @else if (s.visas.expiringIn90Days === 0) {
+            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-shield-halved" style="font-size:11px;"></i> Sin alertas</span>
+          } @else {
+            <span class="kpi-card__badge kpi-card__badge--amber"><i class="fa-solid fa-clock" style="font-size:11px;"></i> Seguimiento</span>
+          }
+          <a routerLink="/visas" class="kpi-card__link kpi-card__link--orange">Ver visas <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Pagos Pendientes</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon" [ngClass]="s.payments.overdue > 0 ? 'kpi-card__icon--red' : 'kpi-card__icon--slate'">
+            <i class="fa-solid fa-credit-card"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value" [ngClass]="s.payments.overdue > 0 ? 'kpi-card__value--red' : ''">{{ safeNumber(s.payments.pending) }}</p>
+            <p class="kpi-card__desc">Cuotas pendientes</p>
+            <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
+                <span style="color:var(--sl-gray-500); display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-triangle-exclamation" style="color:#f87171; font-size:11px;"></i> Atrasados</span>
+                <strong [style.color]="s.payments.overdue > 0 ? '#dc2626' : 'var(--sl-gray-700)'">{{ safeNumber(s.payments.overdue) }}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
+                <span style="color:var(--sl-gray-500); display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-dollar-sign" style="color:var(--sl-gray-400); font-size:11px;"></i> Monto total</span>
+                <strong style="color:var(--sl-black)">{{ '$' + (s.payments.totalAmount | number:'1.0-0') }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-card__footer">
+          <span style="font-size:0.75rem; color:var(--sl-gray-500);">{{ s.payments.overdue > 0 ? 'Requiere cobro' : 'Sin atrasos' }}</span>
+          <a routerLink="/payments" class="kpi-card__link kpi-card__link--red">Ver pagos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__top">
+          <span class="kpi-card__label">Próximos Eventos</span>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__icon kpi-card__icon--emerald">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+          <div class="kpi-card__content">
+            <p class="kpi-card__value">{{ safeNumber(s.events.next7Days) }}</p>
+            <p class="kpi-card__desc">En los próximos 7 días</p>
+            <p style="font-size:0.75rem; color:var(--sl-gray-400); margin-top:4px;">Total: <strong style="color:var(--sl-gray-700)">{{ safeNumber(s.events.total) }}</strong> eventos</p>
+          </div>
+        </div>
+        <div class="kpi-card__footer">
+          @if (s.events.next7Days > 0) {
+            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-circle" style="font-size:7px; animation:pulse 1.5s infinite;"></i> Próximamente</span>
+          } @else {
+            <span style="font-size:0.75rem; color:var(--sl-gray-500);">Sin eventos cercanos</span>
+          }
+          <a routerLink="/events" class="kpi-card__link kpi-card__link--emerald">Ver eventos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas y accesos rápidos -->
+    <div class="dashboard__bottom">
+      <div class="dashboard__alerts">
+        <h3 class="dashboard__section-title"><i class="fa-solid fa-bell"></i> Centro de alertas</h3>
+        <div class="dashboard__alert-list">
+          @if (s.documents.pending > 0) {
+            <div class="dashboard__alert dashboard__alert--amber">
+              <div class="dashboard__alert-icon dashboard__alert-icon--amber"><i class="fa-solid fa-file-circle-exclamation"></i></div>
+              <div class="dashboard__alert-text">
+                <p class="dashboard__alert-title dashboard__alert-title--amber">{{ s.documents.pending }} documentos pendientes</p>
+                <p class="dashboard__alert-desc dashboard__alert-desc--amber">Requieren revisión</p>
+              </div>
+              <a routerLink="/documents" class="dashboard__alert-link dashboard__alert-link--amber">Revisar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+            </div>
+          }
+          @if (s.visas.expired > 0) {
+            <div class="dashboard__alert dashboard__alert--red">
+              <div class="dashboard__alert-icon dashboard__alert-icon--red"><i class="fa-solid fa-passport"></i></div>
+              <div class="dashboard__alert-text">
+                <p class="dashboard__alert-title dashboard__alert-title--red">{{ s.visas.expired }} visas vencidas</p>
+                <p class="dashboard__alert-desc dashboard__alert-desc--red">Acción inmediata requerida</p>
+              </div>
+              <a routerLink="/visas" class="dashboard__alert-link dashboard__alert-link--red">Gestionar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+            </div>
+          }
+          @if (s.payments.overdue > 0) {
+            <div class="dashboard__alert dashboard__alert--slate">
+              <div class="dashboard__alert-icon dashboard__alert-icon--slate"><i class="fa-solid fa-credit-card"></i></div>
+              <div class="dashboard__alert-text">
+                <p class="dashboard__alert-title dashboard__alert-title--slate">{{ s.payments.overdue }} pagos atrasados</p>
+                <p class="dashboard__alert-desc dashboard__alert-desc--slate">{{ '$' + (s.payments.totalAmount | number:'1.0-0') }} por cobrar</p>
+              </div>
+              <a routerLink="/payments" class="dashboard__alert-link dashboard__alert-link--slate">Cobrar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+            </div>
+          }
+          @if (s.documents.pending === 0 && s.visas.expired === 0 && s.payments.overdue === 0) {
+            <div class="dashboard__empty">
+              <div class="dashboard__empty-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <p class="dashboard__empty-title">Todo al día</p>
+              <p class="dashboard__empty-desc">No hay alertas pendientes</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="dashboard__quick-access">
+        <h3 class="dashboard__quick-access-title"><i class="fa-solid fa-bolt"></i> Accesos rápidos</h3>
+        <p class="dashboard__quick-access-desc">Operaciones frecuentes</p>
+        <div class="dashboard__quick-access-grid">
+          <a routerLink="/students" class="dashboard__quick-access-item">
+            <i class="fa-solid fa-user-plus" style="color:var(--sl-orange-500)"></i><span>Nuevo estudiante</span>
+          </a>
+          <a routerLink="/documents" class="dashboard__quick-access-item">
+            <i class="fa-solid fa-file-arrow-up" style="color:#38bdf8"></i><span>Subir documento</span>
+          </a>
+          <a routerLink="/payments" class="dashboard__quick-access-item">
+            <i class="fa-solid fa-money-bill-wave" style="color:#34d399"></i><span>Registrar pago</span>
+          </a>
+          <a routerLink="/events" class="dashboard__quick-access-item">
+            <i class="fa-solid fa-calendar-plus" style="color:#fb923c"></i><span>Crear evento</span>
+          </a>
+        </div>
+        <a routerLink="/reports" class="dashboard__quick-access-cta"><i class="fa-solid fa-chart-bar"></i> Ver reportes completos</a>
+      </div>
+    </div>
+  }
+
+  <!-- Estado vacío -->
+  @if (!loading() && !error() && !summary()) {
+    <div class="dashboard__empty-card">
+      <div class="dashboard__empty-card-icon"><i class="fa-solid fa-inbox"></i></div>
+      <p class="dashboard__empty-card-title">No hay datos disponibles</p>
+      <p class="dashboard__empty-card-desc">Intenta recargar el dashboard</p>
+      <p-button icon="pi pi-refresh" label="Recargar" (onClick)="load()" styleClass="mt-4"></p-button>
+    </div>
+  }
+</div>
