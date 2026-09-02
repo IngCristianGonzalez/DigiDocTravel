@@ -8,7 +8,7 @@
         </div>
         <div>
           <h1 class="students__title">Gestión de Estudiantes</h1>
-          <p class="students__subtitle">RF-012 a RF-016 · Registro, consulta, edición y observaciones</p>
+          <p class="students__subtitle">Registro, consulta, edición y observaciones</p>
         </div>
       </div>
       <div class="students__header-actions">
@@ -58,9 +58,9 @@
   <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
   <app-error [message]="error()" (retry)="load()"></app-error>
 
-  <!-- RF-012 Registrar Estudiante -->
+  <!-- Registrar Estudiante -->
   <div class="students__card">
-    <h3 class="students__card-title"><i class="fa-solid fa-user-plus"></i> Registrar Estudiante — RF-012</h3>
+    <h3 class="students__card-title"><i class="fa-solid fa-user-plus"></i> Registrar Estudiante</h3>
 
     <div class="students__form-grid">
       <!-- firstName -->
@@ -184,7 +184,7 @@
     </div>
   </div>
 
-  <!-- RF-014 Toolbar Buscar -->
+  <!-- Toolbar Buscar -->
   <div class="students__toolbar">
     <div class="students__search">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -198,14 +198,14 @@
       />
     </div>
     <div class="students__toolbar-actions">
-      <p-button icon="pi pi-search" label="Buscar — RF-014" size="small" (onClick)="resetAndLoad()"></p-button>
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
       @if (search()) {
         <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
       }
     </div>
   </div>
 
-  <!-- Tabla (RF-013 listado + paginación) -->
+  <!-- Tabla -->
   <div class="students__table-card">
     <div class="students__table-header">
       <h3 class="students__table-title"><i class="fa-solid fa-table-list"></i> Estudiantes</h3>
@@ -265,7 +265,7 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="select(s)" pTooltip="Ver / Editar RF-013" tooltipPosition="top"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="select(s)" pTooltip="Ver / Editar" tooltipPosition="top"></p-button>
                 </div>
               </td>
             </tr>
@@ -292,12 +292,12 @@
     </div>
   </div>
 
-  <!-- RF-015 / RF-016 Detalle -->
+  <!-- Detalle -->
   @if (selected()) {
     <div class="students__detail">
       <div class="students__detail-header">
         <div>
-          <h3 class="students__detail-title"><i class="fa-solid fa-pen-to-square"></i> Editar / Asociar Asesor — RF-015</h3>
+          <h3 class="students__detail-title"><i class="fa-solid fa-pen-to-square"></i> Editar / Asociar Asesor</h3>
           <p class="students__detail-subtitle">{{ selected()?.email }}</p>
         </div>
         <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="selected.set(null)" pTooltip="Cerrar detalle" tooltipPosition="left"></p-button>
@@ -326,7 +326,7 @@
 
         <!-- Observaciones -->
         <div class="detail-block">
-          <h4 class="detail-block__title"><i class="fa-solid fa-clipboard"></i> Observaciones — RF-016</h4>
+          <h4 class="detail-block__title"><i class="fa-solid fa-clipboard"></i> Observaciones</h4>
           <div class="obs-input-row">
             <div class="field" [class.field--error]="obsError()">
               <p-floatLabel>

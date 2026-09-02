@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { StudentsComponent } from './students.component';
 
-describe('StudentsComponent - RF-012 a RF-016 + OWASP', () => {
+describe('StudentsComponent - OWASP', () => {
   let fixture: ComponentFixture<StudentsComponent>;
   let component: StudentsComponent;
 
@@ -19,10 +19,9 @@ describe('StudentsComponent - RF-012 a RF-016 + OWASP', () => {
 
   it('should create', () => expect(component).toBeTruthy());
 
-  it('should have title RF-012', () => {
+  it('should have title Gestión de Estudiantes', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Gestión de Estudiantes');
-    expect(el.textContent).toContain('RF-012');
   });
 
   it('should validate required fields', () => {
