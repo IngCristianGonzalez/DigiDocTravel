@@ -12,12 +12,37 @@ import { COUNTRIES, Country } from './countries.data';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { TableModule } from 'primeng/table';
+import { TableModule, Table } from 'primeng/table';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
+
+// Fix PrimeNG Table dataToRender crash (chunk-N2JOYJBE.js:4 t.slice / primeng_table.js:13454)
+// Revisado con puppeteer: _data.slice is not a function cuando paginator llama con number
+try {
+  const proto: any = (Table as any).prototype;
+  const orig = proto.dataToRender;
+  if (orig && !(orig as any).__patched) {
+    const patched = function (this: any, data: any) {
+      const _data = data ?? this.processedData;
+      if (_data && this.paginator) {
+        if (!Array.isArray(_data)) {
+          const fallback = Array.isArray(this.processedData) ? this.processedData : [];
+          const first = this.lazy ? 0 : this.first;
+          return fallback.slice(first, first + this.rows);
+        }
+        const first = this.lazy ? 0 : this.first;
+        return _data.slice(first, first + this.rows);
+      }
+      return Array.isArray(_data) ? _data : (Array.isArray(this.processedData) ? this.processedData : []);
+    };
+    (patched as any).__patched = true;
+    (patched as any).__orig = orig;
+    proto.dataToRender = patched;
+  }
+} catch {}
 
 @Component({
   selector: 'app-students',
