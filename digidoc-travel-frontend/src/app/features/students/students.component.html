@@ -1,0 +1,368 @@
+<div class="students">
+  <!-- Header -->
+  <div class="students__header">
+    <div class="students__header-top">
+      <div class="students__header-left">
+        <div class="students__icon-box">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <h1 class="students__title">Gestión de Estudiantes</h1>
+          <p class="students__subtitle">RF-012 a RF-016 · Registro, consulta, edición y observaciones</p>
+        </div>
+      </div>
+      <div class="students__header-actions">
+        <span class="students__updated">
+          <i class="fa-solid fa-shield-halved"></i> Validación OWASP activa
+        </span>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="load()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="students__quick-stats">
+      <div class="students__quick-stat students__quick-stat--slate">
+        <div class="students__quick-stat-icon students__quick-stat-icon--slate"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="students__quick-stat-label">Total registrados</p>
+          <p class="students__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="students__quick-stat students__quick-stat--sky">
+        <div class="students__quick-stat-icon students__quick-stat-icon--sky"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div>
+          <p class="students__quick-stat-label">En esta página</p>
+          <p class="students__quick-stat-value">{{ students().length }}</p>
+        </div>
+      </div>
+      <div class="students__quick-stat students__quick-stat--emerald">
+        <div class="students__quick-stat-icon students__quick-stat-icon--emerald"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="students__quick-stat-label">Página</p>
+          <p class="students__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
+  <app-error [message]="error()" (retry)="load()"></app-error>
+
+  <!-- RF-012 Registrar Estudiante -->
+  <div class="students__card">
+    <h3 class="students__card-title"><i class="fa-solid fa-user-plus"></i> Registrar Estudiante — RF-012</h3>
+
+    <div class="students__form-grid">
+      <!-- firstName -->
+      <div class="field" [class.field--error]="formErrors().firstName">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-firstName"
+            [ngModel]="form().firstName"
+            (ngModelChange)="updateForm('firstName', $event)"
+            [class.p-invalid]="!!formErrors().firstName"
+            autocomplete="given-name"
+          />
+          <label for="s-firstName">Nombre *</label>
+        </p-floatLabel>
+        @if (formErrors().firstName) {
+          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
+        }
+      </div>
+
+      <!-- lastName -->
+      <div class="field" [class.field--error]="formErrors().lastName">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-lastName"
+            [ngModel]="form().lastName"
+            (ngModelChange)="updateForm('lastName', $event)"
+            [class.p-invalid]="!!formErrors().lastName"
+            autocomplete="family-name"
+          />
+          <label for="s-lastName">Apellido *</label>
+        </p-floatLabel>
+        @if (formErrors().lastName) {
+          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
+        }
+      </div>
+
+      <!-- email -->
+      <div class="field" [class.field--error]="formErrors().email">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-email"
+            type="email"
+            [ngModel]="form().email"
+            (ngModelChange)="updateForm('email', $event)"
+            [class.p-invalid]="!!formErrors().email"
+            autocomplete="email"
+          />
+          <label for="s-email">Email *</label>
+        </p-floatLabel>
+        @if (formErrors().email) {
+          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
+        }
+      </div>
+
+      <!-- countryOrigin -->
+      <div class="field" [class.field--error]="formErrors().countryOrigin">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-countryOrigin"
+            [ngModel]="form().countryOrigin"
+            (ngModelChange)="updateForm('countryOrigin', $event)"
+            [class.p-invalid]="!!formErrors().countryOrigin"
+            autocomplete="country-name"
+          />
+          <label for="s-countryOrigin">País Origen *</label>
+        </p-floatLabel>
+        @if (formErrors().countryOrigin) {
+          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().countryOrigin }}</small>
+        }
+      </div>
+
+      <!-- phone -->
+      <div class="field">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-phone"
+            [ngModel]="form().phone"
+            (ngModelChange)="updateForm('phone', $event)"
+            autocomplete="tel"
+          />
+          <label for="s-phone">Teléfono</label>
+        </p-floatLabel>
+        <span class="field__hint">Opcional · Ej: +57 300 123 4567</span>
+      </div>
+
+      <!-- university -->
+      <div class="field">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="s-university"
+            [ngModel]="form().university"
+            (ngModelChange)="updateForm('university', $event)"
+            autocomplete="organization"
+          />
+          <label for="s-university">Universidad</label>
+        </p-floatLabel>
+        <span class="field__hint">Opcional</span>
+      </div>
+    </div>
+
+    <div class="students__form-actions">
+      <p-button
+        icon="pi pi-user-plus"
+        label="Registrar"
+        [loading]="loading()"
+        [disabled]="loading()"
+        (onClick)="create()">
+      </p-button>
+      @if (msg()) {
+        <span class="students__msg" [class.students__msg--success]="!error()" [class.students__msg--error]="!!error()">
+          <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i>
+          {{ msg() }}
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- RF-014 Toolbar Buscar -->
+  <div class="students__toolbar">
+    <div class="students__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por nombre, email o país..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar estudiantes"
+      />
+    </div>
+    <div class="students__toolbar-actions">
+      <p-button icon="pi pi-search" label="Buscar — RF-014" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla (RF-013 listado + paginación) -->
+  <div class="students__table-card">
+    <div class="students__table-header">
+      <h3 class="students__table-title"><i class="fa-solid fa-table-list"></i> Estudiantes</h3>
+      <span class="students__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : students()"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '62rem' }"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th style="width: 140px">País</th>
+            <th style="width: 180px">Asesor</th>
+            <th style="width: 140px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template #body let-s>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="10rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="12rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="8rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="7rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>
+                <span style="display:inline-flex; align-items:center; gap:8px;">
+                  <span style="width:28px; height:28px; background:var(--sl-gray-100); border:1px solid var(--sl-gray-200); border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; color:var(--sl-gray-600); font-size:0.75rem; flex-shrink:0;">
+                    <i class="fa-solid fa-user"></i>
+                  </span>
+                  <strong style="color:var(--sl-black); font-weight:600;">{{ s.firstName }} {{ s.lastName }}</strong>
+                </span>
+              </td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="s.email" tooltipPosition="top">{{ s.email }}</span>
+              </td>
+              <td>
+                <p-tag [value]="s.countryOrigin" severity="secondary"></p-tag>
+              </td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="s.advisor?.email || s.advisorId || ''" tooltipPosition="top">
+                  {{ s.advisor?.email || s.advisorId || '—' }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="select(s)" pTooltip="Ver / Editar RF-013" tooltipPosition="top"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron estudiantes</p>
+                  <p class="empty-state__desc">Prueba con otro término de búsqueda o registra el primer estudiante.</p>
+                </div>
+                @if (search()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar búsqueda" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- RF-015 / RF-016 Detalle -->
+  @if (selected()) {
+    <div class="students__detail">
+      <div class="students__detail-header">
+        <div>
+          <h3 class="students__detail-title"><i class="fa-solid fa-pen-to-square"></i> Editar / Asociar Asesor — RF-015</h3>
+          <p class="students__detail-subtitle">{{ selected()?.email }}</p>
+        </div>
+        <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="selected.set(null)" pTooltip="Cerrar detalle" tooltipPosition="left"></p-button>
+      </div>
+
+      <div class="students__detail-grid">
+        <!-- Asociar asesor -->
+        <div class="detail-block">
+          <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> Asociar asesor</h4>
+          <div class="detail-block__row">
+            <div class="detail-block__field field">
+              <p-floatLabel>
+                <input
+                  pInputText
+                  id="detail-advisorId"
+                  [ngModel]="advisorId()"
+                  (ngModelChange)="advisorId.set($event)"
+                  autocomplete="off"
+                />
+                <label for="detail-advisorId">Advisor ID</label>
+              </p-floatLabel>
+            </div>
+            <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="detail-block">
+          <h4 class="detail-block__title"><i class="fa-solid fa-clipboard"></i> Observaciones — RF-016</h4>
+          <div class="obs-input-row">
+            <div class="field" [class.field--error]="obsError()">
+              <p-floatLabel>
+                <input
+                  pInputText
+                  id="obs-text"
+                  [ngModel]="obsText()"
+                  (ngModelChange)="obsText.set($event); obsError.set(null)"
+                  [class.p-invalid]="!!obsError()"
+                  (keyup.enter)="addObs()"
+                />
+                <label for="obs-text">Nueva observación</label>
+              </p-floatLabel>
+              @if (obsError()) {
+                <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ obsError() }}</small>
+              }
+            </div>
+            <p-button icon="pi pi-plus" label="Agregar" size="small" (onClick)="addObs()"></p-button>
+          </div>
+
+          <div class="observations">
+            <div class="obs-list">
+              @for (o of observations(); track o.id || $index) {
+                <div class="obs-item">
+                  <span class="obs-item__text">{{ o.observation }}</span>
+                  <span class="obs-item__date"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>{{ o.createdAt | date:'short' }}</span>
+                </div>
+              } @empty {
+                <div class="obs-empty">
+                  <i class="fa-regular fa-comment-dots" style="margin-right:6px;"></i> Sin observaciones
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

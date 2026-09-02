@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
@@ -7,191 +7,35 @@ import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
 
+// PrimeNG - SL Global (lara-light-amber)
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TableModule } from 'primeng/table';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, ErrorComponent],
-  template: `
-    <div class="p-6 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold text-slate-800 mb-6">Gestión de Estudiantes - RF-012 a RF-016</h1>
-
-      <!-- Loading / Error -->
-      <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
-      <app-error [message]="error()" (retry)="load()"></app-error>
-
-      <!-- RF-012 Registrar Estudiante -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-        <h3 class="text-lg font-semibold text-slate-700 mb-4">Registrar Estudiante - RF-012</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-          <!-- firstName -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Nombre *</label>
-            <input
-              placeholder="Nombre"
-              [ngModel]="form().firstName"
-              (ngModelChange)="updateForm('firstName', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().firstName"
-              [class.border-slate-300]="!formErrors().firstName"
-            >
-            <p *ngIf="formErrors().firstName" class="text-xs text-red-500 mt-1">{{ formErrors().firstName }}</p>
-          </div>
-          <!-- lastName -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Apellido *</label>
-            <input
-              placeholder="Apellido"
-              [ngModel]="form().lastName"
-              (ngModelChange)="updateForm('lastName', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().lastName"
-              [class.border-slate-300]="!formErrors().lastName"
-            >
-            <p *ngIf="formErrors().lastName" class="text-xs text-red-500 mt-1">{{ formErrors().lastName }}</p>
-          </div>
-          <!-- email -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Email *</label>
-            <input
-              placeholder="Email"
-              [ngModel]="form().email"
-              (ngModelChange)="updateForm('email', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().email"
-              [class.border-slate-300]="!formErrors().email"
-            >
-            <p *ngIf="formErrors().email" class="text-xs text-red-500 mt-1">{{ formErrors().email }}</p>
-          </div>
-          <!-- countryOrigin -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">País Origen *</label>
-            <input
-              placeholder="País Origen"
-              [ngModel]="form().countryOrigin"
-              (ngModelChange)="updateForm('countryOrigin', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().countryOrigin"
-              [class.border-slate-300]="!formErrors().countryOrigin"
-            >
-            <p *ngIf="formErrors().countryOrigin" class="text-xs text-red-500 mt-1">{{ formErrors().countryOrigin }}</p>
-          </div>
-          <!-- phone -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Teléfono</label>
-            <input
-              placeholder="Teléfono"
-              [ngModel]="form().phone"
-              (ngModelChange)="updateForm('phone', $event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-          <!-- university -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Universidad</label>
-            <input
-              placeholder="Universidad"
-              [ngModel]="form().university"
-              (ngModelChange)="updateForm('university', $event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-        </div>
-        <button (click)="create()" [disabled]="loading()" class="mt-4 bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-medium px-6 py-2 rounded-lg transition-colors">
-          Registrar
-        </button>
-        <div *ngIf="msg()" class="mt-3 text-sm font-medium" [class.text-green-600]="!error()" [class.text-red-600]="error()">{{ msg() }}</div>
-      </div>
-
-      <!-- RF-014 Buscar -->
-      <div class="flex gap-3 mb-4">
-        <input
-          placeholder="Buscar por nombre, email o país..."
-          [ngModel]="search()"
-          (ngModelChange)="search.set($event)"
-          (keyup.enter)="resetAndLoad()"
-          class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-        >
-        <button (click)="resetAndLoad()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-lg font-medium transition-colors">Buscar - RF-014</button>
-      </div>
-
-      <!-- Tabla -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-slate-100 text-left text-sm font-semibold text-slate-600">
-              <th class="px-4 py-3">Nombre</th>
-              <th class="px-4 py-3">Email</th>
-              <th class="px-4 py-3">País</th>
-              <th class="px-4 py-3">Asesor</th>
-              <th class="px-4 py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let s of students()" class="border-t border-slate-200 hover:bg-slate-50 text-sm">
-              <td class="px-4 py-3">{{ s.firstName }} {{ s.lastName }}</td>
-              <td class="px-4 py-3">{{ s.email }}</td>
-              <td class="px-4 py-3">{{ s.countryOrigin }}</td>
-              <td class="px-4 py-3">{{ s.advisor?.email || s.advisorId || '-' }}</td>
-              <td class="px-4 py-3">
-                <button (click)="select(s)" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-medium transition-colors">Ver / Editar RF-013</button>
-              </td>
-            </tr>
-            <tr *ngIf="!loading() && students().length === 0">
-              <td colspan="5" class="px-4 py-8 text-center text-slate-400">No se encontraron estudiantes</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Paginación -->
-        <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
-          <span class="text-sm text-slate-600">Página {{ page() }} de {{ totalPages() }} — Total: {{ total() }} registros</span>
-          <div class="flex gap-2">
-            <button (click)="prevPage()" [disabled]="page() <= 1" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Anterior</button>
-            <button (click)="nextPage()" [disabled]="page() >= totalPages()" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Siguiente</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- RF-015 / RF-016 Detalle -->
-      <div *ngIf="selected()" class="bg-white p-6 mt-6 rounded-xl shadow-sm border border-slate-200">
-        <h3 class="text-lg font-semibold text-slate-700 mb-4">Editar / Asociar Asesor RF-015 — {{ selected()?.email }}</h3>
-        <div class="flex gap-3 items-end">
-          <div class="flex-1">
-            <label class="block text-sm font-medium text-slate-600 mb-1">Advisor ID</label>
-            <input
-              placeholder="Advisor ID"
-              [ngModel]="advisorId()"
-              (ngModelChange)="advisorId.set($event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-          <button (click)="assignAdvisor()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">Asociar Asesor</button>
-        </div>
-
-        <div class="mt-6">
-          <h4 class="font-semibold text-slate-700 mb-3">Observaciones RF-016</h4>
-          <div class="flex gap-3">
-            <input
-              placeholder="Nueva observación"
-              [ngModel]="obsText()"
-              (ngModelChange)="obsText.set($event)"
-              class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="obsError()"
-            >
-            <button (click)="addObs()" class="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2 rounded-lg font-medium transition-colors">Agregar</button>
-          </div>
-          <p *ngIf="obsError()" class="text-xs text-red-500 mt-1">{{ obsError() }}</p>
-          <ul class="mt-4 space-y-2">
-            <li *ngFor="let o of observations()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm flex justify-between">
-              <span>{{ o.observation }}</span>
-              <span class="text-slate-400">{{ o.createdAt | date:'short' }}</span>
-            </li>
-            <li *ngIf="observations().length === 0" class="text-sm text-slate-400 italic">Sin observaciones</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    ErrorComponent,
+    // PrimeNG
+    ButtonModule,
+    InputTextModule,
+    FloatLabelModule,
+    TableModule,
+    SkeletonModule,
+    TagModule,
+    TooltipModule,
+  ],
+  templateUrl: './students.component.html',
+  styleUrls: ['./students.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentsComponent implements OnInit {
   loading = signal(false);
@@ -212,6 +56,9 @@ export class StudentsComponent implements OnInit {
   formErrors = signal<{ firstName?: string; lastName?: string; email?: string; countryOrigin?: string }>({});
   obsError = signal<string | null>(null);
 
+  // skeleton placeholder rows (p-table flex pattern)
+  readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Student));
+
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   constructor(private svc: StudentsService, private toast: ToastService) {}
@@ -222,7 +69,6 @@ export class StudentsComponent implements OnInit {
 
   updateForm(field: string, value: string) {
     this.form.update(f => ({ ...f, [field]: value }));
-    // limpiar error inline del campo al escribir
     if ((this.formErrors() as any)[field]) {
       this.formErrors.update(e => ({ ...e, [field]: undefined } as any));
     }
@@ -230,7 +76,6 @@ export class StudentsComponent implements OnInit {
 
   private sanitize(value: string): string {
     if (!value) return '';
-    // RF seguridad: strip tags y caracteres peligrosos < > .. / \
     return value
       .replace(/<[^>]*>/g, '')
       .replace(/[<>]/g, '')
@@ -278,7 +123,6 @@ export class StudentsComponent implements OnInit {
       next: (r) => {
         this.students.set(r.data ?? []);
         this.total.set(r.total ?? r.data?.length ?? 0);
-        // calcular totalPages si no viene del backend
         const tp = ((r as any).totalPages ?? Math.ceil((r.total ?? 0) / this.limit())) || 1;
         this.totalPages.set(tp);
         this.loading.set(false);
@@ -318,7 +162,6 @@ export class StudentsComponent implements OnInit {
     }
 
     const sanitized = this.sanitizeForm(this.form());
-    // validación adicional de email después de sanitizar
     if (!this.emailRegex.test(sanitized.email)) {
       this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
       this.toast.error('Email inválido');
@@ -331,7 +174,6 @@ export class StudentsComponent implements OnInit {
       next: () => {
         this.msg.set('Estudiante registrado');
         this.toast.success('Estudiante registrado correctamente');
-        // reset form manteniendo countryOrigin por defecto
         this.form.set({ firstName: '', lastName: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
         this.formErrors.set({});
         this.loading.set(false);
@@ -400,7 +242,6 @@ export class StudentsComponent implements OnInit {
       this.obsError.set('La observación no puede estar vacía');
       return;
     }
-    // Seguridad: validar que no contiene <script
     if (/<\s*script/i.test(raw)) {
       this.obsError.set('Contenido no permitido: <script> detectado');
       this.toast.error('Observación contiene contenido no permitido');
