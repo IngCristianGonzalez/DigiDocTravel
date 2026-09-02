@@ -16,6 +16,12 @@
           <i class="fa-solid fa-shield-halved"></i> Validación OWASP activa
         </span>
         <p-button
+          icon="pi pi-user-plus"
+          label="Registrar estudiante"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
           icon="pi pi-refresh"
           label="Recargar"
           [loading]="loading()"
@@ -58,131 +64,11 @@
   <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
   <app-error [message]="error()" (retry)="load()"></app-error>
 
-  <!-- Registrar Estudiante -->
-  <div class="students__card">
-    <h3 class="students__card-title"><i class="fa-solid fa-user-plus"></i> Registrar Estudiante</h3>
-
-    <div class="students__form-grid">
-      <!-- firstName -->
-      <div class="field" [class.field--error]="formErrors().firstName">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-firstName"
-            [ngModel]="form().firstName"
-            (ngModelChange)="updateForm('firstName', $event)"
-            [class.p-invalid]="!!formErrors().firstName"
-            autocomplete="given-name"
-          />
-          <label for="s-firstName">Nombre *</label>
-        </p-floatLabel>
-        @if (formErrors().firstName) {
-          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
-        }
-      </div>
-
-      <!-- lastName -->
-      <div class="field" [class.field--error]="formErrors().lastName">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-lastName"
-            [ngModel]="form().lastName"
-            (ngModelChange)="updateForm('lastName', $event)"
-            [class.p-invalid]="!!formErrors().lastName"
-            autocomplete="family-name"
-          />
-          <label for="s-lastName">Apellido *</label>
-        </p-floatLabel>
-        @if (formErrors().lastName) {
-          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
-        }
-      </div>
-
-      <!-- email -->
-      <div class="field" [class.field--error]="formErrors().email">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-email"
-            type="email"
-            [ngModel]="form().email"
-            (ngModelChange)="updateForm('email', $event)"
-            [class.p-invalid]="!!formErrors().email"
-            autocomplete="email"
-          />
-          <label for="s-email">Email *</label>
-        </p-floatLabel>
-        @if (formErrors().email) {
-          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
-        }
-      </div>
-
-      <!-- countryOrigin -->
-      <div class="field" [class.field--error]="formErrors().countryOrigin">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-countryOrigin"
-            [ngModel]="form().countryOrigin"
-            (ngModelChange)="updateForm('countryOrigin', $event)"
-            [class.p-invalid]="!!formErrors().countryOrigin"
-            autocomplete="country-name"
-          />
-          <label for="s-countryOrigin">País Origen *</label>
-        </p-floatLabel>
-        @if (formErrors().countryOrigin) {
-          <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().countryOrigin }}</small>
-        }
-      </div>
-
-      <!-- phone -->
-      <div class="field">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-phone"
-            [ngModel]="form().phone"
-            (ngModelChange)="updateForm('phone', $event)"
-            autocomplete="tel"
-          />
-          <label for="s-phone">Teléfono</label>
-        </p-floatLabel>
-        <span class="field__hint">Opcional · Ej: +57 300 123 4567</span>
-      </div>
-
-      <!-- university -->
-      <div class="field">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="s-university"
-            [ngModel]="form().university"
-            (ngModelChange)="updateForm('university', $event)"
-            autocomplete="organization"
-          />
-          <label for="s-university">Universidad</label>
-        </p-floatLabel>
-        <span class="field__hint">Opcional</span>
-      </div>
+  @if (msg()) {
+    <div class="students__msg-banner" [class.students__msg-banner--success]="!error()" [class.students__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
     </div>
-
-    <div class="students__form-actions">
-      <p-button
-        icon="pi pi-user-plus"
-        label="Registrar"
-        [loading]="loading()"
-        [disabled]="loading()"
-        (onClick)="create()">
-      </p-button>
-      @if (msg()) {
-        <span class="students__msg" [class.students__msg--success]="!error()" [class.students__msg--error]="!!error()">
-          <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i>
-          {{ msg() }}
-        </span>
-      }
-    </div>
-  </div>
+  }
 
   <!-- Toolbar Buscar -->
   <div class="students__toolbar">
@@ -283,6 +169,8 @@
                 </div>
                 @if (search()) {
                   <p-button icon="pi pi-filter-slash" label="Limpiar búsqueda" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+                } @else {
+                  <p-button icon="pi pi-user-plus" label="Registrar estudiante" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -366,3 +254,177 @@
     </div>
   }
 </div>
+
+<!-- Modal Registrar Estudiante -->
+<p-dialog
+  header="Registrar estudiante"
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '720px', maxWidth: '95vw' }"
+  styleClass="students-dialog"
+  (onHide)="closeCreateModal()">
+
+  <div class="students__modal-intro">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>Completa los campos. El teléfono toma el indicativo del país seleccionado.</span>
+  </div>
+
+  <div class="students__form-grid students__form-grid--modal">
+    <!-- Nombre -->
+    <div class="field" [class.field--error]="formErrors().firstName">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-firstName"
+          [ngModel]="form().firstName"
+          (ngModelChange)="updateForm('firstName', $event)"
+          [class.p-invalid]="!!formErrors().firstName"
+          autocomplete="given-name"
+          maxlength="50"
+        />
+        <label for="m-firstName">Nombre * (mín. 3)</label>
+      </p-floatLabel>
+      @if (formErrors().firstName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
+      }
+    </div>
+
+    <!-- Apellido -->
+    <div class="field" [class.field--error]="formErrors().lastName">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-lastName"
+          [ngModel]="form().lastName"
+          (ngModelChange)="updateForm('lastName', $event)"
+          [class.p-invalid]="!!formErrors().lastName"
+          autocomplete="family-name"
+          maxlength="50"
+        />
+        <label for="m-lastName">Apellido * (mín. 4)</label>
+      </p-floatLabel>
+      @if (formErrors().lastName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
+      }
+    </div>
+
+    <!-- Email -->
+    <div class="field" [class.field--error]="formErrors().email">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-email"
+          type="email"
+          [ngModel]="form().email"
+          (ngModelChange)="updateForm('email', $event)"
+          [class.p-invalid]="!!formErrors().email"
+          autocomplete="email"
+        />
+        <label for="m-email">Email *</label>
+      </p-floatLabel>
+      @if (formErrors().email) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
+      } @else {
+        <span class="field__hint">Ej: nombre@dominio.com — sin caracteres especiales</span>
+      }
+    </div>
+
+    <!-- País (buscable + bandera + indicativo) -->
+    <div class="field" [class.field--error]="formErrors().countryOrigin">
+      <label class="field__label-static">País origen *</label>
+      <p-dropdown
+        [options]="countries()"
+        [ngModel]="selectedCountry()"
+        (ngModelChange)="onCountryChange($event)"
+        optionLabel="name"
+        [filter]="true"
+        filterBy="name"
+        filterPlaceholder="Buscar país..."
+        placeholder="Selecciona país"
+        [showClear]="false"
+        styleClass="w-full"
+        appendTo="body"
+      >
+        <ng-template pTemplate="selectedItem">
+          @if (selectedCountry()) {
+            <div class="country-option">
+              <span class="country-option__flag">{{ selectedCountry()!.flag }}</span>
+              <span>{{ selectedCountry()!.name }}</span>
+              <span class="country-option__dial">{{ selectedCountry()!.dialCode }}</span>
+            </div>
+          }
+        </ng-template>
+        <ng-template let-country pTemplate="item">
+          <div class="country-option">
+            <span class="country-option__flag">{{ country.flag }}</span>
+            <span>{{ country.name }}</span>
+            <span class="country-option__dial">{{ country.dialCode }}</span>
+          </div>
+        </ng-template>
+      </p-dropdown>
+      @if (formErrors().countryOrigin) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().countryOrigin }}</small>
+      }
+    </div>
+
+    <!-- Teléfono con indicativo -->
+    <div class="field" [class.field--error]="formErrors().phone">
+      <label class="field__label-static">Teléfono <span class="field__optional">(opcional)</span></label>
+      <div class="phone-field">
+        <span class="phone-field__prefix">
+          <span class="phone-field__flag">{{ selectedCountry()?.flag }}</span>
+          {{ dialCode() }}
+        </span>
+        <input
+          pInputText
+          placeholder="Solo número — ej: 3001234567"
+          [ngModel]="phoneNumber()"
+          (ngModelChange)="onPhoneNumberChange($event)"
+          [class.p-invalid]="!!formErrors().phone"
+          inputmode="numeric"
+          autocomplete="tel"
+        />
+      </div>
+      @if (formErrors().phone) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().phone }}</small>
+      } @else {
+        <span class="field__hint">Se guardará como {{ dialCode() }} + número (7–15 dígitos)</span>
+      }
+    </div>
+
+    <!-- Universidad (dependiente del país, buscable) -->
+    <div class="field" [class.field--error]="formErrors().university">
+      <label class="field__label-static">Universidad <span class="field__optional">(opcional)</span></label>
+      <p-dropdown
+        [options]="universitiesForCountry()"
+        [ngModel]="form().university"
+        (ngModelChange)="onUniversityChange($event)"
+        [placeholder]="universitiesForCountry().length ? 'Selecciona universidad' : 'Sin universidades para este país'"
+        [filter]="true"
+        filterPlaceholder="Buscar universidad..."
+        [showClear]="true"
+        [disabled]="!universitiesForCountry().length"
+        styleClass="w-full"
+        appendTo="body"
+        [emptyMessage]="'Sin resultados'"
+      >
+      </p-dropdown>
+      @if (universitiesForCountry().length) {
+        <span class="field__hint">{{ universitiesForCountry().length }} universidades disponibles para {{ selectedCountry()?.name }}</span>
+      }
+      @if (formErrors().university) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().university }}</small>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="students__modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" (onClick)="create()" [loading]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

@@ -577,6 +577,158 @@
 
 // ============================================================
 // PrimeNG overrides scoped
+// Banner msg (global bajo header)
+.students__msg-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+
+  &--success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+  }
+  &--error {
+    background: var(--sl-error-50);
+    border-color: #fecaca;
+    color: var(--sl-error-600);
+  }
+}
+
+// Modal extras
+.students__modal-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  color: #0c4a6e;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-5);
+
+  i { color: #0284c7; }
+}
+
+.students__form-grid--modal {
+  max-width: none;
+}
+
+.field__label-static {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sl-gray-700);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.field__optional {
+  font-weight: 400;
+  color: var(--sl-gray-400);
+  font-size: 0.75rem;
+}
+
+// Country option with flag + dial
+.country-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+}
+
+.country-option__flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.country-option__dial {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--sl-gray-500);
+  background: var(--sl-gray-50);
+  border: 1px solid var(--sl-gray-200);
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+
+// Phone field with prefix
+.phone-field {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+
+  :host ::ng-deep input[pInputText] {
+    flex: 1;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    margin-left: -1px;
+  }
+}
+
+.phone-field__prefix {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sl-gray-50);
+  border: 1px solid var(--sl-gray-300);
+  border-right: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--sl-gray-700);
+  white-space: nowrap;
+}
+
+.phone-field__flag {
+  font-size: 1rem;
+}
+
+.students__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+// Dialog theming (SL Global)
+:host ::ng-deep .students-dialog {
+  .p-dialog-header {
+    background: var(--sl-white) !important;
+    border-bottom: 1px solid var(--sl-gray-200) !important;
+    padding: var(--space-4) var(--space-5) !important;
+  }
+  .p-dialog-title {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--sl-black) !important;
+  }
+  .p-dialog-content {
+    padding: var(--space-5) !important;
+    background: var(--sl-white) !important;
+  }
+  .p-dialog-footer {
+    border-top: 1px solid var(--sl-gray-100) !important;
+    padding: var(--space-4) var(--space-5) !important;
+    background: var(--sl-gray-50) !important;
+  }
+  .p-dropdown {
+    width: 100% !important;
+  }
+  .p-dropdown-label {
+    font-size: 0.875rem !important;
+  }
+  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    font-size: 0.875rem !important;
+  }
+}
+
 // ============================================================
 :host ::ng-deep {
   .p-tag {
