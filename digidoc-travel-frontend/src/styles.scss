@@ -1,0 +1,324 @@
+// ============================================================
+// SL Global - Design System + PrimeNG Overrides
+// B2B Professional Product · WCAG 2.1 AA Compliant
+// ============================================================
+
+// --- Functional Palette ---
+:root {
+  // Brand
+  --sl-orange-500: #f8ad3a;
+  --sl-orange-600: #e0952d;
+  --sl-orange-700: #c97f1f;
+
+  // Neutrals
+  --sl-black: #1d1d1b;
+  --sl-gray-900: #292a2d;
+  --sl-gray-800: #3a3b3e;
+  --sl-gray-700: #525357;
+  --sl-gray-600: #6b6d72;
+  --sl-gray-500: #8a8c92;
+  --sl-gray-400: #a8aab0;
+  --sl-gray-300: #c4c6cc;
+  --sl-gray-200: #e1e3e8;
+  --sl-gray-100: #f0f1f4;
+  --sl-gray-50: #f7f8f9;
+  --sl-white: #ffffff;
+
+  // Semantic
+  --sl-error-600: #b91c1c;
+  --sl-error-50: #fef2f2;
+
+  // Typography
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  // Spacing
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  // Radii
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  // Transitions
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+}
+
+// ============================================================
+// PrimeNG Theme Overrides (Lara - SL Global)
+// ============================================================
+
+// --- PrimeNG Variables ---
+:root {
+  // Primary (Orange)
+  --p-primary-color: #f8ad3a;
+  --p-primary-contrast-color: #ffffff;
+  --p-highlight-color: #f8ad3a;
+  --p-highlight-color-focus: #e0952d;
+  --p-highlight-text-color: #1d1d1b;
+
+  // Form controls
+  --p-formfield-border-color: #c4c6cc;
+  --p-formfield-hover-border-color: #a8aab0;
+  --p-formfield-focus-border-color: #f8ad3a;
+  --p-formfield-focus-ring-color: rgba(248, 173, 58, 0.12);
+  --p-formfield-disabled-background: #f7f8f9;
+  --p-formfield-disabled-color: #8a8c92;
+  --p-formfield-border-radius: 6px;
+
+  // Buttons
+  --p-button-border-radius: 6px;
+  --p-button-sm-font-size: 0.8125rem;
+  --p-button-sm-padding: 0.5rem 1rem;
+
+  // Inputs
+  --p-inputtext-border-radius: 6px;
+  --p-inputtext-padding: 0.625rem 0.75rem;
+  --p-inputtext-font-size: 0.875rem;
+
+  // Checkbox
+  --p-checkbox-border-radius: 4px;
+  --p-checkbox-width: 18px;
+  --p-checkbox-height: 18px;
+
+  // Messages
+  --p-message-border-radius: 6px;
+  --p-message-border-width: 0 0 0 3px;
+}
+
+// ============================================================
+// Reset & Base
+// ============================================================
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--sl-gray-100);
+  color: var(--sl-black);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--sl-orange-500);
+  text-decoration: none;
+  transition: color var(--duration-fast) ease;
+
+  &:hover {
+    color: var(--sl-orange-700);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sl-orange-500);
+    outline-offset: 2px;
+  }
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+::selection {
+  background-color: var(--sl-orange-500);
+  color: var(--sl-black);
+}
+
+// Screen reader only
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ============================================================
+// PrimeNG Component Overrides
+// ============================================================
+
+// --- InputText ---
+.p-inputtext {
+  font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
+  color: var(--sl-black) !important;
+  background: var(--sl-white) !important;
+  border-color: var(--sl-gray-300) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.625rem 0.75rem !important;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease !important;
+
+  &::placeholder {
+    color: var(--sl-gray-400) !important;
+  }
+
+  &:hover:not(:disabled):not(.p-invalid) {
+    border-color: var(--sl-gray-400) !important;
+  }
+
+  &:focus:not(:disabled) {
+    border-color: var(--sl-orange-500) !important;
+    box-shadow: 0 0 0 3px rgba(248, 173, 58, 0.12) !important;
+  }
+
+  &:disabled {
+    background: var(--sl-gray-50) !important;
+    color: var(--sl-gray-500) !important;
+  }
+
+  &.p-invalid {
+    border-color: var(--sl-error-600) !important;
+  }
+}
+
+// --- Button ---
+.p-button {
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.625rem 1.25rem !important;
+  height: 40px !important;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease !important;
+
+  &.p-button-outlined {
+    background: transparent !important;
+    border-color: var(--sl-gray-300) !important;
+    color: var(--sl-gray-700) !important;
+
+    &:hover {
+      background: var(--sl-gray-50) !important;
+      border-color: var(--sl-gray-400) !important;
+    }
+  }
+
+  &.p-button-sm {
+    font-size: 0.8125rem !important;
+    padding: 0.5rem 1rem !important;
+    height: 36px !important;
+  }
+
+  &.p-button-lg {
+    padding: 0.75rem 1.5rem !important;
+    height: 44px !important;
+  }
+
+  &.p-button-text {
+    padding: 0.625rem 0.75rem !important;
+    height: 40px !important;
+  }
+}
+
+// --- Checkbox ---
+.p-checkbox {
+  .p-checkbox-box {
+    border-color: var(--sl-gray-300) !important;
+    border-radius: var(--radius-sm) !important;
+    width: 18px !important;
+    height: 18px !important;
+    transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease !important;
+
+    &:hover:not(.p-disabled):not(.p-highlight) {
+      border-color: var(--sl-gray-400) !important;
+    }
+
+    &.p-highlight {
+      background: var(--sl-orange-500) !important;
+      border-color: var(--sl-orange-500) !important;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--sl-white), 0 0 0 4px var(--sl-orange-500) !important;
+    }
+  }
+
+  .p-checkbox-icon {
+    font-size: 0.625rem !important;
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
+// --- Message (Toast/Inline) ---
+.p-message {
+  border-radius: var(--radius-md) !important;
+  border-width: 0 0 0 3px !important;
+  font-size: 0.8125rem !important;
+  padding: 0.75rem 1rem !important;
+  margin: 0 !important;
+
+  &.p-message-error {
+    background: var(--sl-error-50) !important;
+    border-color: var(--sl-error-600) !important;
+    color: var(--sl-error-600) !important;
+  }
+
+  .p-message-text {
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+// --- Password ---
+.p-password {
+  display: block !important;
+  width: 100% !important;
+
+  input {
+    width: 100% !important;
+  }
+
+  .p-password-toggle-mask-icon {
+    color: var(--sl-gray-500) !important;
+
+    &:hover {
+      color: var(--sl-gray-700) !important;
+    }
+  }
+}
+
+// --- Link ---
+.p-link {
+  color: var(--sl-orange-600) !important;
+  font-weight: 500 !important;
+
+  &:hover {
+    color: var(--sl-orange-700) !important;
+  }
+}
+
+// --- Focus Ring Utility ---
+.p-focusable:focus-visible {
+  outline: 2px solid var(--sl-orange-500) !important;
+  outline-offset: 2px !important;
+}
