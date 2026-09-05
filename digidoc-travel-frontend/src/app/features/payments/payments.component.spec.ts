@@ -3,7 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { PaymentsComponent } from './payments.component';
 
-describe('PaymentsComponent - RF-031 a RF-036', () => {
+describe('PaymentsComponent', () => {
   let fixture: ComponentFixture<PaymentsComponent>;
   let component: PaymentsComponent;
 

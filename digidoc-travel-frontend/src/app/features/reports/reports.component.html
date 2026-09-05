@@ -30,7 +30,7 @@
   <app-loading [show]="loading()" message="Cargando reporte..."></app-loading>
   <app-error [message]="error()" (retry)="reload()"></app-error>
 
-  <!-- Tabs por tipo RF-046..049 -->
+  <!-- Tabs por tipo -->
   <div class="tabs-control-wrapper">
     <div class="tabs-container">
       @for (tab of reportTabs; track tab.value) {

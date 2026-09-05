@@ -13,7 +13,7 @@ const mockRepo = () => ({
   createQueryBuilder: jest.fn(),
 });
 
-describe('StudentsService - RF-012 a RF-016', () => {
+describe('StudentsService', () => {
   let service: StudentsService;
   let studentRepo: any;
   let obsRepo: any;
@@ -31,7 +31,7 @@ describe('StudentsService - RF-012 a RF-016', () => {
     obsRepo = module.get(getRepositoryToken(StudentObservation));
   });
 
-  it('RF-012 Registrar estudiantes', async () => {
+  it('Registrar estudiantes', async () => {
     studentRepo.findOne.mockResolvedValue(null);
     studentRepo.create.mockReturnValue({ email: 's@test.com' });
     studentRepo.save.mockResolvedValue({ id: '1', email: 's@test.com' });
@@ -39,12 +39,12 @@ describe('StudentsService - RF-012 a RF-016', () => {
     expect(res.email).toBe('s@test.com');
   });
 
-  it('RF-012 debe fallar si email duplicado', async () => {
+  it('debe fallar si email duplicado', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1' });
     await expect(service.create({ email: 'dup@test.com' } as any)).rejects.toThrow(ConflictException);
   });
 
-  it('RF-012 debe fallar si identificación duplicada', async () => {
+  it('debe fallar si identificación duplicada', async () => {
     studentRepo.findOne
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ id: '1', identification: '123456' });
@@ -53,18 +53,18 @@ describe('StudentsService - RF-012 a RF-016', () => {
     ).rejects.toThrow(ConflictException);
   });
 
-  it('RF-014 Consultar estudiante', async () => {
+  it('Consultar estudiante', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1', email: 'a@a.com' });
     const res = await service.findOne('1');
     expect(res.id).toBe('1');
   });
 
-  it('RF-014 debe lanzar 404 si no existe', async () => {
+  it('debe lanzar 404 si no existe', async () => {
     studentRepo.findOne.mockResolvedValue(null);
     await expect(service.findOne('invalid')).rejects.toThrow(NotFoundException);
   });
 
-  it('RF-015 Asociar asesor', async () => {
+  it('Asociar asesor', async () => {
     const student = { id: '1', advisorId: null };
     studentRepo.findOne.mockResolvedValue(student);
     studentRepo.save.mockResolvedValue({ ...student, advisorId: 'adv1' });
@@ -72,7 +72,7 @@ describe('StudentsService - RF-012 a RF-016', () => {
     expect(res.advisorId).toBe('adv1');
   });
 
-  it('RF-016 Registrar observación', async () => {
+  it('Registrar observación', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1' });
     obsRepo.create.mockReturnValue({ id: 'o1', observation: 'test' });
     obsRepo.save.mockResolvedValue({ id: 'o1', observation: 'test' });
@@ -80,7 +80,7 @@ describe('StudentsService - RF-012 a RF-016', () => {
     expect(res.observation).toBe('test');
   });
 
-  it('RF-016 Consultar observaciones', async () => {
+  it('Consultar observaciones', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1' });
     obsRepo.find.mockResolvedValue([{ id: 'o1' }]);
     const res = await service.getObservations('1');

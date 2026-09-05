@@ -11,7 +11,7 @@ const mockRepo = () => ({
   createQueryBuilder: jest.fn(),
 });
 
-describe('VisasService - RF-025 a RF-030', () => {
+describe('VisasService', () => {
   let service: VisasService;
   let repo: any;
 
@@ -23,18 +23,18 @@ describe('VisasService - RF-025 a RF-030', () => {
     repo = module.get(getRepositoryToken(Visa));
   });
 
-  it('RF-025 Registrar visa válida', async () => {
+  it('Registrar visa válida', async () => {
     repo.create.mockReturnValue({});
     repo.save.mockResolvedValue({ id: '1', issueDate: '2024-01-01', expiryDate: '2025-01-01' });
     const res = await service.create({ studentId: 's1', visaType: 'student', country: 'USA', issueDate: '2024-01-01', expiryDate: '2025-01-01' } as any, 'u1');
     expect(res.id).toBe('1');
   });
 
-  it('RF-026 Validar fecha vencimiento < expedición debe fallar', async () => {
+  it('Validar fecha vencimiento < expedición debe fallar', async () => {
     await expect(service.create({ studentId: 's1', visaType: 't', country: 'USA', issueDate: '2025-01-01', expiryDate: '2024-01-01' } as any, 'u1')).rejects.toThrow(BadRequestException);
   });
 
-  it('RF-028 Consultar estado - calcular días restantes', async () => {
+  it('Consultar estado - calcular días restantes', async () => {
     const future = new Date(); future.setDate(future.getDate()+30);
     repo.findOne.mockResolvedValue({ id: '1', expiryDate: future.toISOString().split('T')[0] });
     const res = await service.findOne('1');
@@ -42,14 +42,14 @@ describe('VisasService - RF-025 a RF-030', () => {
     expect(res.daysLeft).toBeGreaterThan(0);
   });
 
-  it('RF-029 Expiring en 90 días', async () => {
+  it('Expiring en 90 días', async () => {
     const qb = { leftJoinAndSelect: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis(), getMany: jest.fn().mockResolvedValue([{ id:'1', expiryDate: new Date().toISOString().split('T')[0]}]) };
     repo.createQueryBuilder.mockReturnValue(qb);
     const res = await service.findExpiring(90);
     expect(res.length).toBe(1);
   });
 
-  it('RF-030 Alerta automática debe marcar alertSent', async () => {
+  it('Alerta automática debe marcar alertSent', async () => {
     const visa = { id: '1', expiryDate: new Date().toISOString().split('T')[0], alertSent: false };
     const qb = { leftJoinAndSelect: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis(), getMany: jest.fn().mockResolvedValue([visa]) };
     repo.createQueryBuilder.mockReturnValue(qb);

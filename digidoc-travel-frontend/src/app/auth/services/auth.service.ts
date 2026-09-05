@@ -130,7 +130,7 @@ export class AuthService {
     );
   }
 
-  // RF-002 / CU-003 — recuperación de contraseña (backend throttled 3/min)
+  // Recuperación de contraseña (backend throttled 3/min)
   forgotPassword(email: string): Observable<{ message: string }> {
     this._loading.set(true);
     this._error.set(null);

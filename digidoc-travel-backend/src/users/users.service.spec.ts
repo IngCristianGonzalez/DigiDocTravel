@@ -19,7 +19,7 @@ const mockRoleRepo = () => ({
   findBy: jest.fn(),
 });
 
-describe('UsersService - RF-007 a RF-011', () => {
+describe('UsersService', () => {
   let service: UsersService;
   let userRepo: any;
   let roleRepo: any;
@@ -37,7 +37,7 @@ describe('UsersService - RF-007 a RF-011', () => {
     roleRepo = module.get(getRepositoryToken(Role));
   });
 
-  describe('RF-007 Registrar usuarios', () => {
+  describe('Registrar usuarios', () => {
     it('debe crear usuario con email único', async () => {
       userRepo.findOne.mockResolvedValue(null);
       userRepo.create.mockReturnValue({ email: 'test@test.com', password: 'hashed' });
@@ -52,7 +52,7 @@ describe('UsersService - RF-007 a RF-011', () => {
     });
   });
 
-  describe('RF-009 Desactivar usuarios', () => {
+  describe('Desactivar usuarios', () => {
     it('debe desactivar usuario activo', async () => {
       const user = { id: '1', email: 'a@a.com', status: true, roles: [] };
       userRepo.findOne.mockResolvedValue(user);
@@ -73,7 +73,7 @@ describe('UsersService - RF-007 a RF-011', () => {
     });
   });
 
-  describe('RF-011 Asignar roles', () => {
+  describe('Asignar roles', () => {
     it('debe asignar roles correctamente', async () => {
       const user = { id: '1', roles: [] };
       userRepo.findOne.mockResolvedValue(user);
@@ -89,7 +89,7 @@ describe('UsersService - RF-007 a RF-011', () => {
     });
   });
 
-  describe('RF-010 Consultar usuarios', () => {
+  describe('Consultar usuarios', () => {
     it('debe listar usuarios con paginación', async () => {
       const qb = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),

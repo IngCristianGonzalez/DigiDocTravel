@@ -11,7 +11,7 @@ import { ToastService } from '../../../core/services/toast.service';
 type Mode = 'forgot' | 'reset';
 
 /**
- * RF-002 / CU-003 — Recuperar contraseña.
+ * Recuperar contraseña.
  * Sin token: pide email y envía enlace. Con ?token=: muestra restablecer.
  */
 @Component({

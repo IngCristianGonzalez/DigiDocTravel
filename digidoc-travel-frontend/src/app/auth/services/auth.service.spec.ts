@@ -4,7 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { provideRouter } from '@angular/router';
 import { AuthService } from './auth.service';
 
-describe('AuthService - RF-001 a RF-006', () => {
+describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   const getStorage = () => (globalThis as any).localStorage || (typeof window !== 'undefined' ? (window as any).localStorage : undefined) || { clear: () => {}, getItem: () => null, setItem: () => {}, removeItem: () => {} } as any;
@@ -25,7 +25,7 @@ describe('AuthService - RF-001 a RF-006', () => {
 
   it('should be created', () => expect(service).toBeTruthy());
 
-  it('RF-001 login success should store tokens', () => {
+  it('login success should store tokens', () => {
     const mockRes = { accessToken: 'access', refreshToken: 'refresh', user: { id: '1', email: 'a@a.com', roles: [], lastLogin: '', createdAt: '' } as any };
     service.login({ email: 'a@a.com', password: 'Password123!' }).subscribe(res => {
       expect(res.accessToken).toBe('access');
@@ -58,7 +58,7 @@ describe('AuthService - RF-001 a RF-006', () => {
     req.flush({ message: 'Too many requests' }, { status: 429, statusText: 'Too Many Requests' });
   });
 
-  it('RF-007 register', () => {
+  it('register', () => {
     service.register({ fullName: 'Juan Perez', email: 'new@test.com', password: 'Password123!', institution: 'Test' } as any).subscribe(res => {
       expect(res).toBeTruthy();
     });
@@ -82,7 +82,7 @@ describe('AuthService - RF-001 a RF-006', () => {
     req.flush({ accessToken: 'a', refreshToken: 'r', user: { id: '1', email: 'a@a.com', roles: [] } } as any);
   });
 
-  it('RF-002 forgotPassword posts email', () => {
+  it('forgotPassword posts email', () => {
     service.forgotPassword('a@a.com').subscribe(res => {
       expect(res).toBeTruthy();
     });
@@ -92,7 +92,7 @@ describe('AuthService - RF-001 a RF-006', () => {
     req.flush({ message: 'ok' });
   });
 
-  it('RF-002 resetPassword posts token and password', () => {
+  it('resetPassword posts token and password', () => {
     service.resetPassword('tok123', 'Newpass1!').subscribe(res => {
       expect(res).toBeTruthy();
     });

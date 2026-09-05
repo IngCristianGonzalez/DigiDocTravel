@@ -4,7 +4,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
 import { ForgotPasswordComponent } from './forgot-password.component';
 
-describe('ForgotPasswordComponent - RF-002', () => {
+describe('ForgotPasswordComponent -', () => {
   const setup = (token: string | null) => {
     TestBed.configureTestingModule({
       imports: [ForgotPasswordComponent],

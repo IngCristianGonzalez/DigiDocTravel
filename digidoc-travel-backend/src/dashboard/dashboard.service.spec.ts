@@ -26,7 +26,7 @@ const mockRepo = () => ({
   }),
 });
 
-describe('DashboardService - RF-051 a RF-056', () => {
+describe('DashboardService', () => {
   let service: DashboardService;
 
   beforeEach(async () => {
@@ -44,7 +44,7 @@ describe('DashboardService - RF-051 a RF-056', () => {
     service = module.get<DashboardService>(DashboardService);
   });
 
-  it('RF-051 Resumen general', async () => {
+  it('Resumen general', async () => {
     const res = await service.getSummary();
     expect(res.students.total).toBe(5);
     expect(res.visas.expiringIn90Days).toBeDefined();
@@ -52,28 +52,28 @@ describe('DashboardService - RF-051 a RF-056', () => {
     expect(res.events.next7Days).toBeDefined();
   });
 
-  it('RF-052 Estudiantes activos', async () => {
+  it('Estudiantes activos', async () => {
     const res = await service.getStudentsStats();
     expect(res.total).toBe(5);
     expect(res.byCountry).toBeDefined();
   });
 
-  it('RF-053 Documentos pendientes', async () => {
+  it('Documentos pendientes', async () => {
     const res = await service.getPendingDocuments();
     expect(res).toBeDefined();
   });
 
-  it('RF-054 Visas por vencer', async () => {
+  it('Visas por vencer', async () => {
     const res = await service.getExpiringVisas();
     expect(res).toBeDefined();
   });
 
-  it('RF-055 Pagos pendientes', async () => {
+  it('Pagos pendientes', async () => {
     const res = await service.getPendingPayments();
     expect(res).toBeDefined();
   });
 
-  it('RF-056 Próximos eventos', async () => {
+  it('Próximos eventos', async () => {
     const res = await service.getUpcomingEvents();
     expect(res).toBeDefined();
   });

@@ -61,7 +61,7 @@
   <app-loading [show]="loading()" message="Cargando notificaciones..."></app-loading>
   <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
 
-  <!-- Toolbar: búsqueda + filtros historial RF-045 -->
+  <!-- Toolbar: búsqueda + filtros historial -->
   <div class="notifs__toolbar">
     <div class="notifs__search">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -219,7 +219,7 @@
     <p class="notifs__detail-message">{{ n.message }}</p>
     <dl class="detail-list">
       <div class="detail-list__row"><dt>Tipo</dt><dd>{{ n.type }}</dd></div>
-      <div class="detail-list__row"><dt>Email</dt><dd>{{ n.emailSent ? 'Enviado (RF-043)' : 'No enviado' }}</dd></div>
+      <div class="detail-list__row"><dt>Email</dt><dd>{{ n.emailSent ? 'Enviado' : 'No enviado' }}</dd></div>
       <div class="detail-list__row"><dt>Estado</dt><dd>{{ n.read ? 'Leída' : 'No leída' }}</dd></div>
     </dl>
   }

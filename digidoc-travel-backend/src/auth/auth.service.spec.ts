@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UnauthorizedException } from '@nestjs/common';
 
-describe('AuthService - RF-001 a RF-006', () => {
+describe('AuthService', () => {
   let service: AuthService;
   let usersService: any;
   let jwtService: any;
@@ -38,7 +38,7 @@ describe('AuthService - RF-001 a RF-006', () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('RF-001 Login correcto', async () => {
+  it('Login correcto', async () => {
     usersService.findByEmail.mockResolvedValue({ id: '1', email: 'a@a.com', status: true, roles: [{ name: 'admin' }], password: 'hash' });
     usersService.validatePassword.mockResolvedValue(true);
     jwtService.signAsync.mockResolvedValue('access');
@@ -46,13 +46,13 @@ describe('AuthService - RF-001 a RF-006', () => {
     expect(res.accessToken).toBeDefined();
   });
 
-  it('RF-001 Login con contraseña incorrecta debe fallar', async () => {
+  it('Login con contraseña incorrecta debe fallar', async () => {
     usersService.findByEmail.mockResolvedValue({ id: '1', status: true, roles: [], password: 'hash' });
     usersService.validatePassword.mockResolvedValue(false);
     await expect(service.login({ email: 'a@a.com', password: 'wrong' } as any, '', '')).rejects.toThrow(UnauthorizedException);
   });
 
-  it('RF-002 Registro', async () => {
+  it('Registro', async () => {
     usersService.create = jest.fn().mockResolvedValue({ id: '1', email: 'new@test.com' });
     // need to override service create logic: service.register calls usersService.create
     // but we mocked create above via usersService, so just test
@@ -60,7 +60,7 @@ describe('AuthService - RF-001 a RF-006', () => {
     expect(res.email).toBe('new@test.com');
   });
 
-  it('RF-003 Logout elimina cache', async () => {
+  it('Logout elimina cache', async () => {
     const res = await service.logout('1', '127.0.0.1', 'device');
     expect(cache.del).toHaveBeenCalledWith('refresh:1');
     expect(res.message).toContain('Logged out');
