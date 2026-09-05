@@ -1,0 +1,270 @@
+<div class="notifs">
+  <!-- Header -->
+  <div class="notifs__header">
+    <div class="notifs__header-top">
+      <div class="notifs__header-left">
+        <div class="notifs__icon-box">
+          <i class="fa-solid fa-bell"></i>
+        </div>
+        <div>
+          <h1 class="notifs__title">Notificaciones</h1>
+          <p class="notifs__subtitle">Centro de avisos de la plataforma y correo</p>
+        </div>
+      </div>
+      <div class="notifs__header-actions">
+        <p-button
+          icon="pi pi-check-double"
+          label="Marcar todas leídas"
+          size="small"
+          [disabled]="loading() || unreadCount() === 0"
+          (onClick)="openMarkAll()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="resetAndLoad(); loadUnread()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="notifs__quick-stats">
+      <div class="notifs__quick-stat notifs__quick-stat--alert">
+        <div class="notifs__quick-stat-icon"><i class="fa-solid fa-envelope"></i></div>
+        <div>
+          <p class="notifs__quick-stat-label">No leídas</p>
+          <p class="notifs__quick-stat-value">{{ unreadCount() }}</p>
+        </div>
+      </div>
+      <div class="notifs__quick-stat">
+        <div class="notifs__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="notifs__quick-stat-label">Total historial</p>
+          <p class="notifs__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="notifs__quick-stat">
+        <div class="notifs__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="notifs__quick-stat-label">Página</p>
+          <p class="notifs__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando notificaciones..."></app-loading>
+  <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
+
+  <!-- Toolbar: búsqueda + filtros historial RF-045 -->
+  <div class="notifs__toolbar">
+    <div class="notifs__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por título o mensaje..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar notificaciones"
+      />
+    </div>
+    <div class="notifs__toolbar-actions">
+      <p-dropdown
+        [options]="typeOptions"
+        [ngModel]="filterType()"
+        (ngModelChange)="filterType.set($event); resetAndLoad()"
+        placeholder="Todos los tipos"
+        [showClear]="true"
+        ariaLabel="Filtrar por tipo"
+      />
+      <p-dropdown
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="filterStatus()"
+        (ngModelChange)="filterStatus.set($event); resetAndLoad()"
+        placeholder="Todos los estados"
+        [showClear]="true"
+        ariaLabel="Filtrar por estado"
+      />
+      @if (search() || filterType() || filterStatus()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="clearFilters()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla historial -->
+  <div class="notifs__table-card">
+    <div class="notifs__table-header">
+      <h3 class="notifs__table-title"><i class="fa-solid fa-table-list"></i> Historial</h3>
+      <span class="notifs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : notifs()"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '62rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Título</th>
+            <th style="width: 120px">Tipo</th>
+            <th style="width: 140px">Fecha</th>
+            <th style="width: 110px">Email</th>
+            <th style="width: 110px">Estado</th>
+            <th style="width: 112px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-n>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="12rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="7rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="4rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="6rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr [class.notifs__row--unread]="!n.read">
+              <td>
+                <span class="td-ellipsis" [pTooltip]="n.title" tooltipPosition="top"><strong [class.notifs__unread-title]="!n.read">{{ n.title }}</strong></span>
+              </td>
+              <td><p-tag [value]="n.type" [severity]="typeSeverity(n.type)"></p-tag></td>
+              <td>{{ n.createdAt | date:'short' }}</td>
+              <td>
+                @if (n.emailSent) {
+                  <span class="notifs__email-sent"><i class="fa-solid fa-circle-check"></i> Sí</span>
+                } @else {
+                  <span class="notifs__muted">—</span>
+                }
+              </td>
+              <td><p-tag [value]="n.read ? 'Leída' : 'No leída'" [severity]="n.read ? 'secondary' : 'info'"></p-tag></td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(n)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  @if (!n.read) {
+                    <p-button icon="pi pi-check" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="markOne(n.id)" pTooltip="Marcar leída" tooltipPosition="top" ariaLabel="Marcar leída"></p-button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">Sin notificaciones</p>
+                  <p class="empty-state__desc">Prueba con otros filtros.</p>
+                </div>
+                @if (filterType() || filterStatus() || search()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearFilters()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="notifs-dialog register-modal"
+  aria-label="Detalle de notificación"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-bell"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Notificación</span>
+        <span class="register-modal__subtitle">{{ detailNotif()?.createdAt | date:'medium' }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailNotif(); as n) {
+    <h3 class="notifs__detail-title">{{ n.title }}</h3>
+    <p class="notifs__detail-message">{{ n.message }}</p>
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ n.type }}</dd></div>
+      <div class="detail-list__row"><dt>Email</dt><dd>{{ n.emailSent ? 'Enviado (RF-043)' : 'No enviado' }}</dd></div>
+      <div class="detail-list__row"><dt>Estado</dt><dd>{{ n.read ? 'Leída' : 'No leída' }}</dd></div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      @if (detailNotif() && !detailNotif()!.read) {
+        <p-button label="Marcar leída" icon="pi pi-check" severity="success" type="button" (onClick)="markReadFromDetail()"></p-button>
+      }
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Marcar todas -->
+<p-dialog
+  [visible]="showMarkAllModal()"
+  (visibleChange)="showMarkAllModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '440px', maxWidth: '95vw' }"
+  styleClass="notifs-dialog register-modal"
+  aria-label="Marcar todas como leídas"
+  (onHide)="closeMarkAllModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-check-double"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Marcar todas como leídas</span>
+        <span class="register-modal__subtitle">{{ unreadCount() }} sin leer</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <p class="notifs__confirm-text">¿Confirmas marcar todas las notificaciones como leídas?</p>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeMarkAllModal()" icon="pi pi-times"></p-button>
+      <p-button label="Confirmar" icon="pi pi-check" type="button" (onClick)="confirmMarkAll()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
