@@ -1,0 +1,447 @@
+<div class="payments">
+  <!-- Header -->
+  <div class="payments__header">
+    <div class="payments__header-top">
+      <div class="payments__header-left">
+        <div class="payments__icon-box">
+          <i class="fa-solid fa-credit-card"></i>
+        </div>
+        <div>
+          <h1 class="payments__title">Plan de Pagos</h1>
+          <p class="payments__subtitle">Planes, cuotas y registro de pagos</p>
+        </div>
+      </div>
+      <div class="payments__header-actions">
+        <p-button
+          icon="pi pi-plus"
+          label="Crear plan"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="resetAndLoad()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="payments__quick-stats">
+      <div class="payments__quick-stat">
+        <div class="payments__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="payments__quick-stat-label">Planes</p>
+          <p class="payments__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="payments__quick-stat">
+        <div class="payments__quick-stat-icon"><i class="fa-solid fa-wallet"></i></div>
+        <div>
+          <p class="payments__quick-stat-label">Vista actual</p>
+          <p class="payments__quick-stat-value">{{ viewMode() === 'pending' ? 'Pendientes' : 'Todos' }}</p>
+        </div>
+      </div>
+      <div class="payments__quick-stat">
+        <div class="payments__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="payments__quick-stat-label">Página</p>
+          <p class="payments__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando planes..."></app-loading>
+  <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
+
+  @if (msg()) {
+    <div class="payments__msg-banner" [class.payments__msg-banner--success]="!error()" [class.payments__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
+    </div>
+  }
+
+  <div class="payments__notice">
+    <i class="fa-solid fa-bell"></i>
+    <span>El backend notifica 7 días antes del vencimiento de cada cuota (RF-035).</span>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="payments__toolbar">
+    <div class="payments__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por concepto..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar planes"
+      />
+    </div>
+    <div class="payments__toolbar-actions">
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Vista: Todos / Pendientes -->
+  <div class="tabs-control-wrapper">
+    <div class="tabs-container">
+      <button class="tab-button" [class.tab-active]="viewMode() === 'all'" (click)="setViewMode('all')">
+        <span>Todos</span>
+      </button>
+      <button class="tab-button" [class.tab-active]="viewMode() === 'pending'" (click)="setViewMode('pending')">
+        <span>Pendientes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla planes -->
+  <div class="payments__table-card">
+    <div class="payments__table-header">
+      <h3 class="payments__table-title"><i class="fa-solid fa-table-list"></i> Planes de pago</h3>
+      <span class="payments__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : plans()"
+        [lazy]="true"
+        [paginator]="viewMode() === 'all'"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '60rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Concepto</th>
+            <th style="width: 140px">Total</th>
+            <th style="width: 110px">Cuotas</th>
+            <th style="width: 120px">Estado</th>
+            <th style="width: 112px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-p>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="10rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="4rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="6rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="p.concept" tooltipPosition="top"><strong class="plan-name">{{ p.concept }}</strong></span>
+              </td>
+              <td>${{ p.totalAmount }}</td>
+              <td>{{ paidCount(p) }}</td>
+              <td><p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag></td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-list" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openInstallments(p)" pTooltip="Ver cuotas" tooltipPosition="top" ariaLabel="Ver cuotas"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron planes</p>
+                  <p class="empty-state__desc">Crea el primer plan para comenzar.</p>
+                </div>
+                @if (viewMode() === 'all' && !search()) {
+                  <p-button icon="pi pi-plus" label="Crear plan" size="small" (onClick)="openCreateModal()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear plan -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="payments-dialog register-modal"
+  aria-label="Crear plan de pago"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-plus"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Crear plan de pago</span>
+        <span class="register-modal__subtitle">Las cuotas se generan automáticamente</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="payments__form-grid">
+    <div class="field field--full" [class.field--error]="formErrors().studentId">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-studentId"
+          [ngModel]="form().studentId"
+          (ngModelChange)="updateForm('studentId', $event)"
+          [class.p-invalid]="!!formErrors().studentId"
+          autocomplete="off"
+          placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+        />
+        <label for="m-studentId">Student ID (UUID) *</label>
+      </p-floatLabel>
+      @if (formErrors().studentId) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
+      }
+    </div>
+
+    <div class="field field--full" [class.field--error]="formErrors().concept">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-concept"
+          [ngModel]="form().concept"
+          (ngModelChange)="updateForm('concept', $event)"
+          [class.p-invalid]="!!formErrors().concept"
+          autocomplete="off"
+          placeholder="Ej: Matrícula"
+          maxlength="150"
+        />
+        <label for="m-concept">Concepto *</label>
+      </p-floatLabel>
+      @if (formErrors().concept) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().concept }}</small>
+      }
+    </div>
+
+    <div class="field" [class.field--error]="formErrors().totalAmount">
+      <p-floatLabel>
+        <input
+          pInputText
+          type="number"
+          min="0"
+          step="0.01"
+          id="m-totalAmount"
+          [ngModel]="form().totalAmount"
+          (ngModelChange)="updateForm('totalAmount', $event)"
+          [class.p-invalid]="!!formErrors().totalAmount"
+          placeholder="Ej: 3000"
+        />
+        <label for="m-totalAmount">Monto total *</label>
+      </p-floatLabel>
+      @if (formErrors().totalAmount) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().totalAmount }}</small>
+      }
+    </div>
+
+    <div class="field" [class.field--error]="formErrors().installments">
+      <p-floatLabel>
+        <input
+          pInputText
+          type="number"
+          min="1"
+          step="1"
+          id="m-installments"
+          [ngModel]="form().installments"
+          (ngModelChange)="updateForm('installments', $event)"
+          [class.p-invalid]="!!formErrors().installments"
+          placeholder="Ej: 3"
+        />
+        <label for="m-installments">Cuotas *</label>
+      </p-floatLabel>
+      @if (formErrors().installments) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().installments }}</small>
+      }
+    </div>
+
+    <div class="field field--full" [class.field--error]="formErrors().startDate">
+      <label class="field__label-static" for="m-startDate">Fecha de inicio *</label>
+      <input
+        pInputText
+        type="date"
+        id="m-startDate"
+        [ngModel]="form().startDate"
+        (ngModelChange)="updateForm('startDate', $event)"
+        [class.p-invalid]="!!formErrors().startDate"
+      />
+      @if (formErrors().startDate) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().startDate }}</small>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Crear" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Cuotas -->
+<p-dialog
+  [visible]="showInstallmentsModal()"
+  (visibleChange)="showInstallmentsModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '620px', maxWidth: '95vw' }"
+  styleClass="payments-dialog register-modal"
+  aria-label="Cuotas del plan"
+  (onHide)="closeInstallmentsModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-list"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Cuotas del plan</span>
+        <span class="register-modal__subtitle">{{ installmentsPlan()?.concept }} · ${{ installmentsPlan()?.totalAmount }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="installments-list">
+    <div class="installments-head">
+      <span>#</span><span>Monto</span><span>Vencimiento</span><span>Estado</span><span></span>
+    </div>
+    @for (i of installments(); track i.id || $index) {
+      <div class="installment-row">
+        <span class="installment-num">{{ i.number }}</span>
+        <span class="installment-amount">${{ i.amount }}</span>
+        <span>{{ i.dueDate | date:'shortDate' }}</span>
+        <span><p-tag [value]="i.status" [severity]="statusSeverity(i.status)"></p-tag></span>
+        <span class="installment-action">
+          @if (i.status === 'pending') {
+            <p-button label="Pagar" icon="pi pi-dollar" size="small" severity="success" (onClick)="openPay(i)"></p-button>
+          } @else {
+            <span class="payments__muted">Pagada</span>
+          }
+        </span>
+      </div>
+    } @empty {
+      <div class="installments-empty"><i class="fa-regular fa-folder-open"></i> Este plan no tiene cuotas registradas</div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeInstallmentsModal()" icon="pi pi-times"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Registrar pago -->
+<p-dialog
+  [visible]="showPayModal()"
+  (visibleChange)="showPayModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="payments-dialog register-modal"
+  aria-label="Registrar pago"
+  (onHide)="closePayModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-dollar-sign"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar pago</span>
+        <span class="register-modal__subtitle">Cuota #{{ payTarget()?.number }} · ${{ payTarget()?.amount }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="payments__form-grid payments__form-grid--single">
+    <div class="field" [class.field--error]="payError()">
+      <p-floatLabel>
+        <input
+          pInputText
+          type="number"
+          min="0"
+          step="0.01"
+          id="pay-amount"
+          [ngModel]="payAmount()"
+          (ngModelChange)="payAmount.set($event)"
+          [class.p-invalid]="!!payError()"
+          placeholder="Ej: 1000"
+        />
+        <label for="pay-amount">Monto pagado *</label>
+      </p-floatLabel>
+    </div>
+
+    <div class="field">
+      <p-floatLabel>
+        <p-dropdown
+          inputId="pay-method"
+          [options]="methodOptions"
+          [ngModel]="payMethod()"
+          (ngModelChange)="payMethod.set($event)"
+          styleClass="w-full"
+          appendTo="body"
+        />
+        <label for="pay-method">Método</label>
+      </p-floatLabel>
+    </div>
+
+    <div class="field field--full">
+      <label class="field__label-static" for="pay-date">Fecha de pago *</label>
+      <input
+        pInputText
+        type="date"
+        id="pay-date"
+        [ngModel]="payDate()"
+        (ngModelChange)="payDate.set($event)"
+      />
+    </div>
+
+    @if (payError()) {
+      <small class="field__error field--full"><i class="fa-solid fa-circle-exclamation"></i> {{ payError() }}</small>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closePayModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar pago" icon="pi pi-check" severity="success" type="button" (onClick)="confirmPay()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
