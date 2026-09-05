@@ -25,7 +25,7 @@ export interface RegisterRequest {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000/api/auth';
+  private readonly API_URL = '/api/auth';
 
   private _user = signal<User | null>(null);
   private _token = signal<string | null>(null);

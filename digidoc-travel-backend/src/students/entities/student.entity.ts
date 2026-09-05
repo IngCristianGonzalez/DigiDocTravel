@@ -16,6 +16,11 @@ export class Student {
   @Column({ length: 255, unique: true })
   email: string;
 
+  // Documento de identidad del estudiante. Único a nivel API (DTO obligatorio).
+  // Nullable en DB solo para preservar filas legacy; backfill vía UPDATE post-sincronización.
+  @Column({ length: 50, unique: true, nullable: true })
+  identification: string;
+
   @Column({ length: 20, nullable: true })
   phone: string;
 

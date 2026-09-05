@@ -14,8 +14,10 @@ export class StudentsService {
   ) {}
 
   async create(dto: CreateStudentDto): Promise<Student> {
-    const existing = await this.studentRepo.findOne({ where: { email: dto.email } });
-    if (existing) throw new ConflictException('Student email already exists');
+    const existingEmail = await this.studentRepo.findOne({ where: { email: dto.email } });
+    if (existingEmail) throw new ConflictException('Student email already exists');
+    const existingId = await this.studentRepo.findOne({ where: { identification: dto.identification } });
+    if (existingId) throw new ConflictException('Student identification already exists');
     const student = this.studentRepo.create(dto as any) as unknown as Student;
     return this.studentRepo.save(student as any) as Promise<Student>;
   }
@@ -26,7 +28,7 @@ export class StudentsService {
     const qb = this.studentRepo.createQueryBuilder('student')
       .leftJoinAndSelect('student.advisor', 'advisor');
 
-    if (query.search) qb.andWhere('(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.email ILIKE :search)', { search: `%${query.search}%` });
+    if (query.search) qb.andWhere('(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.email ILIKE :search OR student.identification ILIKE :search)', { search: `%${query.search}%` });
     if (query.countryOrigin) qb.andWhere('student.countryOrigin = :country', { country: query.countryOrigin });
     if (query.status !== undefined) qb.andWhere('student.status = :status', { status: query.status === 'true' || query.status === true });
     if (query.advisorId) qb.andWhere('student.advisorId = :advisorId', { advisorId: query.advisorId });
@@ -48,6 +50,10 @@ export class StudentsService {
     if (dto.email && dto.email !== student.email) {
       const existing = await this.studentRepo.findOne({ where: { email: dto.email } });
       if (existing) throw new ConflictException('Email already exists');
+    }
+    if (dto.identification && dto.identification !== student.identification) {
+      const existing = await this.studentRepo.findOne({ where: { identification: dto.identification } });
+      if (existing) throw new ConflictException('Identification already exists');
     }
     Object.assign(student, dto);
     return this.studentRepo.save(student);

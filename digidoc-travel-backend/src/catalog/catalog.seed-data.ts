@@ -1,18 +1,18 @@
-// Fallback offline — sincronizado con backend src/catalog/catalog.seed-data.ts (125 IES, 20 países)
-// Fuente primaria: backend seed; ver digidoc-travel-docs/05-Database/Catalog-PoC.md
-export interface University {
+// Fuente única de verdad del catálogo países → universidades (relación 1:N).
+// Verificado contra fuentes externas:
+// - Códigos telefónicos: https://en.wikipedia.org/wiki/List_of_telephone_country_codes
+// - Universidades: https://en.wikipedia.org/wiki/List_of_universities_in_Colombia,
+//   https://en.wikipedia.org/wiki/List_of_universities_in_Spain, y equivalentes por país.
+// El frontend conserva una copia local (countries.data.ts) solo como fallback offline.
+export interface CountrySeed {
+  code: string;
   name: string;
-}
-
-export interface Country {
-  code: string;        // ISO2
-  name: string;
-  dialCode: string;    // +57
-  flag: string;        // emoji
+  dialCode: string;
+  flag: string;
   universities: string[];
 }
 
-export const COUNTRIES: Country[] = [
+export const COUNTRY_SEED: CountrySeed[] = [
   {
     code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴',
     universities: [
