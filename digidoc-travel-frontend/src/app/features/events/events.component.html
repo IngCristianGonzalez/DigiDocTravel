@@ -1,0 +1,412 @@
+<div class="events">
+  <!-- Header -->
+  <div class="events__header">
+    <div class="events__header-top">
+      <div class="events__header-left">
+        <div class="events__icon-box">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div>
+          <h1 class="events__title">Gestión de Eventos</h1>
+          <p class="events__subtitle">Creación, QR, enlace único y recordatorios</p>
+        </div>
+      </div>
+      <div class="events__header-actions">
+        <p-button
+          icon="pi pi-plus"
+          label="Crear evento"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="resetAndLoad()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="events__quick-stats">
+      <div class="events__quick-stat">
+        <div class="events__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="events__quick-stat-label">Total registrados</p>
+          <p class="events__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="events__quick-stat">
+        <div class="events__quick-stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <div>
+          <p class="events__quick-stat-label">En esta página</p>
+          <p class="events__quick-stat-value">{{ events().length }}</p>
+        </div>
+      </div>
+      <div class="events__quick-stat">
+        <div class="events__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="events__quick-stat-label">Página</p>
+          <p class="events__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando eventos..."></app-loading>
+  <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
+
+  @if (msg()) {
+    <div class="events__msg-banner" [class.events__msg-banner--success]="!error()" [class.events__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
+    </div>
+  }
+
+  <div class="events__notice">
+    <i class="fa-solid fa-bell"></i>
+    <span>El backend envía recordatorios 24h antes por email/notificación (RF-041).</span>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="events__toolbar">
+    <div class="events__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por título o ubicación..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar eventos"
+      />
+    </div>
+    <div class="events__toolbar-actions">
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="events__table-card">
+    <div class="events__table-header">
+      <h3 class="events__table-title"><i class="fa-solid fa-table-list"></i> Eventos</h3>
+      <span class="events__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : events()"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '62rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Título</th>
+            <th style="width: 150px">Fecha</th>
+            <th style="width: 160px">Ubicación</th>
+            <th style="width: 110px">Estado</th>
+            <th style="width: 144px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-e>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="11rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="7rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="7rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="8rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="e.title" tooltipPosition="top"><strong class="event-name">{{ e.title }}</strong></span>
+              </td>
+              <td>{{ e.eventDate | date:'short' }}</td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="e.location || '—'" tooltipPosition="top">{{ e.location || '—' }}</span>
+              </td>
+              <td><p-tag [value]="isUpcoming(e.eventDate) ? 'Próximo' : 'Pasado'" [severity]="isUpcoming(e.eventDate) ? 'success' : 'secondary'"></p-tag></td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(e)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(e)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar evento"></p-button>
+                  <p-button icon="pi pi-qrcode" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openQr(e)" pTooltip="QR y enlace" tooltipPosition="top" ariaLabel="Ver QR y enlace"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron eventos</p>
+                  <p class="empty-state__desc">Crea el primer evento para comenzar.</p>
+                </div>
+                @if (!search()) {
+                  <p-button icon="pi pi-plus" label="Crear evento" size="small" (onClick)="openCreateModal()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Campos compartidos crear/editar -->
+<ng-template #eventFormFields>
+  <div class="field field--full" [class.field--error]="formErrors().title">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-title"
+        [ngModel]="form().title"
+        (ngModelChange)="updateForm('title', $event)"
+        [class.p-invalid]="!!formErrors().title"
+        autocomplete="off"
+        placeholder="Ej: Feria de universidades"
+        maxlength="150"
+      />
+      <label for="m-title">Título *</label>
+    </p-floatLabel>
+    @if (formErrors().title) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().title }}</small>
+    }
+  </div>
+
+  <div class="field field--full" [class.field--error]="formErrors().eventDate">
+    <label class="field__label-static" for="m-eventDate">Fecha y hora *</label>
+    <input
+      pInputText
+      type="datetime-local"
+      id="m-eventDate"
+      [ngModel]="form().eventDate"
+      (ngModelChange)="updateForm('eventDate', $event)"
+      [class.p-invalid]="!!formErrors().eventDate"
+    />
+    @if (formErrors().eventDate) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().eventDate }}</small>
+    } @else {
+      <span class="field__hint">Se guarda en formato ISO</span>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().description">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-description"
+        [ngModel]="form().description"
+        (ngModelChange)="updateForm('description', $event)"
+        autocomplete="off"
+        placeholder="Descripción breve"
+        maxlength="500"
+      />
+      <label for="m-description">Descripción <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+    @if (formErrors().description) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().description }}</small>
+    }
+  </div>
+
+  <div class="field">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-location"
+        [ngModel]="form().location"
+        (ngModelChange)="updateForm('location', $event)"
+        autocomplete="off"
+        placeholder="Ej: Auditorio principal"
+        maxlength="150"
+      />
+      <label for="m-location">Ubicación <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+  </div>
+</ng-template>
+
+<!-- Modal Crear -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '600px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="events-dialog register-modal"
+  aria-label="Crear evento"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-plus"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Crear evento</span>
+        <span class="register-modal__subtitle">Se genera QR y enlace único automáticamente</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="events__form-grid">
+    <ng-container *ngTemplateOutlet="eventFormFields"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Crear" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Editar -->
+<p-dialog
+  [visible]="showEditModal()"
+  (visibleChange)="showEditModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '600px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="events-dialog register-modal"
+  aria-label="Editar evento"
+  (onHide)="closeEditModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Editar evento</span>
+        <span class="register-modal__subtitle">{{ editingEvent()?.title }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="events__form-grid">
+    <ng-container *ngTemplateOutlet="eventFormFields"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Detalle -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="events-dialog register-modal"
+  aria-label="Detalle de evento"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de evento</span>
+        <span class="register-modal__subtitle">{{ detailEvent()?.title }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailEvent(); as e) {
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Título</dt><dd>{{ e.title }}</dd></div>
+      <div class="detail-list__row"><dt>Fecha</dt><dd>{{ e.eventDate | date:'medium' }}</dd></div>
+      <div class="detail-list__row"><dt>Ubicación</dt><dd>{{ e.location || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>Descripción</dt><dd>{{ e.description || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>Recordatorio</dt><dd>{{ e.reminderSent ? 'Enviado' : 'Pendiente' }}</dd></div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal QR y enlace -->
+<p-dialog
+  [visible]="showQrModal()"
+  (visibleChange)="showQrModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '440px', maxWidth: '95vw' }"
+  styleClass="events-dialog register-modal"
+  aria-label="QR y enlace del evento"
+  (onHide)="closeQrModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-qrcode"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">QR y enlace único</span>
+        <span class="register-modal__subtitle">{{ qrEvent()?.title }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="qr-box">
+    @if (qrData()?.qrCode) {
+      <img [src]="qrData()!.qrCode" alt="Código QR del evento" class="qr-box__img" width="160" height="160" />
+    } @else {
+      <div class="qr-box__empty"><i class="fa-solid fa-spinner fa-spin"></i> Generando QR...</div>
+    }
+    @if (shareLink()) {
+      <div class="qr-box__link">
+        <span class="qr-box__url">{{ shareLink() }}</span>
+        <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" (onClick)="copyLink()" pTooltip="Copiar enlace" tooltipPosition="top" ariaLabel="Copiar enlace"></p-button>
+      </div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeQrModal()" icon="pi pi-times"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
