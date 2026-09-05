@@ -130,6 +130,39 @@ export class AuthService {
     );
   }
 
+  // RF-002 / CU-003 — recuperación de contraseña (backend throttled 3/min)
+  forgotPassword(email: string): Observable<{ message: string }> {
+    this._loading.set(true);
+    this._error.set(null);
+    return this.http
+      .post<{ message: string }>(`${this.API_URL}/forgot-password`, { email })
+      .pipe(
+        map((res: any) => unwrap<{ message: string }>(res)),
+        tap(() => this._loading.set(false)),
+        catchError((error) => {
+          this._loading.set(false);
+          this._error.set(error.error?.message || 'No se pudo enviar el correo de recuperación.');
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    this._loading.set(true);
+    this._error.set(null);
+    return this.http
+      .post<{ message: string }>(`${this.API_URL}/reset-password`, { token, password })
+      .pipe(
+        map((res: any) => unwrap<{ message: string }>(res)),
+        tap(() => this._loading.set(false)),
+        catchError((error) => {
+          this._loading.set(false);
+          this._error.set(error.error?.message || 'No se pudo restablecer la contraseña.');
+          return throwError(() => error);
+        }),
+      );
+  }
+
   hasRole(role: string): boolean {
     const user = this._user();
     return user?.roles?.some((r) => r.name === role) ?? false;

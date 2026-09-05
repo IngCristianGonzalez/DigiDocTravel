@@ -8,6 +8,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { DropdownModule } from 'primeng/dropdown';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -54,6 +55,7 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
+    private toast: ToastService,
   ) {}
 
   isFullNameValid(): boolean {
@@ -87,6 +89,9 @@ export class RegisterComponent {
     );
   }
 
+  // OWASP A03/XSS - sanitizar inputs
+  private sanitize(v: string): string { return v.replace(/<[^>]*>/g, '').trim(); }
+
   onSubmit(): void {
     this.fullNameTouched.set(true);
     this.emailTouched.set(true);
@@ -99,17 +104,29 @@ export class RegisterComponent {
     this.loading = true;
     this.submitError.set(null);
 
-    // Simulate registration (no backend endpoint yet)
-    setTimeout(() => {
-      this.loading = false;
-      this.submitSuccess.set(true);
-      setTimeout(() => {
-        this.router.navigate(['/auth/login']);
-      }, 2000);
-    }, 1500);
+    this.authService.register({
+      fullName: this.sanitize(this.fullName),
+      email: this.sanitize(this.email),
+      password: this.password,
+      institution: this.sanitize(this.institution),
+      role: this.selectedRole() ?? undefined,
+    }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.submitSuccess.set(true);
+        this.toast.success('Cuenta creada. Revisa tu correo e inicia sesión.');
+        setTimeout(() => this.router.navigate(['/auth/login']), 2000);
+      },
+      error: (err) => {
+        this.loading = false;
+        const msg = err.error?.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+        this.submitError.set(msg);
+        this.toast.error(msg);
+      },
+    });
   }
 
   signUpWithGoogle(): void {
-    window.open('http://localhost:3000/api/auth/google', '_self');
+    window.open('/api/auth/google', '_self');
   }
 }

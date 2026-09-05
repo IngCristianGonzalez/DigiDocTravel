@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Plan"
+  short_description: "Plan-first workflow for multi-step engineering tasks in EBrisk"
+  default_prompt: "Build an explicit plan before implementing complex changes in this workspace."
