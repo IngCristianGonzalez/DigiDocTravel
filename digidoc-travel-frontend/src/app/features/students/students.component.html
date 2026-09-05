@@ -76,7 +76,7 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input
         pInputText
-        placeholder="Buscar por nombre, email o país..."
+        placeholder="Buscar por nombre, identificación, email o país..."
         [ngModel]="search()"
         (ngModelChange)="search.set($event)"
         (keyup.enter)="resetAndLoad()"
@@ -101,42 +101,50 @@
     <div class="table-wrapper">
       <p-table
         [value]="loading() ? skeletonRows : students()"
+        [lazy]="true"
         [paginator]="true"
-        [rows]="10"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
         styleClass="p-datatable-sm"
         [scrollable]="true"
         scrollHeight="flex"
-        [tableStyle]="{ 'min-width': '62rem' }"
+        [tableStyle]="{ 'min-width': '68rem' }"
       >
-        <ng-template #header>
+        <ng-template pTemplate="header">
           <tr>
             <th>Nombre</th>
+            <th style="width: 145px">Identificación</th>
             <th>Email</th>
             <th style="width: 140px">País</th>
             <th style="width: 180px">Asesor</th>
-            <th style="width: 140px; text-align: center">Acciones</th>
+            <th style="width: 176px; text-align: center">Acciones</th>
           </tr>
         </ng-template>
 
-        <ng-template #body let-s>
+        <ng-template pTemplate="body" let-s>
           @if (loading()) {
             <tr>
               <td><p-skeleton height="1.1rem" width="10rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="7rem"></p-skeleton></td>
               <td><p-skeleton height="1.1rem" width="12rem"></p-skeleton></td>
               <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
               <td><p-skeleton height="1.1rem" width="8rem"></p-skeleton></td>
-              <td><p-skeleton height="1.9rem" width="7rem" borderRadius="6px"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="10rem" borderRadius="6px"></p-skeleton></td>
             </tr>
           } @else {
             <tr>
               <td>
-                <span style="display:inline-flex; align-items:center; gap:8px;">
-                  <span style="width:28px; height:28px; background:var(--sl-gray-100); border:1px solid var(--sl-gray-200); border-radius:9999px; display:inline-flex; align-items:center; justify-content:center; color:var(--sl-gray-600); font-size:0.75rem; flex-shrink:0;">
+                <span class="student-cell">
+                  <span class="student-avatar" aria-hidden="true">
                     <i class="fa-solid fa-user"></i>
                   </span>
-                  <strong style="color:var(--sl-black); font-weight:600;">{{ s.firstName }} {{ s.lastName }}</strong>
+                  <strong class="student-name">{{ s.firstName }} {{ s.lastName }}</strong>
                 </span>
+              </td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="s.identification || '—'" tooltipPosition="top">{{ s.identification || '—' }}</span>
               </td>
               <td>
                 <span class="td-ellipsis" [pTooltip]="s.email" tooltipPosition="top">{{ s.email }}</span>
@@ -151,16 +159,19 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="select(s)" pTooltip="Ver / Editar" tooltipPosition="top"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(s)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(s)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar estudiante"></p-button>
+                  <p-button icon="pi pi-comments" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openObs(s)" pTooltip="Observaciones" tooltipPosition="top" ariaLabel="Observaciones"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(s)" pTooltip="Desactivar" tooltipPosition="top" ariaLabel="Desactivar estudiante"></p-button>
                 </div>
               </td>
             </tr>
           }
         </ng-template>
 
-        <ng-template #emptymessage>
+        <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="5">
+            <td colspan="6">
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
@@ -180,99 +191,53 @@
     </div>
   </div>
 
-  <!-- Detalle -->
-  @if (selected()) {
-    <div class="students__detail">
-      <div class="students__detail-header">
-        <div>
-          <h3 class="students__detail-title"><i class="fa-solid fa-pen-to-square"></i> Editar / Asociar Asesor</h3>
-          <p class="students__detail-subtitle">{{ selected()?.email }}</p>
-        </div>
-        <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="selected.set(null)" pTooltip="Cerrar detalle" tooltipPosition="left"></p-button>
-      </div>
-
-      <div class="students__detail-grid">
-        <!-- Asociar asesor -->
-        <div class="detail-block">
-          <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> Asociar asesor</h4>
-          <div class="detail-block__row">
-            <div class="detail-block__field field">
-              <p-floatLabel>
-                <input
-                  pInputText
-                  id="detail-advisorId"
-                  [ngModel]="advisorId()"
-                  (ngModelChange)="advisorId.set($event)"
-                  autocomplete="off"
-                />
-                <label for="detail-advisorId">Advisor ID</label>
-              </p-floatLabel>
-            </div>
-            <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
-          </div>
-        </div>
-
-        <!-- Observaciones -->
-        <div class="detail-block">
-          <h4 class="detail-block__title"><i class="fa-solid fa-clipboard"></i> Observaciones</h4>
-          <div class="obs-input-row">
-            <div class="field" [class.field--error]="obsError()">
-              <p-floatLabel>
-                <input
-                  pInputText
-                  id="obs-text"
-                  [ngModel]="obsText()"
-                  (ngModelChange)="obsText.set($event); obsError.set(null)"
-                  [class.p-invalid]="!!obsError()"
-                  (keyup.enter)="addObs()"
-                />
-                <label for="obs-text">Nueva observación</label>
-              </p-floatLabel>
-              @if (obsError()) {
-                <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ obsError() }}</small>
-              }
-            </div>
-            <p-button icon="pi pi-plus" label="Agregar" size="small" (onClick)="addObs()"></p-button>
-          </div>
-
-          <div class="observations">
-            <div class="obs-list">
-              @for (o of observations(); track o.id || $index) {
-                <div class="obs-item">
-                  <span class="obs-item__text">{{ o.observation }}</span>
-                  <span class="obs-item__date"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>{{ o.createdAt | date:'short' }}</span>
-                </div>
-              } @empty {
-                <div class="obs-empty">
-                  <i class="fa-regular fa-comment-dots" style="margin-right:6px;"></i> Sin observaciones
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
+  <!-- Nota UX: el detalle, la edición, las observaciones y la desactivación
+    viven en modales (p-dialog) accionados desde la columna Acciones.
+    No se renderiza panel inline para mantener un solo foco por vez. -->
 </div>
 
-<!-- Modal Registrar Estudiante -->
+<!-- Modal Registrar Estudiante — Convención modales de registro:
+  header con título + subtítulo, nota de campos obligatorios,
+  grid 2 cols (1 en móvil), labels limpios + placeholder + hint,
+  footer Cancelar (secondary) + Registrar (primary). -->
 <p-dialog
-  header="Registrar estudiante"
   [visible]="showCreateModal()"
   (visibleChange)="showCreateModal.set($event)"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [focusOnShow]="true"
   [style]="{ width: '720px', maxWidth: '95vw' }"
-  styleClass="students-dialog"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Registrar estudiante"
   (onHide)="closeCreateModal()">
 
-  <div class="students__modal-intro">
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-user-plus"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar estudiante</span>
+        <span class="register-modal__subtitle">Crea un nuevo registro en el sistema</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="students__modal-intro register-modal__intro">
     <i class="fa-solid fa-circle-info"></i>
-    <span>Completa los campos. El teléfono toma el indicativo del país seleccionado.</span>
+    <span>Completa los campos. El teléfono toma el indicativo del país seleccionado. Los campos marcados con * son obligatorios.</span>
   </div>
 
-  <div class="students__form-grid students__form-grid--modal">
+  <div class="students__form-grid students__form-grid--modal register-modal__grid">
+    <ng-container *ngTemplateOutlet="studentFormFields"></ng-container>
+  </div>
+
+  <!-- Campos del formulario compartidos por los modales Crear y Editar
+    (mismo form() signal; solo un modal se abre a la vez). -->
+  <ng-template #studentFormFields>
     <!-- Nombre -->
     <div class="field" [class.field--error]="formErrors().firstName">
       <p-floatLabel>
@@ -283,12 +248,17 @@
           (ngModelChange)="updateForm('firstName', $event)"
           [class.p-invalid]="!!formErrors().firstName"
           autocomplete="given-name"
-          maxlength="50"
+          placeholder="Ej: Juan"
+          [attr.minlength]="MIN_NAME_LENGTH"
+          [attr.maxlength]="MAX_NAME_LENGTH"
+          aria-describedby="m-firstName-hint"
         />
-        <label for="m-firstName">Nombre * (mín. 3)</label>
+        <label for="m-firstName">Nombre *</label>
       </p-floatLabel>
       @if (formErrors().firstName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
+      } @else {
+        <span class="field__hint" id="m-firstName-hint">Mínimo 3 caracteres, solo letras</span>
       }
     </div>
 
@@ -302,12 +272,41 @@
           (ngModelChange)="updateForm('lastName', $event)"
           [class.p-invalid]="!!formErrors().lastName"
           autocomplete="family-name"
-          maxlength="50"
+          placeholder="Ej: Pérez"
+          [attr.minlength]="MIN_NAME_LENGTH"
+          [attr.maxlength]="MAX_NAME_LENGTH"
+          aria-describedby="m-lastName-hint"
         />
-        <label for="m-lastName">Apellido * (mín. 4)</label>
+        <label for="m-lastName">Apellido *</label>
       </p-floatLabel>
       @if (formErrors().lastName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
+      } @else {
+        <span class="field__hint" id="m-lastName-hint">Mínimo 3 caracteres, solo letras</span>
+      }
+    </div>
+
+    <!-- Identificación -->
+    <div class="field" [class.field--error]="formErrors().identification">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-identification"
+          [ngModel]="form().identification"
+          (ngModelChange)="updateForm('identification', $event)"
+          [class.p-invalid]="!!formErrors().identification"
+          autocomplete="off"
+          placeholder="Ej: 123456789"
+          [attr.minlength]="MIN_ID_LENGTH"
+          [attr.maxlength]="MAX_ID_LENGTH"
+          aria-describedby="m-identification-hint"
+        />
+        <label for="m-identification">Identificación *</label>
+      </p-floatLabel>
+      @if (formErrors().identification) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().identification }}</small>
+      } @else {
+        <span class="field__hint" id="m-identification-hint">Mínimo 4 caracteres, sin espacios</span>
       }
     </div>
 
@@ -322,32 +321,35 @@
           (ngModelChange)="updateForm('email', $event)"
           [class.p-invalid]="!!formErrors().email"
           autocomplete="email"
+          placeholder="Ej: nombre@dominio.com"
+          maxlength="255"
+          aria-describedby="m-email-hint"
         />
         <label for="m-email">Email *</label>
       </p-floatLabel>
       @if (formErrors().email) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
       } @else {
-        <span class="field__hint">Ej: nombre@dominio.com — sin caracteres especiales</span>
+        <span class="field__hint" id="m-email-hint">Ej: nombre@dominio.com — sin caracteres especiales</span>
       }
     </div>
 
     <!-- País (buscable + bandera + indicativo) -->
     <div class="field" [class.field--error]="formErrors().countryOrigin">
-      <label class="field__label-static">País origen *</label>
-      <p-dropdown
-        [options]="countries()"
-        [ngModel]="selectedCountry()"
-        (ngModelChange)="onCountryChange($event)"
-        optionLabel="name"
-        [filter]="true"
-        filterBy="name"
-        filterPlaceholder="Buscar país..."
-        placeholder="Selecciona país"
-        [showClear]="false"
-        styleClass="w-full"
-        appendTo="body"
-      >
+      <p-floatLabel>
+        <p-dropdown
+          inputId="m-country"
+          [options]="countries()"
+          [ngModel]="selectedCountry()"
+          (ngModelChange)="onCountryChange($event)"
+          optionLabel="name"
+          [filter]="true"
+          filterBy="name"
+          filterPlaceholder="Buscar país..."
+          [showClear]="false"
+          styleClass="w-full"
+          appendTo="body"
+        >
         <ng-template pTemplate="selectedItem">
           @if (selectedCountry()) {
             <div class="country-option">
@@ -364,14 +366,45 @@
             <span class="country-option__dial">{{ country.dialCode }}</span>
           </div>
         </ng-template>
-      </p-dropdown>
+        </p-dropdown>
+        <label for="m-country">País origen *</label>
+      </p-floatLabel>
       @if (formErrors().countryOrigin) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().countryOrigin }}</small>
+      } @else {
+        <span class="field__hint">Incluye bandera e indicativo</span>
       }
     </div>
 
-    <!-- Teléfono con indicativo -->
-    <div class="field" [class.field--error]="formErrors().phone">
+    <!-- Universidad (dependiente del país, buscable) -->
+    <div class="field" [class.field--error]="formErrors().university">
+      <p-floatLabel>
+        <p-dropdown
+          inputId="m-university"
+          [options]="universitiesForCountry()"
+          [ngModel]="form().university"
+          (ngModelChange)="onUniversityChange($event)"
+          [filter]="true"
+          filterPlaceholder="Buscar universidad..."
+          [showClear]="true"
+          [disabled]="!universitiesForCountry().length"
+          styleClass="w-full"
+          appendTo="body"
+          [emptyMessage]="'Sin resultados'"
+        >
+        </p-dropdown>
+        <label for="m-university">Universidad <span class="field__optional">(opcional)</span></label>
+      </p-floatLabel>
+      @if (universitiesForCountry().length) {
+        <span class="field__hint">{{ universitiesForCountry().length }} universidades disponibles para {{ selectedCountry()?.name }}</span>
+      }
+      @if (formErrors().university) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().university }}</small>
+      }
+    </div>
+
+    <!-- Teléfono con indicativo (ancho completo) -->
+    <div class="field field--full" [class.field--error]="formErrors().phone">
       <label class="field__label-static">Teléfono <span class="field__optional">(opcional)</span></label>
       <div class="phone-field">
         <span class="phone-field__prefix">
@@ -394,37 +427,251 @@
         <span class="field__hint">Se guardará como {{ dialCode() }} + número (7–15 dígitos)</span>
       }
     </div>
+  </ng-template>
 
-    <!-- Universidad (dependiente del país, buscable) -->
-    <div class="field" [class.field--error]="formErrors().university">
-      <label class="field__label-static">Universidad <span class="field__optional">(opcional)</span></label>
-      <p-dropdown
-        [options]="universitiesForCountry()"
-        [ngModel]="form().university"
-        (ngModelChange)="onUniversityChange($event)"
-        [placeholder]="universitiesForCountry().length ? 'Selecciona universidad' : 'Sin universidades para este país'"
-        [filter]="true"
-        filterPlaceholder="Buscar universidad..."
-        [showClear]="true"
-        [disabled]="!universitiesForCountry().length"
-        styleClass="w-full"
-        appendTo="body"
-        [emptyMessage]="'Sin resultados'"
-      >
-      </p-dropdown>
-      @if (universitiesForCountry().length) {
-        <span class="field__hint">{{ universitiesForCountry().length }} universidades disponibles para {{ selectedCountry()?.name }}</span>
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Ver detalle — solo lectura + atajo a Editar -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Detalle de estudiante"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de estudiante</span>
+        <span class="register-modal__subtitle">{{ detailStudent()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailStudent(); as d) {
+    <dl class="detail-list">
+      <div class="detail-list__row">
+        <dt>Nombre</dt>
+        <dd>{{ d.firstName }} {{ d.lastName }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>Identificación</dt>
+        <dd>{{ d.identification || '—' }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>Email</dt>
+        <dd class="detail-list__break">{{ d.email }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>Teléfono</dt>
+        <dd>{{ d.phone || '—' }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>País origen</dt>
+        <dd>{{ d.countryOrigin || '—' }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>Universidad</dt>
+        <dd>{{ d.university || '—' }}</dd>
+      </div>
+      <div class="detail-list__row">
+        <dt>Asesor</dt>
+        <dd class="detail-list__break">{{ d.advisor?.email || d.advisorId || '—' }}</dd>
+      </div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Editar — mismo formulario + asociar asesor -->
+<p-dialog
+  [visible]="showEditModal()"
+  (visibleChange)="showEditModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '720px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Editar estudiante"
+  (onHide)="closeEditModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Editar estudiante</span>
+        <span class="register-modal__subtitle">{{ editingStudent()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="students__modal-intro register-modal__intro">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>Actualiza los campos necesarios. Los campos marcados con * son obligatorios.</span>
+  </div>
+
+  <div class="students__form-grid students__form-grid--modal register-modal__grid">
+    <ng-container *ngTemplateOutlet="studentFormFields"></ng-container>
+  </div>
+
+  <div class="detail-block detail-block--spaced">
+    <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> Asociar asesor</h4>
+    <div class="detail-block__row">
+      <div class="detail-block__field field">
+        <p-floatLabel>
+          <input
+            pInputText
+            id="edit-advisorId"
+            [ngModel]="advisorId()"
+            (ngModelChange)="advisorId.set($event)"
+            autocomplete="off"
+          />
+          <label for="edit-advisorId">Advisor ID</label>
+        </p-floatLabel>
+      </div>
+      <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Observaciones — agregar + historial -->
+<p-dialog
+  [visible]="showObsModal()"
+  (visibleChange)="showObsModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Observaciones de estudiante"
+  (onHide)="closeObsModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-clipboard"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Observaciones</span>
+        <span class="register-modal__subtitle">{{ obsStudent()?.firstName }} {{ obsStudent()?.lastName }} · {{ obsStudent()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="obs-input-row">
+    <div class="field" [class.field--error]="obsError()">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="obs-text-modal"
+          [ngModel]="obsText()"
+          (ngModelChange)="obsText.set($event); obsError.set(null)"
+          [class.p-invalid]="!!obsError()"
+          (keyup.enter)="addObs()"
+        />
+        <label for="obs-text-modal">Nueva observación</label>
+      </p-floatLabel>
+      @if (obsError()) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ obsError() }}</small>
       }
-      @if (formErrors().university) {
-        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().university }}</small>
+    </div>
+    <p-button icon="pi pi-plus" label="Agregar" size="small" (onClick)="addObs()"></p-button>
+  </div>
+
+  <div class="observations">
+    <div class="obs-list">
+      @for (o of observations(); track o.id || $index) {
+        <div class="obs-item">
+          <span class="obs-item__text">{{ o.observation }}</span>
+          <span class="obs-item__date"><i class="fa-regular fa-clock"></i>{{ o.createdAt | date:'short' }}</span>
+        </div>
+      } @empty {
+        <div class="obs-empty">
+          <i class="fa-regular fa-comment-dots"></i> Sin observaciones
+        </div>
       }
     </div>
   </div>
 
   <ng-template pTemplate="footer">
-    <div class="students__modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar" icon="pi pi-check" (onClick)="create()" [loading]="loading()"></p-button>
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeObsModal()" icon="pi pi-times"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Desactivar — confirmación simple con aviso de impacto -->
+<p-dialog
+  [visible]="showDeleteModal()"
+  (visibleChange)="showDeleteModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Desactivar estudiante"
+  (onHide)="closeDeleteModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Desactivar estudiante</span>
+        <span class="register-modal__subtitle">Esta acción cambia el estado del registro</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="delete-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>El estudiante dejará de estar activo en el sistema. Podrá reactivarse desde administración.</span>
+  </div>
+
+  @if (deleteTarget(); as t) {
+    <p class="delete-target">{{ t.firstName }} {{ t.lastName }} · {{ t.email }}</p>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

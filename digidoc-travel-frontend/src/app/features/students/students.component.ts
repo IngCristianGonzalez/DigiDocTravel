@@ -2,47 +2,23 @@ import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@a
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
+import { CatalogService } from './catalog.service';
 import { Student } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
 import { COUNTRIES, Country } from './countries.data';
 
-// PrimeNG - SL Global (lara-light-amber)
+// PrimeNG - SL Global (lara-light-amber) · PrimeNG 17
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { TableModule, Table } from 'primeng/table';
+import { TableModule } from 'primeng/table';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
-
-// Fix PrimeNG Table dataToRender crash (chunk-N2JOYJBE.js:4 t.slice / primeng_table.js:13454)
-// Revisado con puppeteer: _data.slice is not a function cuando paginator llama con number
-try {
-  const proto: any = (Table as any).prototype;
-  const orig = proto.dataToRender;
-  if (orig && !(orig as any).__patched) {
-    const patched = function (this: any, data: any) {
-      const _data = data ?? this.processedData;
-      if (_data && this.paginator) {
-        if (!Array.isArray(_data)) {
-          const fallback = Array.isArray(this.processedData) ? this.processedData : [];
-          const first = this.lazy ? 0 : this.first;
-          return fallback.slice(first, first + this.rows);
-        }
-        const first = this.lazy ? 0 : this.first;
-        return _data.slice(first, first + this.rows);
-      }
-      return Array.isArray(_data) ? _data : (Array.isArray(this.processedData) ? this.processedData : []);
-    };
-    (patched as any).__patched = true;
-    (patched as any).__orig = orig;
-    proto.dataToRender = patched;
-  }
-} catch {}
 
 @Component({
   selector: 'app-students',
@@ -72,7 +48,7 @@ export class StudentsComponent implements OnInit {
   students = signal<Student[]>([]);
   search = signal('');
   // form base (modal)
-  form = signal<any>({ firstName: '', lastName: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
+  form = signal<any>({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
   msg = signal('');
   selected = signal<Student | null>(null);
   advisorId = signal('');
@@ -85,10 +61,19 @@ export class StudentsComponent implements OnInit {
 
   // modal + paises/universidades
   showCreateModal = signal(false);
+  // PoC UX: todo por modales — detalle, edición, observaciones y desactivar
+  showDetailModal = signal(false);
+  showEditModal = signal(false);
+  showObsModal = signal(false);
+  showDeleteModal = signal(false);
+  detailStudent = signal<Student | null>(null);
+  editingStudent = signal<Student | null>(null);
+  obsStudent = signal<Student | null>(null);
+  deleteTarget = signal<Student | null>(null);
   countries = signal<Country[]>(COUNTRIES);
   selectedCountry = signal<Country | null>(COUNTRIES.find(c => c.code === 'CO') ?? COUNTRIES[0]);
   phoneNumber = signal('');
-  formErrors = signal<{ firstName?: string; lastName?: string; email?: string; countryOrigin?: string; phone?: string; university?: string }>({});
+  formErrors = signal<{ firstName?: string; lastName?: string; identification?: string; email?: string; countryOrigin?: string; phone?: string; university?: string }>({});
   obsError = signal<string | null>(null);
 
   // computed helpers
@@ -102,20 +87,53 @@ export class StudentsComponent implements OnInit {
   private nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/;
   private forbiddenCharsRegex = /[@*{}[\]#\$%\^&+=\|~`<>]/;
 
-  constructor(private svc: StudentsService, private toast: ToastService) {}
+  // Convención formularios de registro: nombres y apellidos mínimo 3 caracteres
+  readonly MIN_NAME_LENGTH = 3;
+  readonly MAX_NAME_LENGTH = 50;
+  // Identificación: obligatoria, mínimo 4 caracteres (letras, números, puntos y guiones)
+  readonly MIN_ID_LENGTH = 4;
+  readonly MAX_ID_LENGTH = 50;
+  private identificationRegex = /^[A-Za-z0-9.\-]+$/;
+
+  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService) {}
 
   ngOnInit() {
     this.load();
+    this.loadCatalog();
     // inicializa countryOrigin desde selectedCountry
     if (this.selectedCountry()) {
       this.form.update(f => ({ ...f, countryOrigin: this.selectedCountry()!.name }));
     }
   }
 
+  // Catálogo países/universidades desde la DB (fallback local si la API falla)
+  loadCatalog() {
+    this.catalog.listCountries().subscribe({
+      next: (res) => {
+        if (!res || res.length === 0) return;
+        const currentCode = this.selectedCountry()?.code ?? 'CO';
+        const mapped: Country[] = res.map(c => ({
+          code: c.code,
+          name: c.name,
+          dialCode: c.dialCode,
+          flag: c.flag ?? '',
+          universities: (c.universities ?? []).map(u => u.name),
+        }));
+        this.countries.set(mapped);
+        const keep = mapped.find(c => c.code === currentCode) ?? mapped[0];
+        this.selectedCountry.set(keep);
+        this.form.update(f => ({ ...f, countryOrigin: keep.name, university: '' }));
+      },
+      error: () => {
+        // fallback silencioso: se conserva COUNTRIES local
+      }
+    });
+  }
+
   // Modal controls
   openCreateModal() {
     // reset form + errores
-    this.form.set({ firstName: '', lastName: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
+    this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
     this.phoneNumber.set('');
     this.formErrors.set({});
     this.showCreateModal.set(true);
@@ -123,6 +141,93 @@ export class StudentsComponent implements OnInit {
 
   closeCreateModal() {
     this.showCreateModal.set(false);
+  }
+
+  // ---- PoC UX: acciones de fila abren modales (nada inline en la página) ----
+  openDetail(s: Student) {
+    this.detailStudent.set(s);
+    this.showDetailModal.set(true);
+    this.loadObservationsFor(s.id);
+  }
+
+  closeDetailModal() {
+    this.showDetailModal.set(false);
+    this.detailStudent.set(null);
+  }
+
+  goFromDetailToEdit() {
+    const d = this.detailStudent();
+    this.closeDetailModal();
+    if (d) this.openEdit(d);
+  }
+
+  openEdit(s: Student) {
+    this.editingStudent.set(s);
+    this.form.set({
+      firstName: s.firstName ?? '',
+      lastName: s.lastName ?? '',
+      identification: s.identification ?? '',
+      email: s.email ?? '',
+      countryOrigin: s.countryOrigin ?? this.selectedCountry()?.name ?? 'Colombia',
+      phone: s.phone ?? '',
+      university: s.university ?? '',
+    });
+    this.formErrors.set({});
+    // Sincroniza país + dígitos del teléfono con el indicativo
+    const match = this.countries().find(c => c.name === (s.countryOrigin ?? ''));
+    if (match) this.selectedCountry.set(match);
+    const digits = (s.phone ?? '').replace(/\D/g, '');
+    const dial = (match?.dialCode ?? this.dialCode()).replace(/\D/g, '');
+    this.phoneNumber.set(digits.startsWith(dial) && dial ? digits.slice(dial.length) : digits);
+    this.advisorId.set((s as any).advisorId ?? '');
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal() {
+    this.showEditModal.set(false);
+    this.editingStudent.set(null);
+    this.formErrors.set({});
+  }
+
+  openObs(s: Student) {
+    this.obsStudent.set(s);
+    this.obsText.set('');
+    this.obsError.set(null);
+    this.loadObservationsFor(s.id);
+    this.showObsModal.set(true);
+  }
+
+  closeObsModal() {
+    this.showObsModal.set(false);
+    this.obsStudent.set(null);
+    this.obsText.set('');
+    this.obsError.set(null);
+  }
+
+  openDelete(s: Student) {
+    this.deleteTarget.set(s);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal.set(false);
+    this.deleteTarget.set(null);
+  }
+
+  private loadObservationsFor(studentId: string) {
+    this.svc.getObservations(studentId).subscribe({
+      next: (v) => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []),
+      error: () => this.observations.set([])
+    });
+  }
+
+  // Paginación servidor vía p-table lazy: un solo control de paginación
+  onPageChange(event: { first: number; rows: number }) {
+    const rows = event.rows || this.limit();
+    const nextPage = Math.floor((event.first || 0) / rows) + 1;
+    this.limit.set(rows);
+    this.page.set(nextPage);
+    this.load();
   }
 
   onCountryChange(country: Country | null) {
@@ -185,8 +290,8 @@ export class StudentsComponent implements OnInit {
     const firstName = (f.firstName ?? '').trim();
     if (!firstName) {
       errors.firstName = 'El nombre es obligatorio';
-    } else if (firstName.length < 3) {
-      errors.firstName = 'Mínimo 3 caracteres';
+    } else if (firstName.length < this.MIN_NAME_LENGTH) {
+      errors.firstName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
     } else if (this.forbiddenCharsRegex.test(firstName) || !this.nameRegex.test(firstName)) {
       errors.firstName = 'No se permiten caracteres especiales (@ * { } etc.)';
     }
@@ -194,10 +299,19 @@ export class StudentsComponent implements OnInit {
     const lastName = (f.lastName ?? '').trim();
     if (!lastName) {
       errors.lastName = 'El apellido es obligatorio';
-    } else if (lastName.length < 4) {
-      errors.lastName = 'Mínimo 4 caracteres';
+    } else if (lastName.length < this.MIN_NAME_LENGTH) {
+      errors.lastName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
     } else if (this.forbiddenCharsRegex.test(lastName) || !this.nameRegex.test(lastName)) {
       errors.lastName = 'No se permiten caracteres especiales (@ * { } etc.)';
+    }
+
+    const identification = (f.identification ?? '').trim();
+    if (!identification) {
+      errors.identification = 'La identificación es obligatoria';
+    } else if (identification.length < this.MIN_ID_LENGTH) {
+      errors.identification = `Mínimo ${this.MIN_ID_LENGTH} caracteres`;
+    } else if (!this.identificationRegex.test(identification)) {
+      errors.identification = 'Solo letras, números, puntos y guiones';
     }
 
     const email = (f.email ?? '').trim();
@@ -241,14 +355,19 @@ export class StudentsComponent implements OnInit {
     this.error.set(null);
     this.svc.list({ search: this.search(), page: this.page(), limit: this.limit() }).subscribe({
       next: (r) => {
-        this.students.set(r.data ?? []);
-        this.total.set(r.total ?? r.data?.length ?? 0);
-        const tp = ((r as any).totalPages ?? Math.ceil((r.total ?? 0) / this.limit())) || 1;
-        this.totalPages.set(tp);
+        // r ya viene desenvuelto por StudentsService.list (soporta {success,data} y PaginatedResponse directo)
+        const data = (r as any)?.data ?? (Array.isArray(r) ? r : []);
+        const total = (r as any)?.total ?? (Array.isArray(data) ? data.length : 0);
+        const tpFromServer = (r as any)?.totalPages;
+        const totalPages = tpFromServer !== undefined && tpFromServer !== null ? tpFromServer : (Math.ceil(total / this.limit()) || 1);
+        this.students.set(Array.isArray(data) ? data : []);
+        this.total.set(total);
+        this.totalPages.set(totalPages);
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar estudiantes';
+        // e.error puede venir envuelto {success:false, message}
+        const message = e.error?.message || e.error?.data?.message || e.message || 'Error al cargar estudiantes';
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -282,19 +401,25 @@ export class StudentsComponent implements OnInit {
       return;
     }
 
-    // arma payload con país, teléfono con indicativo y universidad
-    const base = this.sanitizeForm(this.form());
+    // Payload estrictamente whitelisteado (backend: whitelist + forbidNonWhitelisted).
+    // Normaliza: trim, email en minúsculas, opcionales vacíos se omiten (undefined)
+    // para que el registro efectivamente persista en el sistema.
+    const raw = this.form();
     const dial = this.dialCode();
-    const phoneDigits = this.phoneNumber().trim();
-    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : '';
-    const payload = {
-      ...base,
-      countryOrigin: this.selectedCountry()?.name ?? base.countryOrigin,
-      phone: fullPhone,
-      // university ya sanitizada
+    const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
+    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : undefined;
+    const university = (raw.university ?? '').trim() || undefined;
+    const payload: Record<string, unknown> = {
+      firstName: this.sanitize(raw.firstName ?? '').trim(),
+      lastName: this.sanitize(raw.lastName ?? '').trim(),
+      identification: this.sanitize(raw.identification ?? '').trim(),
+      email: this.sanitize(raw.email ?? '').trim().toLowerCase(),
+      countryOrigin: this.selectedCountry()?.name ?? this.sanitize(raw.countryOrigin ?? '').trim(),
     };
+    if (fullPhone) payload['phone'] = fullPhone;
+    if (university) payload['university'] = this.sanitize(university);
 
-    if (!this.emailRegex.test(payload.email)) {
+    if (!this.emailRegex.test(payload['email'] as string)) {
       this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
       this.toast.error('Email inválido');
       return;
@@ -306,7 +431,7 @@ export class StudentsComponent implements OnInit {
       next: () => {
         this.msg.set('Estudiante registrado');
         this.toast.success('Estudiante registrado correctamente');
-        this.form.set({ firstName: '', lastName: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
+        this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
         this.phoneNumber.set('');
         this.formErrors.set({});
         this.loading.set(false);
@@ -324,28 +449,81 @@ export class StudentsComponent implements OnInit {
     });
   }
 
+  // Compat: la acción "Ver" de la tabla abre el modal de detalle
   select(s: Student) {
-    this.selected.set(s);
-    this.loading.set(true);
+    this.openDetail(s);
     this.svc.get(s.id).subscribe({
       next: (d) => {
+        this.detailStudent.set(d as any);
         this.selected.set(d as any);
-        this.loading.set(false);
       },
       error: (e) => {
         const message = e.error?.message || 'Error al obtener estudiante';
         this.toast.error(message);
+      }
+    });
+  }
+
+  saveEdit() {
+    const target = this.editingStudent();
+    if (!target) return;
+    if (!this.validateForm()) {
+      this.toast.error('Corrige los errores del formulario');
+      return;
+    }
+    const raw = this.form();
+    const dial = this.dialCode();
+    const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
+    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : undefined;
+    const university = (raw.university ?? '').trim() || undefined;
+    const payload: Record<string, unknown> = {
+      firstName: this.sanitize(raw.firstName ?? '').trim(),
+      lastName: this.sanitize(raw.lastName ?? '').trim(),
+      identification: this.sanitize(raw.identification ?? '').trim(),
+      email: this.sanitize(raw.email ?? '').trim().toLowerCase(),
+      countryOrigin: this.selectedCountry()?.name ?? this.sanitize(raw.countryOrigin ?? '').trim(),
+    };
+    if (fullPhone) payload['phone'] = fullPhone;
+    if (university) payload['university'] = this.sanitize(university);
+
+    this.loading.set(true);
+    this.svc.update(target.id, payload).subscribe({
+      next: () => {
+        this.toast.success('Estudiante actualizado correctamente');
+        this.loading.set(false);
+        this.closeEditModal();
+        this.load();
+      },
+      error: (e) => {
+        const message = e.error?.message || 'Error al actualizar estudiante';
+        this.toast.error(message);
         this.loading.set(false);
       }
     });
-    this.svc.getObservations(s.id).subscribe({
-      next: (v) => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []),
-      error: () => this.observations.set([])
+  }
+
+  confirmDelete() {
+    const target = this.deleteTarget();
+    if (!target) return;
+    this.loading.set(true);
+    this.svc.remove(target.id).subscribe({
+      next: () => {
+        this.toast.success('Estudiante desactivado correctamente');
+        this.loading.set(false);
+        this.closeDeleteModal();
+        this.page.set(1);
+        this.load();
+      },
+      error: (e) => {
+        const message = e.error?.message || 'Error al desactivar estudiante';
+        this.toast.error(message);
+        this.loading.set(false);
+      }
     });
   }
 
   assignAdvisor() {
-    const id = this.selected()?.id;
+    const id = this.editingStudent()?.id ?? this.detailStudent()?.id ?? this.selected()?.id;
     if (!id) return;
     const sanitizedAdvisorId = this.sanitize(this.advisorId());
     if (!sanitizedAdvisorId) {
@@ -366,7 +544,7 @@ export class StudentsComponent implements OnInit {
   }
 
   addObs() {
-    const id = this.selected()?.id;
+    const id = this.obsStudent()?.id ?? this.selected()?.id;
     if (!id) return;
 
     const raw = this.obsText();
@@ -392,7 +570,7 @@ export class StudentsComponent implements OnInit {
       next: () => {
         this.obsText.set('');
         this.toast.success('Observación agregada');
-        this.svc.getObservations(id).subscribe(v => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []));
+        this.loadObservationsFor(id);
       },
       error: (e) => {
         const message = e.error?.message || 'Error al agregar observación';
