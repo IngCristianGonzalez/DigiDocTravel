@@ -6,7 +6,7 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 export interface Student {
-  id: string; firstName: string; lastName: string; email: string; phone?: string;
+  id: string; firstName: string; lastName: string; identification: string; email: string; phone?: string;
   countryOrigin: string; cityOrigin?: string; university?: string; career?: string; semester?: number;
   status: boolean; advisorId?: string; advisor?: any; createdAt: string;
 }

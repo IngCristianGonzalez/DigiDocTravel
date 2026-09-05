@@ -44,6 +44,15 @@ describe('StudentsService - RF-012 a RF-016', () => {
     await expect(service.create({ email: 'dup@test.com' } as any)).rejects.toThrow(ConflictException);
   });
 
+  it('RF-012 debe fallar si identificación duplicada', async () => {
+    studentRepo.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: '1', identification: '123456' });
+    await expect(
+      service.create({ email: 'nuevo@test.com', identification: '123456' } as any),
+    ).rejects.toThrow(ConflictException);
+  });
+
   it('RF-014 Consultar estudiante', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1', email: 'a@a.com' });
     const res = await service.findOne('1');

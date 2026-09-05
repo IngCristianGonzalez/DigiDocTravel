@@ -1,0 +1,1018 @@
+// ============================================================
+// Students Component — HSK Design System
+// PrimeNG 17 bridge · BEM · Tokens HSK/SL (ver src/styles.scss aliases)
+// RF-012 a RF-016 — Registro con identificación + catálogo 1:N
+// ============================================================
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.students {
+  max-width: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+// ============================================================
+// Header Card (mismo patron dashboard)
+// ============================================================
+.students__header {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md) var(--space-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.students__header-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.students__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.students__icon-box {
+  width: 48px;
+  height: 48px;
+  background: var(--color-text-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-bg-card);
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.students__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.students__subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xxs);
+}
+
+.students__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.students__updated {
+  display: none;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-sm);
+
+  @media (min-width: 640px) {
+    display: inline-flex;
+  }
+}
+
+// Quick stats under header — tokens HSK, no hardcode hex fuera de semánticos
+.students__quick-stats {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.students__quick-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid transparent;
+
+  &--slate { background: var(--color-bg-surface); border-color: var(--color-border); }
+  &--sky { background: var(--color-bg-highlight); border-color: var(--color-border); }
+  &--emerald { background: var(--color-bg-surface); border-color: var(--color-border); }
+}
+
+.students__quick-stat-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+
+  &--slate { color: var(--color-text-muted); }
+  &--sky { color: var(--hsk-primary); border-color: var(--color-border); }
+  &--emerald { color: var(--hsk-primary); border-color: var(--color-border); }
+}
+
+.students__quick-stat-label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.students__quick-stat-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+// ============================================================
+// Card base — HSK tokens
+// ============================================================
+.students__card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.students__card-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0 0 var(--space-md) 0;
+
+  i { color: var(--color-text-muted); font-size: 0.875rem; }
+}
+
+.students__section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+
+  i { color: var(--hsk-primary); }
+}
+
+// ============================================================
+// Form Grid + Controls (reglas basicas)
+// ============================================================
+.students__form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  max-width: 720px;
+  align-items: stretch;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.field--full {
+  grid-column: 1 / -1;
+}
+
+.field__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.field__control {
+  width: 100%;
+}
+
+// p-floatLabel necesita wrapper 100% — todos los controles alineados a la misma altura
+:host ::ng-deep .field p-floatLabel,
+:host ::ng-deep .field p-floatlabel {
+  width: 100%;
+  display: block;
+}
+
+:host ::ng-deep .field input[pInputText],
+:host ::ng-deep .field .p-dropdown {
+  width: 100%;
+  min-height: 42px;
+}
+
+:host ::ng-deep .field .p-dropdown .p-dropdown-label {
+  display: flex;
+  align-items: center;
+}
+
+// Mensaje error inline (regla basica controles)
+.field__error {
+  font-size: 0.75rem;
+  color: var(--sl-error-600);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  margin-top: var(--space-xxs);
+
+  i { font-size: 0.6875rem; }
+}
+
+.field--error {
+  :host ::ng-deep input[pInputText] {
+    border-color: var(--sl-error-600) !important;
+    box-shadow: 0 0 0 3px var(--shadow-focus) !important;
+  }
+}
+
+.field__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.students__form-actions {
+  margin-top: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.students__msg {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+
+  &--success { color: var(--hsk-primary); }
+  &--error { color: var(--sl-error-600); }
+}
+
+// ============================================================
+// Toolbar (buscar)
+// ============================================================
+.students__toolbar {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-md);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.students__search {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  i {
+    position: absolute;
+    left: var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    pointer-events: none;
+  }
+
+  :host ::ng-deep input[pInputText] {
+    width: 100%;
+    padding-left: var(--space-xl) !important;
+  }
+}
+
+.students__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+// ============================================================
+// TableCard - flex chain para scrollHeight="flex"
+// ============================================================
+.students__table-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.students__table-header {
+  padding: var(--space-md) var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-bg-surface);
+  flex-shrink: 0;
+}
+
+.students__table-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+
+  i { color: var(--color-text-muted); font-size: 0.875rem; }
+}
+
+.students__table-count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-xxs) var(--space-sm);
+  font-weight: 500;
+}
+
+.table-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .table-wrapper .p-datatable {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+}
+
+.td-ellipsis {
+  max-width: 220px;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+
+.empty-state__icon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+}
+
+.empty-state__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.empty-state__desc {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xxs);
+}
+
+// ============================================================
+// Detail Card (RF-015 / RF-016)
+// ============================================================
+.students__detail {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-xs);
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.students__detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-bg-surface);
+  margin-bottom: var(--space-md);
+}
+
+.students__detail-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+
+  i { color: var(--hsk-primary); }
+}
+
+.students__detail-subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: var(--space-xxs);
+  word-break: break-all;
+}
+
+.students__detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.detail-block__title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+
+  i { font-size: 0.8125rem; color: var(--color-text-muted); }
+}
+
+.detail-block__row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-end;
+}
+
+.detail-block__field {
+  flex: 1;
+}
+
+.observations {
+  margin-top: var(--space-sm);
+}
+
+.obs-input-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+
+  .field { flex: 1; }
+}
+
+.obs-list {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: var(--space-xxs);
+}
+
+.obs-item {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  align-items: flex-start;
+  transition: box-shadow var(--transition-fast) ease;
+
+  &:hover {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.obs-item__text {
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+}
+
+.obs-item__date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.obs-empty {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: var(--space-md);
+  text-align: center;
+  background: var(--color-bg-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+// ============================================================
+// PrimeNG overrides scoped
+// Banner msg (global bajo header)
+.students__msg-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+
+  &--success {
+    background: var(--color-bg-surface);
+    border-color: var(--color-border);
+    color: var(--hsk-primary);
+  }
+  &--error {
+    background: var(--sl-error-50);
+    border-color: var(--color-border);
+    color: var(--sl-error-600);
+  }
+}
+
+// Modal extras
+.students__modal-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-bg-highlight);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-md);
+
+  i { color: var(--hsk-primary); }
+}
+
+.students__form-grid--modal {
+  max-width: none;
+}
+
+// ============================================================
+// Convención modales de registro (reutilizable: .register-modal)
+// Header con icono + títulos · intro · grid 2→1 cols · footer
+// Cancelar (secondary) + acción primaria · responsive móvil
+// ============================================================
+.register-modal__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.register-modal__icon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-text-primary);
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-bg-card);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.register-modal__titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.register-modal__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+}
+
+.register-modal__subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.register-modal__intro {
+  margin-bottom: var(--space-md);
+}
+
+.register-modal__grid {
+  align-items: stretch;
+}
+
+.register-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+
+    :host ::ng-deep .p-button {
+      width: 100%;
+    }
+  }
+}
+
+.field__label-static {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  display: block;
+}
+
+.field__optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+// Country option with flag + dial
+.country-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.875rem;
+}
+
+.country-option__flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.country-option__dial {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+}
+
+// Phone field with prefix
+.phone-field {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+
+  :host ::ng-deep input[pInputText] {
+    flex: 1;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    margin-left: -1px;
+  }
+}
+
+.phone-field__prefix {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-right: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  padding: 0 var(--space-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.phone-field__flag {
+  font-size: 1rem;
+}
+
+.students__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+// Dialog theming (SL Global) + convención registro
+:host ::ng-deep .students-dialog {
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+
+  .p-dialog-header {
+    background: var(--color-bg-card) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    padding: var(--space-md) var(--space-md) !important;
+    flex-shrink: 0;
+  }
+  .p-dialog-title {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--color-text-primary) !important;
+  }
+  .p-dialog-content {
+    padding: var(--space-md) !important;
+    background: var(--color-bg-card) !important;
+    overflow-y: auto !important;
+    flex: 1 1 auto !important;
+
+    @media (max-width: 480px) {
+      padding: var(--space-md) !important;
+    }
+  }
+  .p-dialog-footer {
+    border-top: 1px solid var(--color-bg-surface) !important;
+    padding: var(--space-md) var(--space-md) !important;
+    background: var(--color-bg-surface) !important;
+    flex-shrink: 0;
+  }
+  .p-dropdown {
+    width: 100% !important;
+  }
+  .p-dropdown-label {
+    font-size: 0.875rem !important;
+  }
+  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    font-size: 0.875rem !important;
+  }
+}
+
+// ============================================================
+// PoC UX — Celda estudiante (tokens, sin estilos inline)
+// ============================================================
+.student-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.student-avatar {
+  width: 28px;
+  height: 28px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.student-name {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ============================================================
+// PoC UX — Footer de modales 50/50 (estándar confirmación)
+// ============================================================
+.modal-footer {
+  display: flex;
+  gap: var(--space-sm);
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
+
+:host ::ng-deep .modal-footer .p-button {
+  flex: 1 1 0;
+}
+
+// ============================================================
+// PoC UX — Modal detalle (lista definición)
+// ============================================================
+.detail-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.detail-list__row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8125rem;
+
+  &:nth-child(even) {
+    background: var(--color-bg-surface);
+  }
+
+  dt {
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-primary);
+    word-break: break-word;
+  }
+}
+
+.detail-list__break {
+  word-break: break-all;
+}
+
+.detail-block--spaced {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+// ============================================================
+// PoC UX — Modal desactivar (aviso + objetivo)
+// ============================================================
+.register-modal__icon--danger {
+  background: var(--sl-error-600);
+}
+
+.delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  background: var(--sl-error-50);
+  border: 1px solid var(--color-border);
+  color: var(--sl-error-600);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-md);
+
+  i { margin-top: 2px; }
+}
+
+.delete-target {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0;
+  word-break: break-all;
+}
+
+// Iconos FA dentro de observaciones con tokens (sin margin inline)
+.obs-item__date {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+}
+
+.obs-empty {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+// ============================================================
+:host ::ng-deep {
+  .p-tag {
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    padding: 2px 10px !important;
+    border-radius: 9999px !important;
+  }
+
+  .p-button {
+    border-radius: var(--radius-md) !important;
+  }
+
+  .p-skeleton {
+    border-radius: var(--radius-md) !important;
+  }
+
+  .p-datatable .p-datatable-thead > tr > th {
+    background: var(--color-bg-surface) !important;
+    color: var(--color-text-secondary) !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    border-color: var(--color-border) !important;
+    white-space: nowrap;
+  }
+
+  .p-datatable .p-datatable-tbody > tr > td {
+    font-size: 0.8125rem !important;
+    color: var(--color-text-primary) !important;
+    border-color: var(--color-bg-surface) !important;
+    padding: 0.75rem 0.75rem !important;
+  }
+
+  .p-datatable .p-datatable-tbody > tr:hover {
+    background: var(--color-bg-surface) !important;
+  }
+
+  .p-paginator {
+    border-top: 1px solid var(--color-bg-surface) !important;
+    background: var(--color-bg-surface) !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
+    padding: 0.5rem !important;
+  }
+
+  .p-inputtext.p-invalid {
+    border-color: var(--sl-error-600) !important;
+  }
+}

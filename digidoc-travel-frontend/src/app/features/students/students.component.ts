@@ -1,204 +1,54 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
+import { CatalogService } from './catalog.service';
 import { Student } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { COUNTRIES, Country } from './countries.data';
+
+// PrimeNG - SL Global (lara-light-amber) · PrimeNG 17
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TableModule } from 'primeng/table';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, ErrorComponent],
-  template: `
-    <div class="p-6 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold text-slate-800 mb-6">Gestión de Estudiantes - RF-012 a RF-016</h1>
-
-      <!-- Loading / Error -->
-      <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
-      <app-error [message]="error()" (retry)="load()"></app-error>
-
-      <!-- RF-012 Registrar Estudiante -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-        <h3 class="text-lg font-semibold text-slate-700 mb-4">Registrar Estudiante - RF-012</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-          <!-- firstName -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Nombre *</label>
-            <input
-              placeholder="Nombre"
-              [ngModel]="form().firstName"
-              (ngModelChange)="updateForm('firstName', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().firstName"
-              [class.border-slate-300]="!formErrors().firstName"
-            >
-            <p *ngIf="formErrors().firstName" class="text-xs text-red-500 mt-1">{{ formErrors().firstName }}</p>
-          </div>
-          <!-- lastName -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Apellido *</label>
-            <input
-              placeholder="Apellido"
-              [ngModel]="form().lastName"
-              (ngModelChange)="updateForm('lastName', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().lastName"
-              [class.border-slate-300]="!formErrors().lastName"
-            >
-            <p *ngIf="formErrors().lastName" class="text-xs text-red-500 mt-1">{{ formErrors().lastName }}</p>
-          </div>
-          <!-- email -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Email *</label>
-            <input
-              placeholder="Email"
-              [ngModel]="form().email"
-              (ngModelChange)="updateForm('email', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().email"
-              [class.border-slate-300]="!formErrors().email"
-            >
-            <p *ngIf="formErrors().email" class="text-xs text-red-500 mt-1">{{ formErrors().email }}</p>
-          </div>
-          <!-- countryOrigin -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">País Origen *</label>
-            <input
-              placeholder="País Origen"
-              [ngModel]="form().countryOrigin"
-              (ngModelChange)="updateForm('countryOrigin', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().countryOrigin"
-              [class.border-slate-300]="!formErrors().countryOrigin"
-            >
-            <p *ngIf="formErrors().countryOrigin" class="text-xs text-red-500 mt-1">{{ formErrors().countryOrigin }}</p>
-          </div>
-          <!-- phone -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Teléfono</label>
-            <input
-              placeholder="Teléfono"
-              [ngModel]="form().phone"
-              (ngModelChange)="updateForm('phone', $event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-          <!-- university -->
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Universidad</label>
-            <input
-              placeholder="Universidad"
-              [ngModel]="form().university"
-              (ngModelChange)="updateForm('university', $event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-        </div>
-        <button (click)="create()" [disabled]="loading()" class="mt-4 bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-medium px-6 py-2 rounded-lg transition-colors">
-          Registrar
-        </button>
-        <div *ngIf="msg()" class="mt-3 text-sm font-medium" [class.text-green-600]="!error()" [class.text-red-600]="error()">{{ msg() }}</div>
-      </div>
-
-      <!-- RF-014 Buscar -->
-      <div class="flex gap-3 mb-4">
-        <input
-          placeholder="Buscar por nombre, email o país..."
-          [ngModel]="search()"
-          (ngModelChange)="search.set($event)"
-          (keyup.enter)="resetAndLoad()"
-          class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-        >
-        <button (click)="resetAndLoad()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-lg font-medium transition-colors">Buscar - RF-014</button>
-      </div>
-
-      <!-- Tabla -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-slate-100 text-left text-sm font-semibold text-slate-600">
-              <th class="px-4 py-3">Nombre</th>
-              <th class="px-4 py-3">Email</th>
-              <th class="px-4 py-3">País</th>
-              <th class="px-4 py-3">Asesor</th>
-              <th class="px-4 py-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let s of students()" class="border-t border-slate-200 hover:bg-slate-50 text-sm">
-              <td class="px-4 py-3">{{ s.firstName }} {{ s.lastName }}</td>
-              <td class="px-4 py-3">{{ s.email }}</td>
-              <td class="px-4 py-3">{{ s.countryOrigin }}</td>
-              <td class="px-4 py-3">{{ s.advisor?.email || s.advisorId || '-' }}</td>
-              <td class="px-4 py-3">
-                <button (click)="select(s)" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-medium transition-colors">Ver / Editar RF-013</button>
-              </td>
-            </tr>
-            <tr *ngIf="!loading() && students().length === 0">
-              <td colspan="5" class="px-4 py-8 text-center text-slate-400">No se encontraron estudiantes</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Paginación -->
-        <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
-          <span class="text-sm text-slate-600">Página {{ page() }} de {{ totalPages() }} — Total: {{ total() }} registros</span>
-          <div class="flex gap-2">
-            <button (click)="prevPage()" [disabled]="page() <= 1" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Anterior</button>
-            <button (click)="nextPage()" [disabled]="page() >= totalPages()" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Siguiente</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- RF-015 / RF-016 Detalle -->
-      <div *ngIf="selected()" class="bg-white p-6 mt-6 rounded-xl shadow-sm border border-slate-200">
-        <h3 class="text-lg font-semibold text-slate-700 mb-4">Editar / Asociar Asesor RF-015 — {{ selected()?.email }}</h3>
-        <div class="flex gap-3 items-end">
-          <div class="flex-1">
-            <label class="block text-sm font-medium text-slate-600 mb-1">Advisor ID</label>
-            <input
-              placeholder="Advisor ID"
-              [ngModel]="advisorId()"
-              (ngModelChange)="advisorId.set($event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-          </div>
-          <button (click)="assignAdvisor()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">Asociar Asesor</button>
-        </div>
-
-        <div class="mt-6">
-          <h4 class="font-semibold text-slate-700 mb-3">Observaciones RF-016</h4>
-          <div class="flex gap-3">
-            <input
-              placeholder="Nueva observación"
-              [ngModel]="obsText()"
-              (ngModelChange)="obsText.set($event)"
-              class="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="obsError()"
-            >
-            <button (click)="addObs()" class="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2 rounded-lg font-medium transition-colors">Agregar</button>
-          </div>
-          <p *ngIf="obsError()" class="text-xs text-red-500 mt-1">{{ obsError() }}</p>
-          <ul class="mt-4 space-y-2">
-            <li *ngFor="let o of observations()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm flex justify-between">
-              <span>{{ o.observation }}</span>
-              <span class="text-slate-400">{{ o.createdAt | date:'short' }}</span>
-            </li>
-            <li *ngIf="observations().length === 0" class="text-sm text-slate-400 italic">Sin observaciones</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  `
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    ErrorComponent,
+    ButtonModule,
+    InputTextModule,
+    FloatLabelModule,
+    TableModule,
+    SkeletonModule,
+    TagModule,
+    TooltipModule,
+    DialogModule,
+    DropdownModule,
+  ],
+  templateUrl: './students.component.html',
+  styleUrls: ['./students.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentsComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   students = signal<Student[]>([]);
   search = signal('');
-  form = signal<any>({ firstName: '', lastName: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
+  // form base (modal)
+  form = signal<any>({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
   msg = signal('');
   selected = signal<Student | null>(null);
   advisorId = signal('');
@@ -209,20 +59,206 @@ export class StudentsComponent implements OnInit {
   totalPages = signal(1);
   limit = signal(10);
 
-  formErrors = signal<{ firstName?: string; lastName?: string; email?: string; countryOrigin?: string }>({});
+  // modal + paises/universidades
+  showCreateModal = signal(false);
+  // PoC UX: todo por modales — detalle, edición, observaciones y desactivar
+  showDetailModal = signal(false);
+  showEditModal = signal(false);
+  showObsModal = signal(false);
+  showDeleteModal = signal(false);
+  detailStudent = signal<Student | null>(null);
+  editingStudent = signal<Student | null>(null);
+  obsStudent = signal<Student | null>(null);
+  deleteTarget = signal<Student | null>(null);
+  countries = signal<Country[]>(COUNTRIES);
+  selectedCountry = signal<Country | null>(COUNTRIES.find(c => c.code === 'CO') ?? COUNTRIES[0]);
+  phoneNumber = signal('');
+  formErrors = signal<{ firstName?: string; lastName?: string; identification?: string; email?: string; countryOrigin?: string; phone?: string; university?: string }>({});
   obsError = signal<string | null>(null);
 
-  private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // computed helpers
+  dialCode = computed(() => this.selectedCountry()?.dialCode ?? '');
+  universitiesForCountry = computed(() => this.selectedCountry()?.universities ?? []);
 
-  constructor(private svc: StudentsService, private toast: ToastService) {}
+  readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Student));
+
+  private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Solo letras (incluye acentos), espacios, apóstrofe y guion. Bloquea @ * { } [ ] etc.
+  private nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/;
+  private forbiddenCharsRegex = /[@*{}[\]#\$%\^&+=\|~`<>]/;
+
+  // Convención formularios de registro: nombres y apellidos mínimo 3 caracteres
+  readonly MIN_NAME_LENGTH = 3;
+  readonly MAX_NAME_LENGTH = 50;
+  // Identificación: obligatoria, mínimo 4 caracteres (letras, números, puntos y guiones)
+  readonly MIN_ID_LENGTH = 4;
+  readonly MAX_ID_LENGTH = 50;
+  private identificationRegex = /^[A-Za-z0-9.\-]+$/;
+
+  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService) {}
 
   ngOnInit() {
     this.load();
+    this.loadCatalog();
+    // inicializa countryOrigin desde selectedCountry
+    if (this.selectedCountry()) {
+      this.form.update(f => ({ ...f, countryOrigin: this.selectedCountry()!.name }));
+    }
+  }
+
+  // Catálogo países/universidades desde la DB (fallback local si la API falla)
+  loadCatalog() {
+    this.catalog.listCountries().subscribe({
+      next: (res) => {
+        if (!res || res.length === 0) return;
+        const currentCode = this.selectedCountry()?.code ?? 'CO';
+        const mapped: Country[] = res.map(c => ({
+          code: c.code,
+          name: c.name,
+          dialCode: c.dialCode,
+          flag: c.flag ?? '',
+          universities: (c.universities ?? []).map(u => u.name),
+        }));
+        this.countries.set(mapped);
+        const keep = mapped.find(c => c.code === currentCode) ?? mapped[0];
+        this.selectedCountry.set(keep);
+        this.form.update(f => ({ ...f, countryOrigin: keep.name, university: '' }));
+      },
+      error: () => {
+        // fallback silencioso: se conserva COUNTRIES local
+      }
+    });
+  }
+
+  // Modal controls
+  openCreateModal() {
+    // reset form + errores
+    this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
+    this.phoneNumber.set('');
+    this.formErrors.set({});
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal.set(false);
+  }
+
+  // ---- PoC UX: acciones de fila abren modales (nada inline en la página) ----
+  openDetail(s: Student) {
+    this.detailStudent.set(s);
+    this.showDetailModal.set(true);
+    this.loadObservationsFor(s.id);
+  }
+
+  closeDetailModal() {
+    this.showDetailModal.set(false);
+    this.detailStudent.set(null);
+  }
+
+  goFromDetailToEdit() {
+    const d = this.detailStudent();
+    this.closeDetailModal();
+    if (d) this.openEdit(d);
+  }
+
+  openEdit(s: Student) {
+    this.editingStudent.set(s);
+    this.form.set({
+      firstName: s.firstName ?? '',
+      lastName: s.lastName ?? '',
+      identification: s.identification ?? '',
+      email: s.email ?? '',
+      countryOrigin: s.countryOrigin ?? this.selectedCountry()?.name ?? 'Colombia',
+      phone: s.phone ?? '',
+      university: s.university ?? '',
+    });
+    this.formErrors.set({});
+    // Sincroniza país + dígitos del teléfono con el indicativo
+    const match = this.countries().find(c => c.name === (s.countryOrigin ?? ''));
+    if (match) this.selectedCountry.set(match);
+    const digits = (s.phone ?? '').replace(/\D/g, '');
+    const dial = (match?.dialCode ?? this.dialCode()).replace(/\D/g, '');
+    this.phoneNumber.set(digits.startsWith(dial) && dial ? digits.slice(dial.length) : digits);
+    this.advisorId.set((s as any).advisorId ?? '');
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal() {
+    this.showEditModal.set(false);
+    this.editingStudent.set(null);
+    this.formErrors.set({});
+  }
+
+  openObs(s: Student) {
+    this.obsStudent.set(s);
+    this.obsText.set('');
+    this.obsError.set(null);
+    this.loadObservationsFor(s.id);
+    this.showObsModal.set(true);
+  }
+
+  closeObsModal() {
+    this.showObsModal.set(false);
+    this.obsStudent.set(null);
+    this.obsText.set('');
+    this.obsError.set(null);
+  }
+
+  openDelete(s: Student) {
+    this.deleteTarget.set(s);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal.set(false);
+    this.deleteTarget.set(null);
+  }
+
+  private loadObservationsFor(studentId: string) {
+    this.svc.getObservations(studentId).subscribe({
+      next: (v) => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []),
+      error: () => this.observations.set([])
+    });
+  }
+
+  // Paginación servidor vía p-table lazy: un solo control de paginación
+  onPageChange(event: { first: number; rows: number }) {
+    const rows = event.rows || this.limit();
+    const nextPage = Math.floor((event.first || 0) / rows) + 1;
+    this.limit.set(rows);
+    this.page.set(nextPage);
+    this.load();
+  }
+
+  onCountryChange(country: Country | null) {
+    if (!country) return;
+    this.selectedCountry.set(country);
+    this.form.update(f => ({ ...f, countryOrigin: country.name, university: '' }));
+    // limpia error de pais/universidad
+    if (this.formErrors().countryOrigin) {
+      this.formErrors.update(e => ({ ...e, countryOrigin: undefined }));
+    }
+    if (this.formErrors().university) {
+      this.formErrors.update(e => ({ ...e, university: undefined }));
+    }
+  }
+
+  onUniversityChange(value: string) {
+    this.form.update(f => ({ ...f, university: value }));
+  }
+
+  onPhoneNumberChange(value: string) {
+    // solo digitos, max 15
+    const digits = value.replace(/\D/g, '').slice(0, 15);
+    this.phoneNumber.set(digits);
+    this.form.update(f => ({ ...f, phone: digits ? `${this.dialCode()} ${digits}`.trim() : '' }));
+    if (this.formErrors().phone) {
+      this.formErrors.update(e => ({ ...e, phone: undefined }));
+    }
   }
 
   updateForm(field: string, value: string) {
     this.form.update(f => ({ ...f, [field]: value }));
-    // limpiar error inline del campo al escribir
     if ((this.formErrors() as any)[field]) {
       this.formErrors.update(e => ({ ...e, [field]: undefined } as any));
     }
@@ -230,7 +266,6 @@ export class StudentsComponent implements OnInit {
 
   private sanitize(value: string): string {
     if (!value) return '';
-    // RF seguridad: strip tags y caracteres peligrosos < > .. / \
     return value
       .replace(/<[^>]*>/g, '')
       .replace(/[<>]/g, '')
@@ -252,19 +287,63 @@ export class StudentsComponent implements OnInit {
     const f = this.form();
     const errors: any = {};
 
-    if (!f.firstName || !f.firstName.trim()) {
+    const firstName = (f.firstName ?? '').trim();
+    if (!firstName) {
       errors.firstName = 'El nombre es obligatorio';
+    } else if (firstName.length < this.MIN_NAME_LENGTH) {
+      errors.firstName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
+    } else if (this.forbiddenCharsRegex.test(firstName) || !this.nameRegex.test(firstName)) {
+      errors.firstName = 'No se permiten caracteres especiales (@ * { } etc.)';
     }
-    if (!f.lastName || !f.lastName.trim()) {
+
+    const lastName = (f.lastName ?? '').trim();
+    if (!lastName) {
       errors.lastName = 'El apellido es obligatorio';
+    } else if (lastName.length < this.MIN_NAME_LENGTH) {
+      errors.lastName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
+    } else if (this.forbiddenCharsRegex.test(lastName) || !this.nameRegex.test(lastName)) {
+      errors.lastName = 'No se permiten caracteres especiales (@ * { } etc.)';
     }
-    if (!f.email || !f.email.trim()) {
+
+    const identification = (f.identification ?? '').trim();
+    if (!identification) {
+      errors.identification = 'La identificación es obligatoria';
+    } else if (identification.length < this.MIN_ID_LENGTH) {
+      errors.identification = `Mínimo ${this.MIN_ID_LENGTH} caracteres`;
+    } else if (!this.identificationRegex.test(identification)) {
+      errors.identification = 'Solo letras, números, puntos y guiones';
+    }
+
+    const email = (f.email ?? '').trim();
+    if (!email) {
       errors.email = 'El email es obligatorio';
-    } else if (!this.emailRegex.test(f.email.trim())) {
-      errors.email = 'Formato de email inválido';
+    } else if (!this.emailRegex.test(email)) {
+      errors.email = 'Formato de email inválido (ej: nombre@dominio.com)';
+    } else if (this.forbiddenCharsRegex.test(email) && /[@*{}]/.test(email.replace(/[@.]/g, ''))) {
+      // email ya valida arroba/punto, pero bloquea * { }
+      if (/[*{}]/.test(email)) errors.email = 'Email contiene caracteres no permitidos';
     }
-    if (!f.countryOrigin || !f.countryOrigin.trim()) {
-      errors.countryOrigin = 'El país de origen es obligatorio';
+
+    const country = this.selectedCountry()?.name ?? (f.countryOrigin ?? '').trim();
+    if (!country) {
+      errors.countryOrigin = 'Selecciona un país';
+    } else if (!this.countries().some(c => c.name === country)) {
+      errors.countryOrigin = 'País no válido';
+    }
+
+    const phoneDigits = this.phoneNumber().trim();
+    if (phoneDigits) {
+      if (!/^\d{7,15}$/.test(phoneDigits)) {
+        errors.phone = 'Teléfono: 7 a 15 dígitos';
+      }
+    }
+
+    // universidad opcional, pero si hay país y valor, debe pertenecer a la lista
+    const uni = (f.university ?? '').trim();
+    if (uni && this.universitiesForCountry().length > 0 && !this.universitiesForCountry().includes(uni)) {
+      // permitimos universidad libre? Por requerimiento 1:N, validamos que si elige de la lista exista.
+      // Si escribe manualmente y no está en lista, advertimos pero no bloqueamos — solo si usa dropdown encaja.
+      // Para no ser estricto, no error si es texto libre fuera de lista.
     }
 
     this.formErrors.set(errors);
@@ -276,15 +355,19 @@ export class StudentsComponent implements OnInit {
     this.error.set(null);
     this.svc.list({ search: this.search(), page: this.page(), limit: this.limit() }).subscribe({
       next: (r) => {
-        this.students.set(r.data ?? []);
-        this.total.set(r.total ?? r.data?.length ?? 0);
-        // calcular totalPages si no viene del backend
-        const tp = ((r as any).totalPages ?? Math.ceil((r.total ?? 0) / this.limit())) || 1;
-        this.totalPages.set(tp);
+        // r ya viene desenvuelto por StudentsService.list (soporta {success,data} y PaginatedResponse directo)
+        const data = (r as any)?.data ?? (Array.isArray(r) ? r : []);
+        const total = (r as any)?.total ?? (Array.isArray(data) ? data.length : 0);
+        const tpFromServer = (r as any)?.totalPages;
+        const totalPages = tpFromServer !== undefined && tpFromServer !== null ? tpFromServer : (Math.ceil(total / this.limit()) || 1);
+        this.students.set(Array.isArray(data) ? data : []);
+        this.total.set(total);
+        this.totalPages.set(totalPages);
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar estudiantes';
+        // e.error puede venir envuelto {success:false, message}
+        const message = e.error?.message || e.error?.data?.message || e.message || 'Error al cargar estudiantes';
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -313,13 +396,30 @@ export class StudentsComponent implements OnInit {
 
   create() {
     if (!this.validateForm()) {
+      // marca que hay errores en todos los campos visibles
       this.toast.error('Corrige los errores del formulario');
       return;
     }
 
-    const sanitized = this.sanitizeForm(this.form());
-    // validación adicional de email después de sanitizar
-    if (!this.emailRegex.test(sanitized.email)) {
+    // Payload estrictamente whitelisteado (backend: whitelist + forbidNonWhitelisted).
+    // Normaliza: trim, email en minúsculas, opcionales vacíos se omiten (undefined)
+    // para que el registro efectivamente persista en el sistema.
+    const raw = this.form();
+    const dial = this.dialCode();
+    const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
+    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : undefined;
+    const university = (raw.university ?? '').trim() || undefined;
+    const payload: Record<string, unknown> = {
+      firstName: this.sanitize(raw.firstName ?? '').trim(),
+      lastName: this.sanitize(raw.lastName ?? '').trim(),
+      identification: this.sanitize(raw.identification ?? '').trim(),
+      email: this.sanitize(raw.email ?? '').trim().toLowerCase(),
+      countryOrigin: this.selectedCountry()?.name ?? this.sanitize(raw.countryOrigin ?? '').trim(),
+    };
+    if (fullPhone) payload['phone'] = fullPhone;
+    if (university) payload['university'] = this.sanitize(university);
+
+    if (!this.emailRegex.test(payload['email'] as string)) {
       this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
       this.toast.error('Email inválido');
       return;
@@ -327,14 +427,15 @@ export class StudentsComponent implements OnInit {
 
     this.loading.set(true);
     this.error.set(null);
-    this.svc.create(sanitized).subscribe({
+    this.svc.create(payload).subscribe({
       next: () => {
         this.msg.set('Estudiante registrado');
         this.toast.success('Estudiante registrado correctamente');
-        // reset form manteniendo countryOrigin por defecto
-        this.form.set({ firstName: '', lastName: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
+        this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
+        this.phoneNumber.set('');
         this.formErrors.set({});
         this.loading.set(false);
+        this.showCreateModal.set(false);
         this.page.set(1);
         this.load();
       },
@@ -348,28 +449,81 @@ export class StudentsComponent implements OnInit {
     });
   }
 
+  // Compat: la acción "Ver" de la tabla abre el modal de detalle
   select(s: Student) {
-    this.selected.set(s);
-    this.loading.set(true);
+    this.openDetail(s);
     this.svc.get(s.id).subscribe({
       next: (d) => {
+        this.detailStudent.set(d as any);
         this.selected.set(d as any);
-        this.loading.set(false);
       },
       error: (e) => {
         const message = e.error?.message || 'Error al obtener estudiante';
         this.toast.error(message);
+      }
+    });
+  }
+
+  saveEdit() {
+    const target = this.editingStudent();
+    if (!target) return;
+    if (!this.validateForm()) {
+      this.toast.error('Corrige los errores del formulario');
+      return;
+    }
+    const raw = this.form();
+    const dial = this.dialCode();
+    const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
+    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : undefined;
+    const university = (raw.university ?? '').trim() || undefined;
+    const payload: Record<string, unknown> = {
+      firstName: this.sanitize(raw.firstName ?? '').trim(),
+      lastName: this.sanitize(raw.lastName ?? '').trim(),
+      identification: this.sanitize(raw.identification ?? '').trim(),
+      email: this.sanitize(raw.email ?? '').trim().toLowerCase(),
+      countryOrigin: this.selectedCountry()?.name ?? this.sanitize(raw.countryOrigin ?? '').trim(),
+    };
+    if (fullPhone) payload['phone'] = fullPhone;
+    if (university) payload['university'] = this.sanitize(university);
+
+    this.loading.set(true);
+    this.svc.update(target.id, payload).subscribe({
+      next: () => {
+        this.toast.success('Estudiante actualizado correctamente');
+        this.loading.set(false);
+        this.closeEditModal();
+        this.load();
+      },
+      error: (e) => {
+        const message = e.error?.message || 'Error al actualizar estudiante';
+        this.toast.error(message);
         this.loading.set(false);
       }
     });
-    this.svc.getObservations(s.id).subscribe({
-      next: (v) => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []),
-      error: () => this.observations.set([])
+  }
+
+  confirmDelete() {
+    const target = this.deleteTarget();
+    if (!target) return;
+    this.loading.set(true);
+    this.svc.remove(target.id).subscribe({
+      next: () => {
+        this.toast.success('Estudiante desactivado correctamente');
+        this.loading.set(false);
+        this.closeDeleteModal();
+        this.page.set(1);
+        this.load();
+      },
+      error: (e) => {
+        const message = e.error?.message || 'Error al desactivar estudiante';
+        this.toast.error(message);
+        this.loading.set(false);
+      }
     });
   }
 
   assignAdvisor() {
-    const id = this.selected()?.id;
+    const id = this.editingStudent()?.id ?? this.detailStudent()?.id ?? this.selected()?.id;
     if (!id) return;
     const sanitizedAdvisorId = this.sanitize(this.advisorId());
     if (!sanitizedAdvisorId) {
@@ -390,7 +544,7 @@ export class StudentsComponent implements OnInit {
   }
 
   addObs() {
-    const id = this.selected()?.id;
+    const id = this.obsStudent()?.id ?? this.selected()?.id;
     if (!id) return;
 
     const raw = this.obsText();
@@ -400,7 +554,6 @@ export class StudentsComponent implements OnInit {
       this.obsError.set('La observación no puede estar vacía');
       return;
     }
-    // Seguridad: validar que no contiene <script
     if (/<\s*script/i.test(raw)) {
       this.obsError.set('Contenido no permitido: <script> detectado');
       this.toast.error('Observación contiene contenido no permitido');
@@ -417,7 +570,7 @@ export class StudentsComponent implements OnInit {
       next: () => {
         this.obsText.set('');
         this.toast.success('Observación agregada');
-        this.svc.getObservations(id).subscribe(v => this.observations.set(Array.isArray(v) ? v : (v as any)?.data ?? []));
+        this.loadObservationsFor(id);
       },
       error: (e) => {
         const message = e.error?.message || 'Error al agregar observación';

@@ -11,6 +11,7 @@ import { RolesModule } from './roles/roles.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { PermissionsModule } from './permissions/permissions.module.js';
 import { StudentsModule } from './students/students.module.js';
+import { CatalogModule } from './catalog/catalog.module.js';
 import { DocumentsModule } from './documents/documents.module.js';
 import { VisasModule } from './visas/visas.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
@@ -24,6 +25,8 @@ import { Permission } from './permissions/entities/permission.entity.js';
 import { AuditLog } from './audit/entities/audit-log.entity.js';
 import { Student } from './students/entities/student.entity.js';
 import { StudentObservation } from './students/entities/student-observation.entity.js';
+import { Country } from './catalog/entities/country.entity.js';
+import { University } from './catalog/entities/university.entity.js';
 import { Document } from './documents/entities/document.entity.js';
 import { DocumentHistory } from './documents/entities/document-history.entity.js';
 import { Visa } from './visas/entities/visa.entity.js';
@@ -62,6 +65,8 @@ import { Notification } from './notifications/entities/notification.entity.js';
           AuditLog,
           Student,
           StudentObservation,
+          Country,
+          University,
           Document,
           DocumentHistory,
           Visa,
@@ -93,6 +98,7 @@ import { Notification } from './notifications/entities/notification.entity.js';
     PermissionsModule,
     AuditModule,
     StudentsModule,
+    CatalogModule,
     DocumentsModule,
     VisasModule,
     PaymentsModule,

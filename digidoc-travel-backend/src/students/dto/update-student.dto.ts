@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsOptional, IsInt, Min, IsBoolean } from 'class-validator';
+import { IsEmail, IsString, IsOptional, IsInt, Min, IsBoolean, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class UpdateStudentDto {
   @IsOptional()
@@ -8,6 +8,13 @@ export class UpdateStudentDto {
   @IsOptional()
   @IsString()
   lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(4, { message: 'La identificación debe tener mínimo 4 caracteres' })
+  @MaxLength(50)
+  @Matches(/^[A-Za-z0-9.\-]+$/, { message: 'La identificación solo admite letras, números, puntos y guiones' })
+  identification?: string;
 
   @IsOptional()
   @IsEmail()
