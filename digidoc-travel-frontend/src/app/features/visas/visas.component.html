@@ -1,0 +1,425 @@
+<div class="visas">
+  <!-- Header -->
+  <div class="visas__header">
+    <div class="visas__header-top">
+      <div class="visas__header-left">
+        <div class="visas__icon-box">
+          <i class="fa-solid fa-passport"></i>
+        </div>
+        <div>
+          <h1 class="visas__title">Seguimiento de Visas</h1>
+          <p class="visas__subtitle">Registro, estado y alertas de vencimiento</p>
+        </div>
+      </div>
+      <div class="visas__header-actions">
+        <p-button
+          icon="pi pi-plus"
+          label="Registrar visa"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="resetAndLoad()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="visas__quick-stats">
+      <div class="visas__quick-stat">
+        <div class="visas__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="visas__quick-stat-label">Total registradas</p>
+          <p class="visas__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="visas__quick-stat">
+        <div class="visas__quick-stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div>
+          <p class="visas__quick-stat-label">Vista actual</p>
+          <p class="visas__quick-stat-value">{{ expiringMode() ? 'Por vencer (90 días)' : 'Todas' }}</p>
+        </div>
+      </div>
+      <div class="visas__quick-stat">
+        <div class="visas__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="visas__quick-stat-label">Página</p>
+          <p class="visas__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando visas..."></app-loading>
+  <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
+
+  @if (msg()) {
+    <div class="visas__msg-banner" [class.visas__msg-banner--success]="!error()" [class.visas__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
+    </div>
+  }
+
+  <div class="visas__notice">
+    <i class="fa-solid fa-bell"></i>
+    <span>El backend genera alerta y notifica al equipo cuando una visa vence en 90 días (RF-029/RF-030).</span>
+  </div>
+
+  <!-- Toolbar: búsqueda + tipo + vista -->
+  <div class="visas__toolbar">
+    <div class="visas__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Filtrar por país, tipo o número..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar visas"
+      />
+    </div>
+    <div class="visas__toolbar-actions">
+      <p-dropdown
+        [options]="typeOptions"
+        [ngModel]="visaTypeFilter()"
+        (ngModelChange)="visaTypeFilter.set($event)"
+        placeholder="Todos los tipos"
+        [showClear]="true"
+        ariaLabel="Filtrar por tipo"
+      />
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search() || visaTypeFilter()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); visaTypeFilter.set('')"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Vista: Todas / Por vencer -->
+  <div class="tabs-control-wrapper">
+    <div class="tabs-container">
+      <button class="tab-button" [class.tab-active]="viewMode() === 'all'" (click)="setViewMode('all')">
+        <span>Todas</span>
+      </button>
+      <button class="tab-button" [class.tab-active]="viewMode() === 'expiring'" (click)="setViewMode('expiring')">
+        <span>Por vencer · 90 días</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="visas__table-card">
+    <div class="visas__table-header">
+      <h3 class="visas__table-title"><i class="fa-solid fa-table-list"></i> Visas</h3>
+      <span class="visas__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : visas()"
+        [lazy]="true"
+        [paginator]="!expiringMode()"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '66rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Tipo</th>
+            <th style="width: 130px">Número</th>
+            <th style="width: 130px">País</th>
+            <th style="width: 130px">Vencimiento</th>
+            <th style="width: 110px">Días rest.</th>
+            <th style="width: 110px">Estado</th>
+            <th style="width: 112px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-v>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="4rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="6rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td><p-tag [value]="v.visaType" severity="secondary"></p-tag></td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="v.visaNumber || '—'" tooltipPosition="top">{{ v.visaNumber || '—' }}</span>
+              </td>
+              <td>{{ v.country }}</td>
+              <td>{{ v.expiryDate | date:'yyyy-MM-dd' }}</td>
+              <td><p-tag [value]="daysLeftOf(v).toString()" [severity]="daysSeverity(daysLeftOf(v))"></p-tag></td>
+              <td><p-tag [value]="statusOf(v)" [severity]="statusSeverity(statusOf(v))"></p-tag></td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(v)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(v)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar visa"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron visas</p>
+                  <p class="empty-state__desc">Prueba con otro filtro o registra la primera visa.</p>
+                </div>
+                @if (!search() && !visaTypeFilter() && viewMode() === 'all') {
+                  <p-button icon="pi pi-plus" label="Registrar visa" size="small" (onClick)="openCreateModal()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Campos compartidos crear/editar -->
+<ng-template #visaFormFields let-editing="editing">
+  <div class="field field--full" [class.field--error]="formErrors().studentId">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-studentId"
+        [ngModel]="form().studentId"
+        (ngModelChange)="updateForm('studentId', $event)"
+        [class.p-invalid]="!!formErrors().studentId"
+        [disabled]="editing"
+        autocomplete="off"
+        placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+      />
+      <label for="m-studentId">Student ID (UUID) *</label>
+    </p-floatLabel>
+    @if (formErrors().studentId) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().visaType">
+    <p-floatLabel>
+      <p-dropdown
+        inputId="m-visaType"
+        [options]="typeOptions"
+        [ngModel]="form().visaType"
+        (ngModelChange)="updateForm('visaType', $event)"
+        styleClass="w-full"
+        appendTo="body"
+      />
+      <label for="m-visaType">Tipo de visa *</label>
+    </p-floatLabel>
+    @if (formErrors().visaType) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().visaType }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().visaNumber">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-visaNumber"
+        [ngModel]="form().visaNumber"
+        (ngModelChange)="updateForm('visaNumber', $event)"
+        [class.p-invalid]="!!formErrors().visaNumber"
+        autocomplete="off"
+        placeholder="Ej: US123456"
+        maxlength="50"
+      />
+      <label for="m-visaNumber">Número <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+    @if (formErrors().visaNumber) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().visaNumber }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().country">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-country"
+        [ngModel]="form().country"
+        (ngModelChange)="updateForm('country', $event)"
+        [class.p-invalid]="!!formErrors().country"
+        autocomplete="country-name"
+        placeholder="Ej: USA"
+        maxlength="100"
+      />
+      <label for="m-country">País *</label>
+    </p-floatLabel>
+    @if (formErrors().country) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().country }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().issueDate">
+    <label class="field__label-static" for="m-issueDate">Fecha de expedición *</label>
+    <input
+      pInputText
+      type="date"
+      id="m-issueDate"
+      [ngModel]="form().issueDate"
+      (ngModelChange)="updateForm('issueDate', $event)"
+      [class.p-invalid]="!!formErrors().issueDate"
+    />
+    @if (formErrors().issueDate) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().issueDate }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().expiryDate">
+    <label class="field__label-static" for="m-expiryDate">Fecha de vencimiento *</label>
+    <input
+      pInputText
+      type="date"
+      id="m-expiryDate"
+      [ngModel]="form().expiryDate"
+      (ngModelChange)="updateForm('expiryDate', $event)"
+      [class.p-invalid]="!!formErrors().expiryDate"
+    />
+    @if (formErrors().expiryDate) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().expiryDate }}</small>
+    }
+  </div>
+</ng-template>
+
+<!-- Modal Registrar -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="visas-dialog register-modal"
+  aria-label="Registrar visa"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-passport"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar visa</span>
+        <span class="register-modal__subtitle">El vencimiento debe ser posterior a la expedición</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="visas__form-grid">
+    <ng-container *ngTemplateOutlet="visaFormFields; context: { editing: false }"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Editar -->
+<p-dialog
+  [visible]="showEditModal()"
+  (visibleChange)="showEditModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="visas-dialog register-modal"
+  aria-label="Editar visa"
+  (onHide)="closeEditModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Editar visa</span>
+        <span class="register-modal__subtitle">{{ editingVisa()?.visaNumber || editingVisa()?.visaType }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="visas__form-grid">
+    <ng-container *ngTemplateOutlet="visaFormFields; context: { editing: true }"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Detalle -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="visas-dialog register-modal"
+  aria-label="Detalle de visa"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de visa</span>
+        <span class="register-modal__subtitle">{{ detailVisa()?.visaNumber || detailVisa()?.visaType }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailVisa(); as v) {
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ v.visaType }}</dd></div>
+      <div class="detail-list__row"><dt>Número</dt><dd>{{ v.visaNumber || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>País</dt><dd>{{ v.country }}</dd></div>
+      <div class="detail-list__row"><dt>Expedición</dt><dd>{{ v.issueDate | date:'yyyy-MM-dd' }}</dd></div>
+      <div class="detail-list__row"><dt>Vencimiento</dt><dd>{{ v.expiryDate | date:'yyyy-MM-dd' }} ({{ daysLeftOf(v) }} días)</dd></div>
+      <div class="detail-list__row"><dt>Estado</dt><dd>{{ statusOf(v) }}</dd></div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
