@@ -78,9 +78,9 @@
     <div class="dashboard__skeleton-grid">
       @for (i of [1,2,3,4,5,6]; track i) {
         <div class="dashboard__skeleton-card">
-          <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+          <div class="skeleton-row">
             <p-skeleton shape="circle" size="48px"></p-skeleton>
-            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+            <div class="skeleton-col">
               <p-skeleton height="1rem" width="75%"></p-skeleton>
               <p-skeleton height="0.75rem" width="50%"></p-skeleton>
             </div>
@@ -107,14 +107,14 @@
             <p class="kpi-card__value">{{ safeNumber(s.users?.total) }}</p>
             <p class="kpi-card__desc">Total usuarios registrados</p>
             <div class="kpi-card__meta">
-              <span class="kpi-card__badge"><i class="fa-solid fa-users" style="font-size:11px; color:var(--sl-gray-400)"></i> {{ safeNumber(s.students.active) }} activos</span>
+              <span class="kpi-card__badge"><i class="fa-solid fa-users"></i> {{ safeNumber(s.students.active) }} activos</span>
               <span class="kpi-card__separator">/</span>
-              <span style="color:var(--sl-gray-600); font-size:0.75rem;">{{ safeNumber(s.students.total) }} estudiantes</span>
+              <span class="kpi-card__muted">{{ safeNumber(s.students.total) }} estudiantes</span>
             </div>
           </div>
         </div>
         <div class="kpi-card__footer">
-          <a routerLink="/users" class="kpi-card__link kpi-card__link--indigo">Ver usuarios <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <a routerLink="/users" class="kpi-card__link kpi-card__link--indigo">Ver usuarios <i class="fa-solid fa-arrow-right"></i></a>
           <span class="kpi-card__hint">Sistema</span>
         </div>
       </div>
@@ -131,8 +131,8 @@
             <p class="kpi-card__value">{{ safeNumber(s.students.active) }} <span>/ {{ safeNumber(s.students.total) }}</span></p>
             <p class="kpi-card__desc">Activos / Totales</p>
             <div class="kpi-card__meta">
-              <span style="width:8px; height:8px; background:#10b981; border-radius:50%; display:inline-block; animation:pulse 1.5s infinite;"></span>
-              <span style="font-size:0.75rem; color:var(--sl-gray-600);">Nuevos este mes:</span>
+              <span class="live-dot"></span>
+              <span class="kpi-card__muted">Nuevos este mes:</span>
               <span class="kpi-card__badge kpi-card__badge--emerald">+{{ safeNumber(s.students.newThisMonth) }}</span>
             </div>
           </div>
@@ -141,7 +141,7 @@
           <div class="kpi-card__progress-header"><span>Progreso</span><strong>{{ getStudentsProgress(s) }}%</strong></div>
           <div class="kpi-card__progress-track"><div class="kpi-card__progress-fill" [style.width.%]="getStudentsProgress(s)"></div></div>
         </div>
-        <a routerLink="/students" class="kpi-card__link kpi-card__link--sky" style="margin-top:16px;">Gestionar estudiantes <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+        <a routerLink="/students" class="kpi-card__link kpi-card__link--sky kpi-card__link--spaced">Gestionar estudiantes <i class="fa-solid fa-arrow-right"></i></a>
       </div>
 
       <div class="kpi-card">
@@ -155,14 +155,14 @@
           <div class="kpi-card__content">
             <p class="kpi-card__value" [ngClass]="s.documents.pending > 0 ? 'kpi-card__value--amber' : 'kpi-card__value--emerald'">{{ safeNumber(s.documents.pending) }}</p>
             <p class="kpi-card__desc">Pendientes por revisar</p>
-            <p style="font-size:0.75rem; color:var(--sl-gray-400); margin-top:4px;">Total: <strong style="color:var(--sl-gray-700)">{{ safeNumber(s.documents.total) }}</strong> documentos</p>
+            <p class="kpi-card__note">Total: <strong>{{ safeNumber(s.documents.total) }}</strong> documentos</p>
           </div>
         </div>
         <div class="kpi-card__footer">
           <span class="kpi-card__badge" [ngClass]="s.documents.pending > 0 ? 'kpi-card__badge--amber' : 'kpi-card__badge--emerald'">
-            <i class="fa-solid" [ngClass]="s.documents.pending > 0 ? 'fa-triangle-exclamation' : 'fa-circle-check'" style="font-size:11px;"></i> {{ s.documents.pending > 0 ? 'Requiere atención' : 'Al día' }}
+            <i class="fa-solid" [ngClass]="s.documents.pending > 0 ? 'fa-triangle-exclamation' : 'fa-circle-check'"></i> {{ s.documents.pending > 0 ? 'Requiere atención' : 'Al día' }}
           </span>
-          <a routerLink="/documents" class="kpi-card__link">Ver documentos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <a routerLink="/documents" class="kpi-card__link">Ver documentos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
 
@@ -178,20 +178,20 @@
             <p class="kpi-card__value kpi-card__value--orange">{{ safeNumber(s.visas.expiringIn90Days) }}</p>
             <p class="kpi-card__desc">Expiran en 90 días</p>
             <div class="kpi-card__meta">
-              <span style="font-size:0.75rem; color:var(--sl-gray-500);">Vencidas:</span>
+              <span class="kpi-card__foot-note">Vencidas:</span>
               <span class="kpi-card__badge" [ngClass]="s.visas.expired > 0 ? 'kpi-card__badge--red' : 'kpi-card__badge--slate'">{{ safeNumber(s.visas.expired) }}</span>
             </div>
           </div>
         </div>
         <div class="kpi-card__footer">
           @if (s.visas.expired > 0) {
-            <span class="kpi-card__badge kpi-card__badge--red"><i class="fa-solid fa-circle-exclamation" style="font-size:11px;"></i> Acción requerida</span>
+            <span class="kpi-card__badge kpi-card__badge--red"><i class="fa-solid fa-circle-exclamation"></i> Acción requerida</span>
           } @else if (s.visas.expiringIn90Days === 0) {
-            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-shield-halved" style="font-size:11px;"></i> Sin alertas</span>
+            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-shield-halved"></i> Sin alertas</span>
           } @else {
-            <span class="kpi-card__badge kpi-card__badge--amber"><i class="fa-solid fa-clock" style="font-size:11px;"></i> Seguimiento</span>
+            <span class="kpi-card__badge kpi-card__badge--amber"><i class="fa-solid fa-clock"></i> Seguimiento</span>
           }
-          <a routerLink="/visas" class="kpi-card__link kpi-card__link--orange">Ver visas <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <a routerLink="/visas" class="kpi-card__link kpi-card__link--orange">Ver visas <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
 
@@ -206,21 +206,21 @@
           <div class="kpi-card__content">
             <p class="kpi-card__value" [ngClass]="s.payments.overdue > 0 ? 'kpi-card__value--red' : ''">{{ safeNumber(s.payments.pending) }}</p>
             <p class="kpi-card__desc">Cuotas pendientes</p>
-            <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
-              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
-                <span style="color:var(--sl-gray-500); display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-triangle-exclamation" style="color:#f87171; font-size:11px;"></i> Atrasados</span>
-                <strong [style.color]="s.payments.overdue > 0 ? '#dc2626' : 'var(--sl-gray-700)'">{{ safeNumber(s.payments.overdue) }}</strong>
+            <div class="kpi-card__kv-list">
+              <div class="kpi-card__kv">
+                <span class="kpi-card__kv-label"><i class="fa-solid fa-triangle-exclamation"></i> Atrasados</span>
+                <strong class="kpi-card__kv-value" [class.kpi-card__kv-value--danger]="s.payments.overdue > 0">{{ safeNumber(s.payments.overdue) }}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
-                <span style="color:var(--sl-gray-500); display:flex; align-items:center; gap:4px;"><i class="fa-solid fa-dollar-sign" style="color:var(--sl-gray-400); font-size:11px;"></i> Monto total</span>
-                <strong style="color:var(--sl-black)">{{ '$' + (s.payments.totalAmount | number:'1.0-0') }}</strong>
+              <div class="kpi-card__kv">
+                <span class="kpi-card__kv-label"><i class="fa-solid fa-dollar-sign"></i> Monto total</span>
+                <strong class="kpi-card__kv-value--strong">{{ '$' + (s.payments.totalAmount | number:'1.0-0') }}</strong>
               </div>
             </div>
           </div>
         </div>
         <div class="kpi-card__footer">
-          <span style="font-size:0.75rem; color:var(--sl-gray-500);">{{ s.payments.overdue > 0 ? 'Requiere cobro' : 'Sin atrasos' }}</span>
-          <a routerLink="/payments" class="kpi-card__link kpi-card__link--red">Ver pagos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <span class="kpi-card__foot-note">{{ s.payments.overdue > 0 ? 'Requiere cobro' : 'Sin atrasos' }}</span>
+          <a routerLink="/payments" class="kpi-card__link kpi-card__link--red">Ver pagos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
 
@@ -235,16 +235,16 @@
           <div class="kpi-card__content">
             <p class="kpi-card__value">{{ safeNumber(s.events.next7Days) }}</p>
             <p class="kpi-card__desc">En los próximos 7 días</p>
-            <p style="font-size:0.75rem; color:var(--sl-gray-400); margin-top:4px;">Total: <strong style="color:var(--sl-gray-700)">{{ safeNumber(s.events.total) }}</strong> eventos</p>
+            <p class="kpi-card__note">Total: <strong>{{ safeNumber(s.events.total) }}</strong> eventos</p>
           </div>
         </div>
         <div class="kpi-card__footer">
           @if (s.events.next7Days > 0) {
-            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-circle" style="font-size:7px; animation:pulse 1.5s infinite;"></i> Próximamente</span>
+            <span class="kpi-card__badge kpi-card__badge--emerald"><i class="fa-solid fa-circle live-dot--xs"></i> Próximamente</span>
           } @else {
-            <span style="font-size:0.75rem; color:var(--sl-gray-500);">Sin eventos cercanos</span>
+            <span class="kpi-card__foot-note">Sin eventos cercanos</span>
           }
-          <a routerLink="/events" class="kpi-card__link kpi-card__link--emerald">Ver eventos <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></a>
+          <a routerLink="/events" class="kpi-card__link kpi-card__link--emerald">Ver eventos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </div>
     </div>
@@ -261,7 +261,7 @@
                 <p class="dashboard__alert-title dashboard__alert-title--amber">{{ s.documents.pending }} documentos pendientes</p>
                 <p class="dashboard__alert-desc dashboard__alert-desc--amber">Requieren revisión</p>
               </div>
-              <a routerLink="/documents" class="dashboard__alert-link dashboard__alert-link--amber">Revisar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+              <a routerLink="/documents" class="dashboard__alert-link dashboard__alert-link--amber">Revisar <i class="fa-solid fa-chevron-right"></i></a>
             </div>
           }
           @if (s.visas.expired > 0) {
@@ -271,7 +271,7 @@
                 <p class="dashboard__alert-title dashboard__alert-title--red">{{ s.visas.expired }} visas vencidas</p>
                 <p class="dashboard__alert-desc dashboard__alert-desc--red">Acción inmediata requerida</p>
               </div>
-              <a routerLink="/visas" class="dashboard__alert-link dashboard__alert-link--red">Gestionar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+              <a routerLink="/visas" class="dashboard__alert-link dashboard__alert-link--red">Gestionar <i class="fa-solid fa-chevron-right"></i></a>
             </div>
           }
           @if (s.payments.overdue > 0) {
@@ -281,7 +281,7 @@
                 <p class="dashboard__alert-title dashboard__alert-title--slate">{{ s.payments.overdue }} pagos atrasados</p>
                 <p class="dashboard__alert-desc dashboard__alert-desc--slate">{{ '$' + (s.payments.totalAmount | number:'1.0-0') }} por cobrar</p>
               </div>
-              <a routerLink="/payments" class="dashboard__alert-link dashboard__alert-link--slate">Cobrar <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></a>
+              <a routerLink="/payments" class="dashboard__alert-link dashboard__alert-link--slate">Cobrar <i class="fa-solid fa-chevron-right"></i></a>
             </div>
           }
           @if (s.documents.pending === 0 && s.visas.expired === 0 && s.payments.overdue === 0) {
@@ -298,17 +298,17 @@
         <h3 class="dashboard__quick-access-title"><i class="fa-solid fa-bolt"></i> Accesos rápidos</h3>
         <p class="dashboard__quick-access-desc">Operaciones frecuentes</p>
         <div class="dashboard__quick-access-grid">
-          <a routerLink="/students" class="dashboard__quick-access-item">
-            <i class="fa-solid fa-user-plus" style="color:var(--sl-orange-500)"></i><span>Nuevo estudiante</span>
+          <a routerLink="/students" class="dashboard__quick-access-item dashboard__quick-access-item--students">
+            <i class="fa-solid fa-user-plus"></i><span>Nuevo estudiante</span>
           </a>
-          <a routerLink="/documents" class="dashboard__quick-access-item">
-            <i class="fa-solid fa-file-arrow-up" style="color:#38bdf8"></i><span>Subir documento</span>
+          <a routerLink="/documents" class="dashboard__quick-access-item dashboard__quick-access-item--documents">
+            <i class="fa-solid fa-file-arrow-up"></i><span>Subir documento</span>
           </a>
-          <a routerLink="/payments" class="dashboard__quick-access-item">
-            <i class="fa-solid fa-money-bill-wave" style="color:#34d399"></i><span>Registrar pago</span>
+          <a routerLink="/payments" class="dashboard__quick-access-item dashboard__quick-access-item--payments">
+            <i class="fa-solid fa-money-bill-wave"></i><span>Registrar pago</span>
           </a>
-          <a routerLink="/events" class="dashboard__quick-access-item">
-            <i class="fa-solid fa-calendar-plus" style="color:#fb923c"></i><span>Crear evento</span>
+          <a routerLink="/events" class="dashboard__quick-access-item dashboard__quick-access-item--events">
+            <i class="fa-solid fa-calendar-plus"></i><span>Crear evento</span>
           </a>
         </div>
         <a routerLink="/reports" class="dashboard__quick-access-cta"><i class="fa-solid fa-chart-bar"></i> Ver reportes completos</a>
