@@ -106,7 +106,7 @@ export class ReportsComponent {
     this.error.set(null);
     this.exportMsg.set('');
 
-    // Mantener RF-046 a RF-050 intactos (students RF-046, documents RF-047, visas RF-048, payments RF-049)
+    // Reportes por módulo (students, documents, visas, payments)
     const obs =
       sanitizedType === 'students' ? this.svc.students({ page: this.page() }) :
       sanitizedType === 'documents' ? this.svc.documents({ page: this.page() }) :
@@ -150,17 +150,17 @@ export class ReportsComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    // Export PDF/Excel RF-050 intacto
+    // Export PDF/Excel
     this.svc.export(type, sanitizedFmt).subscribe({
       next: (r) => {
         const filename = this.sanitize(r.filename || `${type}.${sanitizedFmt}`);
         const contentType = this.sanitize(r.contentType || '');
         this.exportMsg.set(`Exportado: ${filename} (${contentType})`);
-        this.toast.success(`Exportado: ${filename} (${contentType}) - RF-050`);
+        this.toast.success(`Exportado: ${filename} (${contentType})`);
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e?.error?.message || e?.message || 'Error al exportar reporte RF-050';
+        const message = e?.error?.message || e?.message || 'Error al exportar reporte';
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);

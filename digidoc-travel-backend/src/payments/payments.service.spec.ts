@@ -15,7 +15,7 @@ const mockRepo = () => ({
   createQueryBuilder: jest.fn(),
 });
 
-describe('PaymentsService - RF-031 a RF-036', () => {
+describe('PaymentsService', () => {
   let service: PaymentsService;
   let planRepo: any;
   let instRepo: any;
@@ -36,7 +36,7 @@ describe('PaymentsService - RF-031 a RF-036', () => {
     payRepo = module.get(getRepositoryToken(Payment));
   });
 
-  it('RF-031 Crear plan genera cuotas', async () => {
+  it('Crear plan genera cuotas', async () => {
     planRepo.create.mockReturnValue({ id: 'p1' });
     planRepo.save.mockResolvedValue({ id: 'p1' });
     instRepo.create.mockImplementation((v: any) => v);
@@ -49,7 +49,7 @@ describe('PaymentsService - RF-031 a RF-036', () => {
     expect(savedInstallments[0].amount).toBe(1000);
   });
 
-  it('RF-033 Registrar pago', async () => {
+  it('Registrar pago', async () => {
     instRepo.findOne.mockResolvedValue({ id: 'i1', status: 'pending', planId: 'p1' });
     payRepo.create.mockReturnValue({ id: 'pay1' });
     payRepo.save.mockResolvedValue({ id: 'pay1' });
@@ -60,18 +60,18 @@ describe('PaymentsService - RF-031 a RF-036', () => {
     expect(res.id).toBe('pay1');
   });
 
-  it('RF-033 No pagar cuota ya pagada', async () => {
+  it('No pagar cuota ya pagada', async () => {
     instRepo.findOne.mockResolvedValue({ id: 'i1', status: 'paid' });
     await expect(service.registerPayment('i1', { amount: 100 } as any, 'u1')).rejects.toThrow(BadRequestException);
   });
 
-  it('RF-034 Consultar estado plan', async () => {
+  it('Consultar estado plan', async () => {
     planRepo.findOne.mockResolvedValue({ id: 'p1', installmentsList: [{ id: 'i1' }] });
     const res = await service.findOne('p1');
     expect(res.id).toBe('p1');
   });
 
-  it('RF-036 Pendientes dashboard', async () => {
+  it('Pendientes dashboard', async () => {
     const qb = { leftJoinAndSelect: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis(), orderBy: jest.fn().mockReturnThis(), getMany: jest.fn().mockResolvedValue([{ id: 'i1' }]) };
     instRepo.createQueryBuilder.mockReturnValue(qb);
     const res = await service.findPending();

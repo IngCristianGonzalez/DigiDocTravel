@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NotificationsService } from './notifications.service';
 import { Notification } from '../../shared/interfaces/api.interface';
 
-// RF-043: el backend expone si el aviso también salió por correo
+// El backend expone si el aviso también salió por correo
 export interface NotifItem extends Notification {
   emailSent?: boolean;
 }
@@ -54,7 +54,7 @@ export class NotificationsComponent implements OnInit {
   limit = signal(10);
   search = signal('');
 
-  // RF-045 filtros historial
+  // Filtros historial
   filterType = signal('');
   filterStatus = signal('');
   readonly typeOptions = ['info', 'warning', 'success', 'error', 'visa', 'payment', 'document'];
@@ -137,7 +137,7 @@ export class NotificationsComponent implements OnInit {
 
     this.svc.list(params).subscribe({
       next: (r: any) => {
-        // RF-042 list — sanitizar cada notificación (defensa en profundidad)
+        // Sanitizar cada notificación (defensa en profundidad)
         const data = r?.data ?? (Array.isArray(r) ? r : []);
         const sanitized = (Array.isArray(data) ? data : []).map(n => ({
           ...n,
@@ -187,7 +187,6 @@ export class NotificationsComponent implements OnInit {
       return;
     }
     this.loading.set(true);
-    // RF-044 markRead
     this.svc.markRead(sanitizedId).subscribe({
       next: () => {
         this.toast.success('Notificación marcada como leída');
@@ -206,7 +205,6 @@ export class NotificationsComponent implements OnInit {
 
   confirmMarkAll() {
     this.loading.set(true);
-    // RF-044 markAll
     this.svc.markAll().subscribe({
       next: () => {
         this.toast.success('Todas marcadas como leídas');

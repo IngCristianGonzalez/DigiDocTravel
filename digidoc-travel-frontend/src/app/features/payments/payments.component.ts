@@ -254,7 +254,7 @@ export class PaymentsComponent implements OnInit {
     };
     this.loading.set(true);
     this.error.set(null);
-    // RF-031/032: crear plan genera cuotas automáticamente
+    // Crear plan genera cuotas automáticamente
     this.svc.create(payload).subscribe({
       next: () => {
         this.msg.set('Plan creado con cuotas');
@@ -306,7 +306,6 @@ export class PaymentsComponent implements OnInit {
       return;
     }
     this.loading.set(true);
-    // RF-033
     this.svc.pay(target.id, { amount, paymentDate: this.payDate(), method: this.payMethod() }).subscribe({
       next: () => {
         this.installments.set(this.installments().map(i => i.id === target.id ? { ...i, status: 'paid' } : i));

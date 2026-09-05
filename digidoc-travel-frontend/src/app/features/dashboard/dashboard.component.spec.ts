@@ -24,14 +24,14 @@ describe('DashboardComponent', () => {
     expect((comp as any).sanitizeSummary).toBeDefined();
   });
 
-  it('should compute students progress RF-052 (clamped 0..100)', () => {
+  it('should compute students progress (clamped 0..100)', () => {
     const comp = fixture.componentInstance;
     expect(comp.getStudentsProgress({ students: { total: 10, active: 5 } } as any)).toBe(50);
     expect(comp.getStudentsProgress({ students: { total: 0, active: 0 } } as any)).toBe(0);
     expect(comp.getStudentsProgress({ students: { total: 10, active: 20 } } as any)).toBe(100);
   });
 
-  it('should sanitize summary numbers RF-051 (negatives/NaN -> 0)', () => {
+  it('should sanitize summary numbers (negatives/NaN -> 0)', () => {
     const comp = fixture.componentInstance;
     const out = (comp as any).sanitizeSummary({ students: { total: -5, active: NaN, newThisMonth: 2 }, documents: { total: 3, pending: 1 }, visas: { expiringIn90Days: 0, expired: 0 }, payments: { pending: 1, overdue: 0, totalAmount: 100 }, events: { next7Days: 1, total: 2 } });
     expect(out.students.total).toBe(0);

@@ -90,7 +90,7 @@ export class UsersComponent implements OnInit {
     });
   }
 
-  // ---- Modal Crear (RF-007) ----
+  // ---- Modal Crear ----
   openCreateModal() {
     this.form.set({ email: '', password: '', firstName: '', lastName: '' });
     this.formErrors.set({});
@@ -101,7 +101,7 @@ export class UsersComponent implements OnInit {
     this.showCreateModal.set(false);
   }
 
-  // ---- Modal Detalle (RF-010) ----
+  // ---- Modal Detalle ----
   openDetail(u: AppUser) {
     this.detailUser.set(u);
     this.showDetailModal.set(true);
@@ -122,7 +122,7 @@ export class UsersComponent implements OnInit {
     if (d) this.openEdit(d);
   }
 
-  // ---- Modal Editar (RF-008) ----
+  // ---- Modal Editar ----
   openEdit(u: AppUser) {
     this.editingUser.set(u);
     this.form.set({ email: u.email ?? '', password: '', firstName: u.firstName ?? '', lastName: u.lastName ?? '' });
@@ -136,7 +136,7 @@ export class UsersComponent implements OnInit {
     this.formErrors.set({});
   }
 
-  // ---- Modal Roles (RF-011) ----
+  // ---- Modal Roles ----
   openRoles(u: AppUser) {
     this.rolesUser.set(u);
     this.selectedRoleIds.set((u.roles ?? []).map(r => r.id));
@@ -149,7 +149,7 @@ export class UsersComponent implements OnInit {
     this.selectedRoleIds.set([]);
   }
 
-  // ---- Modal Desactivar (RF-009) ----
+  // ---- Modal Desactivar ----
   openDelete(u: AppUser) {
     this.deleteTarget.set(u);
     this.showDeleteModal.set(true);

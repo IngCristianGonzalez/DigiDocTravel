@@ -11,7 +11,7 @@ const mockRepo = () => ({
   createQueryBuilder: jest.fn(),
 });
 
-describe('EventsService - RF-037 a RF-041', () => {
+describe('EventsService', () => {
   let service: EventsService;
   let eventRepo: any;
   let partRepo: any;
@@ -25,7 +25,7 @@ describe('EventsService - RF-037 a RF-041', () => {
     partRepo = module.get(getRepositoryToken(EventParticipant));
   });
 
-  it('RF-037 Crear evento con QR y link', async () => {
+  it('Crear evento con QR y link', async () => {
     eventRepo.create.mockReturnValue({ id: 'e1', title: 'Orientation' });
     eventRepo.save.mockResolvedValue({ id: 'e1' });
     eventRepo.findOne.mockResolvedValue({ id: 'e1', title: 'Orientation', qrCode: 'data:image/png', uniqueLink: 'abc-123' });
@@ -36,19 +36,19 @@ describe('EventsService - RF-037 a RF-041', () => {
     expect(res.uniqueLink).toBeDefined();
   });
 
-  it('RF-039 Generar QR', async () => {
+  it('Generar QR', async () => {
     eventRepo.findOne.mockResolvedValue({ id: 'e1', qrCode: 'data:image/png;base64,abc', uniqueLink: 'link123' });
     const res = await service.getQr('e1');
     expect(res.qrCode).toContain('data:image');
   });
 
-  it('RF-040 Link único', async () => {
+  it('Link único', async () => {
     eventRepo.findOne.mockResolvedValue({ id: 'e1', uniqueLink: 'link123' });
     const res = await service.findByLink('link123');
     expect(res.uniqueLink).toBe('link123');
   });
 
-  it('RF-038 Editar evento', async () => {
+  it('Editar evento', async () => {
     eventRepo.findOne.mockResolvedValue({ id: 'e1', title: 'Old' });
     eventRepo.save.mockResolvedValue({ id: 'e1', title: 'New' });
     const res = await service.update('e1', { title: 'New' } as any);

@@ -16,7 +16,7 @@ const mockRepo = (data: any[] = []) => ({
   count: jest.fn(),
 });
 
-describe('ReportsService - RF-046 a RF-050', () => {
+describe('ReportsService', () => {
   let service: ReportsService;
 
   beforeEach(async () => {
@@ -32,35 +32,35 @@ describe('ReportsService - RF-046 a RF-050', () => {
     service = module.get<ReportsService>(ReportsService);
   });
 
-  it('RF-046 Reporte estudiantes', async () => {
+  it('Reporte estudiantes', async () => {
     const res = await service.studentsReport({});
     expect(res.total).toBe(1);
     expect(res.generatedAt).toBeDefined();
   });
 
-  it('RF-047 Reporte documentos', async () => {
+  it('Reporte documentos', async () => {
     const res = await service.documentsReport({});
     expect(res.total).toBe(1);
   });
 
-  it('RF-048 Reporte visas por vencer', async () => {
+  it('Reporte visas por vencer', async () => {
     const res = await service.visasReport({ expiring: 'true' });
     expect(res.total).toBe(1);
   });
 
-  it('RF-049 Reporte pagos pendientes', async () => {
+  it('Reporte pagos pendientes', async () => {
     const res = await service.paymentsReport({ status: 'pending' });
     expect(res.total).toBe(1);
     expect(res.totalAmount).toBeGreaterThan(0);
   });
 
-  it('RF-050 Exportar PDF', async () => {
+  it('Exportar PDF', async () => {
     const res = await service.exportReport('students', 'pdf', {});
     expect(res.contentType).toBe('application/pdf');
     expect(res.filename).toContain('.pdf');
   });
 
-  it('RF-050 Exportar Excel', async () => {
+  it('Exportar Excel', async () => {
     const res = await service.exportReport('payments', 'excel', {});
     expect(res.contentType).toContain('spreadsheet');
     expect(res.filename).toContain('.xlsx');

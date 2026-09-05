@@ -1,7 +1,7 @@
 // ============================================================
 // Users Component — SL Global tokens · BEM
 // Mismo patrón que Students (tabla lazy + modales + acciones)
-// RF-007 a RF-011 — CU-005
+// Notificaciones
 // ============================================================
 
 :host {
@@ -619,7 +619,7 @@
   }
 }
 
-// ---------- Visas: aviso RF-029/030 + tabs de vista + grid ----------
+// ---------- Notificaciones: fila no leída + detalle ----------
 .notifs__notice {
   display: flex;
   align-items: center;
