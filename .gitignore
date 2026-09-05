@@ -13,3 +13,4 @@ digidoc-travel-frontend/dist/
 digidoc-travel-frontend/.angular/
 digidoc-travel-frontend/coverage/
 digidoc-travel-docs/
+.opencode/
