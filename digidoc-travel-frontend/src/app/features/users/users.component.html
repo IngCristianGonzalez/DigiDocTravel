@@ -1,0 +1,494 @@
+<div class="users">
+  <!-- Header -->
+  <div class="users__header">
+    <div class="users__header-top">
+      <div class="users__header-left">
+        <div class="users__icon-box">
+          <i class="fa-solid fa-user-gear"></i>
+        </div>
+        <div>
+          <h1 class="users__title">Gestión de Usuarios</h1>
+          <p class="users__subtitle">Registro, consulta, edición, roles y desactivación</p>
+        </div>
+      </div>
+      <div class="users__header-actions">
+        <p-button
+          icon="pi pi-user-plus"
+          label="Registrar usuario"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="load()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="users__quick-stats">
+      <div class="users__quick-stat">
+        <div class="users__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="users__quick-stat-label">Total registrados</p>
+          <p class="users__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="users__quick-stat">
+        <div class="users__quick-stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div>
+          <p class="users__quick-stat-label">En esta página</p>
+          <p class="users__quick-stat-value">{{ users().length }}</p>
+        </div>
+      </div>
+      <div class="users__quick-stat">
+        <div class="users__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="users__quick-stat-label">Página</p>
+          <p class="users__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando usuarios..."></app-loading>
+  <app-error [message]="error()" (retry)="load()"></app-error>
+
+  @if (msg()) {
+    <div class="users__msg-banner" [class.users__msg-banner--success]="!error()" [class.users__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
+    </div>
+  }
+
+  <!-- Toolbar Buscar -->
+  <div class="users__toolbar">
+    <div class="users__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por email o nombre..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar usuarios"
+      />
+    </div>
+    <div class="users__toolbar-actions">
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="users__table-card">
+    <div class="users__table-header">
+      <h3 class="users__table-title"><i class="fa-solid fa-table-list"></i> Usuarios</h3>
+      <span class="users__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : users()"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '64rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th style="width: 200px">Roles</th>
+            <th style="width: 110px">Estado</th>
+            <th style="width: 176px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-u>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="9rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="12rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="8rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="10rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>
+                <span class="user-cell">
+                  <span class="user-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                  <strong class="user-name">{{ u.firstName }} {{ u.lastName }}</strong>
+                </span>
+              </td>
+              <td>
+                <span class="td-ellipsis" [pTooltip]="u.email" tooltipPosition="top">{{ u.email }}</span>
+              </td>
+              <td>
+                @if (u.roles?.length) {
+                  <span class="role-chips">
+                    @for (r of u.roles; track r.id || r.name) {
+                      <p-tag [value]="r.name" severity="info"></p-tag>
+                    }
+                  </span>
+                } @else {
+                  <span class="users__muted">—</span>
+                }
+              </td>
+              <td>
+                <p-tag [value]="u.status ? 'Activo' : 'Inactivo'" [severity]="u.status ? 'success' : 'secondary'"></p-tag>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(u)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(u)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar usuario"></p-button>
+                  <p-button icon="pi pi-users" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openRoles(u)" pTooltip="Asignar roles" tooltipPosition="top" ariaLabel="Asignar roles"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" [disabled]="!u.status" (onClick)="openDelete(u)" pTooltip="Desactivar" tooltipPosition="top" ariaLabel="Desactivar usuario"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron usuarios</p>
+                  <p class="empty-state__desc">Prueba con otro término de búsqueda o registra el primer usuario.</p>
+                </div>
+                @if (search()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar búsqueda" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+                } @else {
+                  <p-button icon="pi pi-user-plus" label="Registrar usuario" size="small" (onClick)="openCreateModal()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Registrar Usuario -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="users-dialog register-modal"
+  aria-label="Registrar usuario"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-user-plus"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar usuario</span>
+        <span class="register-modal__subtitle">Crea un nuevo acceso a la plataforma</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="users__modal-intro">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>La contraseña debe tener mínimo 8 caracteres con mayúscula, minúscula, número y especial. Los campos * son obligatorios.</span>
+  </div>
+
+  <div class="users__form-grid">
+    <ng-container *ngTemplateOutlet="userFormFields"></ng-container>
+    <!-- Password (solo crear) -->
+    <div class="field" [class.field--error]="formErrors().password">
+      <p-floatLabel>
+        <p-password
+          inputId="m-password"
+          [ngModel]="form().password"
+          (ngModelChange)="updateForm('password', $event)"
+          [feedback]="false"
+          [toggleMask]="true"
+          [class.p-invalid]="!!formErrors().password"
+          autocomplete="new-password"
+        />
+        <label for="m-password">Contraseña *</label>
+      </p-floatLabel>
+      @if (formErrors().password) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().password }}</small>
+      } @else {
+        <span class="field__hint">Mín 8: mayúscula, minúscula, número y especial</span>
+      }
+    </div>
+  </div>
+
+  <ng-template #userFormFields>
+    <div class="field" [class.field--error]="formErrors().firstName">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-firstName"
+          [ngModel]="form().firstName"
+          (ngModelChange)="updateForm('firstName', $event)"
+          [class.p-invalid]="!!formErrors().firstName"
+          autocomplete="given-name"
+          placeholder="Ej: Juan"
+        />
+        <label for="m-firstName">Nombre *</label>
+      </p-floatLabel>
+      @if (formErrors().firstName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
+      }
+    </div>
+
+    <div class="field" [class.field--error]="formErrors().lastName">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-lastName"
+          [ngModel]="form().lastName"
+          (ngModelChange)="updateForm('lastName', $event)"
+          [class.p-invalid]="!!formErrors().lastName"
+          autocomplete="family-name"
+          placeholder="Ej: Pérez"
+        />
+        <label for="m-lastName">Apellido *</label>
+      </p-floatLabel>
+      @if (formErrors().lastName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
+      }
+    </div>
+
+    <div class="field field--full" [class.field--error]="formErrors().email">
+      <p-floatLabel>
+        <input
+          pInputText
+          id="m-email"
+          type="email"
+          [ngModel]="form().email"
+          (ngModelChange)="updateForm('email', $event)"
+          [class.p-invalid]="!!formErrors().email"
+          autocomplete="email"
+          placeholder="Ej: nombre@dominio.com"
+          maxlength="255"
+        />
+        <label for="m-email">Email *</label>
+      </p-floatLabel>
+      @if (formErrors().email) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Ver detalle -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="users-dialog register-modal"
+  aria-label="Detalle de usuario"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de usuario</span>
+        <span class="register-modal__subtitle">{{ detailUser()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailUser(); as d) {
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Nombre</dt><dd>{{ d.firstName }} {{ d.lastName }}</dd></div>
+      <div class="detail-list__row"><dt>Email</dt><dd class="detail-list__break">{{ d.email }}</dd></div>
+      <div class="detail-list__row"><dt>Estado</dt><dd>{{ d.status ? 'Activo' : 'Inactivo' }}</dd></div>
+      <div class="detail-list__row">
+        <dt>Roles</dt>
+        <dd>
+          @if (d.roles?.length) {
+            <span class="role-chips">
+              @for (r of d.roles; track r.id || r.name) {
+                <p-tag [value]="r.name" severity="info"></p-tag>
+              }
+            </span>
+          } @else { — }
+        </dd>
+      </div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Editar -->
+<p-dialog
+  [visible]="showEditModal()"
+  (visibleChange)="showEditModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="users-dialog register-modal"
+  aria-label="Editar usuario"
+  (onHide)="closeEditModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Editar usuario</span>
+        <span class="register-modal__subtitle">{{ editingUser()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="users__form-grid">
+    <ng-container *ngTemplateOutlet="userFormFields"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Asignar roles -->
+<p-dialog
+  [visible]="showRolesModal()"
+  (visibleChange)="showRolesModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="users-dialog register-modal"
+  aria-label="Asignar roles"
+  (onHide)="closeRolesModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-users"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Asignar roles</span>
+        <span class="register-modal__subtitle">{{ rolesUser()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="field">
+    <label class="field__label-static" for="roles-multiselect">Roles *</label>
+    <p-multiSelect
+      inputId="roles-multiselect"
+      [options]="allRoles()"
+      [ngModel]="selectedRoleIds()"
+      (ngModelChange)="selectedRoleIds.set($event)"
+      optionLabel="name"
+      optionValue="id"
+      placeholder="Selecciona roles"
+      [showClear]="true"
+      styleClass="w-full"
+      appendTo="body"
+      [emptyMessage]="'Sin roles disponibles'"
+    />
+    <span class="field__hint">{{ allRoles().length }} roles disponibles</span>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeRolesModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveRoles()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Desactivar -->
+<p-dialog
+  [visible]="showDeleteModal()"
+  (visibleChange)="showDeleteModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="users-dialog register-modal"
+  aria-label="Desactivar usuario"
+  (onHide)="closeDeleteModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Desactivar usuario</span>
+        <span class="register-modal__subtitle">El acceso quedará bloqueado</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="delete-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>El usuario no podrá iniciar sesión. Podrá reactivarse desde administración.</span>
+  </div>
+
+  @if (deleteTarget(); as t) {
+    <p class="delete-target">{{ t.firstName }} {{ t.lastName }} · {{ t.email }}</p>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
