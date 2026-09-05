@@ -1,0 +1,83 @@
+<div class="reports">
+  <!-- Header -->
+  <div class="reports__header">
+    <div class="reports__header-top">
+      <div class="reports__header-left">
+        <div class="reports__icon-box">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+          <h1 class="reports__title">Reportes</h1>
+          <p class="reports__subtitle">Generación y exportación por módulo</p>
+        </div>
+      </div>
+      <div class="reports__header-actions">
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="reload()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando reporte..."></app-loading>
+  <app-error [message]="error()" (retry)="reload()"></app-error>
+
+  <!-- Tabs por tipo RF-046..049 -->
+  <div class="tabs-control-wrapper">
+    <div class="tabs-container">
+      @for (tab of reportTabs; track tab.value) {
+        <button class="tab-button" [class.tab-active]="currentType() === tab.value" (click)="load(tab.value)">
+          <span>{{ tab.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  @if (data()) {
+    <div class="reports__card">
+      <div class="reports__card-head">
+        <div>
+          <h3 class="reports__card-title">
+            Reporte de {{ currentType() }} · Total: {{ data()?.total }}
+          </h3>
+          <p class="reports__card-meta">Generado: {{ data()?.generatedAt | date:'short' }} · Página {{ page() }}</p>
+          @if (data()?.totalAmount) {
+            <p class="reports__card-amount">Monto total: ${{ data()?.totalAmount }}</p>
+          }
+        </div>
+        <p-tag [value]="currentType()" severity="info"></p-tag>
+      </div>
+
+      <div class="reports__json-block">
+        <p class="reports__json-label">Vista previa (JSON sanitizado)</p>
+        <pre class="reports__json">{{ sanitizedJson() }}</pre>
+      </div>
+
+      <div class="reports__export-row">
+        <p-button icon="pi pi-file-pdf" label="Exportar PDF" size="small" [loading]="loading()" [disabled]="loading()" (onClick)="export('pdf')"></p-button>
+        <p-button icon="pi pi-file-excel" label="Exportar Excel" size="small" severity="success" [loading]="loading()" [disabled]="loading()" (onClick)="export('excel')"></p-button>
+      </div>
+
+      @if (exportMsg()) {
+        <div class="reports__export-ok"><i class="fa-solid fa-circle-check"></i> {{ exportMsg() }}</div>
+      }
+    </div>
+  } @else if (!loading() && !error()) {
+    <div class="empty-state">
+      <div class="empty-state__icon"><i class="fa-solid fa-chart-column"></i></div>
+      <div>
+        <p class="empty-state__title">Selecciona un tipo de reporte</p>
+        <p class="empty-state__desc">Estudiantes · Documentos · Visas · Pagos — con exportación a PDF y Excel.</p>
+      </div>
+    </div>
+  }
+</div>
