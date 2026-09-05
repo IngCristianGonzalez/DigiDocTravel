@@ -1,180 +1,55 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DocumentsService } from './documents.service';
+import { Document } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
 
+// PrimeNG - SL Global · PrimeNG 17 (mismo patrón que Students/Users)
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { TableModule } from 'primeng/table';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [CommonModule, FormsModule, LoadingComponent, ErrorComponent],
-  template: `
-    <div class="p-6 max-w-6xl mx-auto">
-      <h1 class="text-2xl font-bold text-slate-800 mb-6">Gestión Documental - RF-017 a RF-024</h1>
-
-      <!-- Loading / Error -->
-      <app-loading [show]="loading()" message="Cargando documentos..."></app-loading>
-      <app-error [message]="error()" (retry)="load()"></app-error>
-
-      <!-- RF-017 / RF-018 Registrar / Cargar Documento -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-        <h3 class="text-lg font-semibold text-slate-700 mb-4">Registrar / Cargar Documento RF-017/018</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Student ID *</label>
-            <input
-              placeholder="Student ID (UUID)"
-              [ngModel]="form().studentId"
-              (ngModelChange)="updateForm('studentId', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().studentId"
-              [class.border-slate-300]="!formErrors().studentId"
-            >
-            <p *ngIf="formErrors().studentId" class="text-xs text-red-500 mt-1">{{ formErrors().studentId }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Tipo *</label>
-            <input
-              placeholder="Tipo (passport, visa...)"
-              [ngModel]="form().type"
-              (ngModelChange)="updateForm('type', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().type"
-              [class.border-slate-300]="!formErrors().type"
-            >
-            <p *ngIf="formErrors().type" class="text-xs text-red-500 mt-1">{{ formErrors().type }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Nombre *</label>
-            <input
-              placeholder="Nombre"
-              [ngModel]="form().name"
-              (ngModelChange)="updateForm('name', $event)"
-              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-              [class.border-red-400]="formErrors().name"
-              [class.border-slate-300]="!formErrors().name"
-            >
-            <p *ngIf="formErrors().name" class="text-xs text-red-500 mt-1">{{ formErrors().name }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Categoría</label>
-            <select
-              [ngModel]="form().category"
-              (ngModelChange)="updateForm('category', $event)"
-              class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-            >
-              <option value="">Sin categoría</option>
-              <option value="identity">Identidad - RF-023</option>
-              <option value="academic">Académico</option>
-              <option value="financial">Financiero</option>
-            </select>
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-slate-600 mb-1">Archivo (PDF, JPG, PNG — máx 10MB)</label>
-            <input type="file" (change)="onFile($event)" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700">
-            <p *ngIf="fileError()" class="text-xs text-red-500 mt-1">{{ fileError() }}</p>
-            <p *ngIf="form().fileUrl" class="text-xs text-emerald-600 mt-1 truncate"><i class="fa-solid fa-circle-check"></i> {{ form().fileUrl }} ({{ form().fileType }} - {{ form().fileSize }} bytes)</p>
-          </div>
-        </div>
-        <button (click)="create()" [disabled]="loading()" class="mt-4 bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-medium px-6 py-2 rounded-lg transition-colors">
-          Registrar
-        </button>
-        <div *ngIf="msg()" class="mt-3 text-sm font-medium" [class.text-green-600]="!error()" [class.text-red-600]="error()">{{ msg() }}</div>
-      </div>
-
-      <!-- RF-022 Filtros / Buscar -->
-      <div class="flex flex-col sm:flex-row gap-3 mb-4">
-        <input
-          placeholder="Buscar por nombre o tipo..."
-          [ngModel]="search()"
-          (ngModelChange)="search.set($event)"
-          (keyup.enter)="resetAndLoad()"
-          class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-        >
-        <select
-          [ngModel]="filterType()"
-          (ngModelChange)="filterType.set($event)"
-          class="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
-        >
-          <option value="">Todos tipos</option>
-          <option value="passport">Passport</option>
-          <option value="visa">Visa</option>
-          <option value="financial">Financial</option>
-          <option value="academic">Academic</option>
-        </select>
-        <button (click)="resetAndLoad()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2 rounded-lg font-medium transition-colors">Buscar RF-022</button>
-      </div>
-
-      <!-- Tabla -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse">
-            <thead>
-              <tr class="bg-slate-100 text-left text-sm font-semibold text-slate-600">
-                <th class="px-4 py-3">Nombre</th>
-                <th class="px-4 py-3">Tipo</th>
-                <th class="px-4 py-3">Categoría</th>
-                <th class="px-4 py-3">Estado</th>
-                <th class="px-4 py-3">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of docs()" class="border-t border-slate-200 hover:bg-slate-50 text-sm">
-                <td class="px-4 py-3 font-medium text-slate-800">{{ d.name }}</td>
-                <td class="px-4 py-3">{{ d.type }}</td>
-                <td class="px-4 py-3">{{ d.category || '-' }}</td>
-                <td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-xs font-medium" [class.bg-emerald-100]="d.status==='approved'" [class.text-emerald-700]="d.status==='approved'" [class.bg-amber-100]="d.status==='pending'" [class.text-amber-700]="d.status==='pending'" [class.bg-slate-100]="!d.status || (d.status!=='approved' && d.status!=='pending')">{{ d.status || 'pending' }}</span></td>
-                <td class="px-4 py-3">
-                  <div class="flex flex-wrap gap-1.5">
-                    <button (click)="download(d.id)" class="text-xs bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 px-3 py-1.5 rounded-lg font-medium transition-colors">Descargar RF-021</button>
-                    <button (click)="edit(d)" class="text-xs bg-white hover:bg-slate-100 border border-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors">Editar RF-019</button>
-                    <button (click)="remove(d.id)" class="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Eliminar RF-020</button>
-                    <button (click)="viewHistory(d.id)" class="text-xs bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Historial RF-024</button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="!loading() && docs().length === 0">
-                <td colspan="5" class="px-4 py-8 text-center text-slate-400">No se encontraron documentos</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Paginación -->
-        <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50">
-          <span class="text-sm text-slate-600">Página {{ page() }} de {{ totalPages() }} — Total: {{ total() }} registros</span>
-          <div class="flex gap-2">
-            <button (click)="prevPage()" [disabled]="page() <= 1" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Anterior</button>
-            <button (click)="nextPage()" [disabled]="page() >= totalPages()" class="px-4 py-1.5 rounded-lg border text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed bg-white border-slate-300 hover:bg-slate-100">Siguiente</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Historial RF-024 -->
-      <div *ngIf="history().length" class="bg-white p-6 mt-6 rounded-xl shadow-sm border border-slate-200">
-        <h4 class="text-base font-semibold text-slate-700 mb-3">Historial RF-024</h4>
-        <ul class="space-y-2">
-          <li *ngFor="let h of history()" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm flex justify-between gap-4">
-            <span class="font-medium text-slate-700">{{ h.action }}</span>
-            <span class="text-slate-500">{{ h.createdAt | date:'short' }}</span>
-            <span class="text-slate-400 truncate max-w-[40%]">{{ h.changes | json }}</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-  `
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    ErrorComponent,
+    ButtonModule,
+    InputTextModule,
+    FloatLabelModule,
+    TableModule,
+    SkeletonModule,
+    TagModule,
+    TooltipModule,
+    DialogModule,
+    DropdownModule,
+  ],
+  templateUrl: './documents.component.html',
+  styleUrls: ['./documents.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentsComponent implements OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
-  docs = signal<any[]>([]);
+  docs = signal<Document[]>([]);
   search = signal('');
   filterType = signal('');
-  form = signal<any>({ studentId: '', type: 'passport', name: '', category: '', fileUrl: '', fileType: '', fileSize: null });
+  form = signal<any>({ studentId: '', type: 'passport', name: '', description: '', category: '', fileUrl: '', fileType: '', fileSize: null });
   msg = signal('');
   history = signal<any[]>([]);
+  historyDoc = signal<Document | null>(null);
   page = signal(1);
   total = signal(0);
   totalPages = signal(1);
@@ -184,14 +59,112 @@ export class DocumentsComponent implements OnInit {
   formErrors = signal<{ studentId?: string; type?: string; name?: string }>({});
   fileError = signal<string | null>(null);
 
+  // Modales — todo por modales, nada inline ni prompt/confirm nativos
+  showCreateModal = signal(false);
+  showEditModal = signal(false);
+  showDetailModal = signal(false);
+  showHistoryModal = signal(false);
+  showDeleteModal = signal(false);
+  detailDoc = signal<Document | null>(null);
+  editingDoc = signal<Document | null>(null);
+  deleteTarget = signal<Document | null>(null);
+
+  readonly typeOptions = ['passport', 'visa', 'academic', 'financial', 'identity'];
+  readonly categoryOptions = ['identity', 'academic', 'financial'];
+  readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Document));
+
   private readonly allowedExt = ['pdf', 'jpg', 'jpeg', 'png'];
   private readonly allowedMime = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
   private readonly maxSize = 10 * 1024 * 1024;
+  private readonly uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   constructor(private svc: DocumentsService, private toast: ToastService) {}
 
   ngOnInit() {
     this.load();
+  }
+
+  // ---- Modales ----
+  openCreateModal() {
+    this.form.set({ studentId: '', type: 'passport', name: '', description: '', category: '', fileUrl: '', fileType: '', fileSize: null });
+    this.formErrors.set({});
+    this.file.set(null);
+    this.fileError.set(null);
+    this.showCreateModal.set(true);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal.set(false);
+  }
+
+  openDetail(d: Document) {
+    this.detailDoc.set(d);
+    this.showDetailModal.set(true);
+    this.svc.get(d.id).subscribe({
+      next: (v: any) => this.detailDoc.set(v?.data ?? v),
+      error: (e) => this.toast.error(e.error?.message || 'Error al obtener documento'),
+    });
+  }
+
+  closeDetailModal() {
+    this.showDetailModal.set(false);
+    this.detailDoc.set(null);
+  }
+
+  goFromDetailToEdit() {
+    const d = this.detailDoc();
+    this.closeDetailModal();
+    if (d) this.openEdit(d);
+  }
+
+  openEdit(d: Document) {
+    this.editingDoc.set(d);
+    this.form.set({ studentId: d.studentId ?? '', type: d.type ?? 'passport', name: d.name ?? '', description: d.description ?? '', category: d.category ?? '', fileUrl: d.fileUrl ?? '', fileType: d.fileType ?? '', fileSize: d.fileSize ?? null });
+    this.formErrors.set({});
+    this.showEditModal.set(true);
+  }
+
+  closeEditModal() {
+    this.showEditModal.set(false);
+    this.editingDoc.set(null);
+    this.formErrors.set({});
+  }
+
+  openHistory(d: Document) {
+    this.historyDoc.set(d);
+    this.history.set([]);
+    this.showHistoryModal.set(true);
+    this.viewHistory(d.id);
+  }
+
+  closeHistoryModal() {
+    this.showHistoryModal.set(false);
+    this.historyDoc.set(null);
+    this.history.set([]);
+  }
+
+  openDelete(d: Document) {
+    this.deleteTarget.set(d);
+    this.showDeleteModal.set(true);
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal.set(false);
+    this.deleteTarget.set(null);
+  }
+
+  onPageChange(event: { first: number; rows: number }) {
+    const rows = event.rows || this.limit();
+    this.limit.set(rows);
+    this.page.set(Math.floor((event.first || 0) / rows) + 1);
+    this.load();
+  }
+
+  statusSeverity(s?: string): 'success' | 'warning' | 'danger' | 'secondary' {
+    if (s === 'approved') return 'success';
+    if (s === 'pending') return 'warning';
+    if (s === 'rejected') return 'danger';
+    return 'secondary';
   }
 
   updateForm(field: string, value: string) {
@@ -217,7 +190,6 @@ export class DocumentsComponent implements OnInit {
     for (const key of Object.keys(raw)) {
       const val = raw[key];
       if (typeof val === 'string') {
-        // name y fileUrl requieren sanitización estricta
         if (key === 'name' || key === 'fileUrl') {
           sanitized[key] = this.sanitize(val);
         } else {
@@ -249,16 +221,13 @@ export class DocumentsComponent implements OnInit {
   private validateForm(): boolean {
     const f = this.form();
     const errors: any = {};
-    if (!f.studentId || !String(f.studentId).trim()) errors.studentId = 'Student ID es obligatorio';
+    const studentId = String(f.studentId ?? '').trim();
+    if (!studentId) errors.studentId = 'Student ID es obligatorio';
+    else if (!this.uuidRegex.test(studentId)) errors.studentId = 'Debe ser un UUID válido';
     if (!f.type || !String(f.type).trim()) errors.type = 'Tipo es obligatorio';
     if (!f.name || !String(f.name).trim()) errors.name = 'Nombre es obligatorio';
     this.formErrors.set(errors);
     return Object.keys(errors).length === 0;
-  }
-
-  private validateFileType(mime: string, name: string): boolean {
-    const ext = name.split('.').pop()?.toLowerCase() || '';
-    return this.allowedMime.includes(mime) && this.allowedExt.includes(ext);
   }
 
   private hasValidMagicBytes(buffer: ArrayBuffer, mime: string): boolean {
@@ -275,10 +244,11 @@ export class DocumentsComponent implements OnInit {
     this.error.set(null);
     this.svc.list({ search: this.search() || undefined, type: this.filterType() || undefined, page: this.page(), limit: this.limit() }).subscribe({
       next: (r: any) => {
-        this.docs.set(r.data ?? []);
-        this.total.set(r.total ?? r.data?.length ?? 0);
-        const tp = (r.totalPages ?? Math.ceil((r.total ?? 0) / this.limit())) || 1;
-        this.totalPages.set(tp);
+        const data = r?.data ?? (Array.isArray(r) ? r : []);
+        const total = r?.total ?? (Array.isArray(data) ? data.length : 0);
+        this.docs.set(Array.isArray(data) ? data : []);
+        this.total.set(total);
+        this.totalPages.set(r?.totalPages ?? (Math.ceil(total / this.limit()) || 1));
         this.loading.set(false);
       },
       error: (e: any) => {
@@ -293,20 +263,6 @@ export class DocumentsComponent implements OnInit {
   resetAndLoad() {
     this.page.set(1);
     this.load();
-  }
-
-  prevPage() {
-    if (this.page() > 1) {
-      this.page.update(p => p - 1);
-      this.load();
-    }
-  }
-
-  nextPage() {
-    if (this.page() < this.totalPages()) {
-      this.page.update(p => p + 1);
-      this.load();
-    }
   }
 
   onFile(e: any) {
@@ -360,7 +316,6 @@ export class DocumentsComponent implements OnInit {
         this.loading.set(true);
         this.svc.upload(selected).subscribe({
           next: (r: any) => {
-            // Seguridad: sanitizar fileUrl con isAllowedUrl check cliente
             const sanitizedUrl = this.sanitize(r.fileUrl || '');
             if (r.fileUrl && !this.isAllowedUrl(r.fileUrl)) {
               this.fileError.set('URL de archivo no permitida (SSRF)');
@@ -392,36 +347,51 @@ export class DocumentsComponent implements OnInit {
     reader.readAsArrayBuffer(selected.slice(0, 8));
   }
 
-  create() {
+  private buildPayload(): any | null {
     if (!this.validateForm()) {
       this.toast.error('Corrige los errores del formulario');
-      return;
+      return null;
     }
     const sanitized = this.sanitizeForm(this.form());
-    // Validación sanitizada no vacía
     if (!sanitized.studentId || !sanitized.type || !sanitized.name) {
       this.toast.error('Campos obligatorios vacíos tras sanitización');
-      return;
+      return null;
     }
-    // Seguridad: sanitizar fileUrl con isAllowedUrl check cliente si existe
+    if (!this.uuidRegex.test(sanitized.studentId)) {
+      this.formErrors.update(e => ({ ...e, studentId: 'Debe ser un UUID válido' }));
+      this.toast.error('Student ID inválido');
+      return null;
+    }
+    if (sanitized.fileUrl && !this.isAllowedUrl(sanitized.fileUrl)) {
+      this.toast.error('fileUrl no permitida');
+      return null;
+    }
+    const payload: any = {
+      studentId: sanitized.studentId,
+      type: sanitized.type,
+      name: sanitized.name,
+    };
+    if (sanitized.description) payload.description = sanitized.description;
+    if (sanitized.category) payload.category = sanitized.category;
     if (sanitized.fileUrl) {
-      if (!this.isAllowedUrl(sanitized.fileUrl)) {
-        this.toast.error('fileUrl no permitida');
-        this.error.set('fileUrl no permitida');
-        return;
-      }
+      payload.fileUrl = sanitized.fileUrl;
+      if (sanitized.fileType) payload.fileType = sanitized.fileType;
+      if (sanitized.fileSize != null) payload.fileSize = sanitized.fileSize;
     }
+    return payload;
+  }
+
+  create() {
+    const payload = this.buildPayload();
+    if (!payload) return;
     this.loading.set(true);
     this.error.set(null);
-    this.svc.create({ ...sanitized }).subscribe({
+    this.svc.create(payload).subscribe({
       next: () => {
         this.msg.set('Documento registrado');
         this.toast.success('Documento registrado correctamente');
-        this.form.set({ studentId: '', type: 'passport', name: '', category: '', fileUrl: '', fileType: '', fileSize: null });
-        this.formErrors.set({});
-        this.file.set(null);
-        this.fileError.set(null);
         this.loading.set(false);
+        this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
@@ -435,14 +405,38 @@ export class DocumentsComponent implements OnInit {
     });
   }
 
+  saveEdit() {
+    const target = this.editingDoc();
+    if (!target) return;
+    const payload = this.buildPayload();
+    if (!payload) return;
+    // studentId no se edita (vínculo inmutable)
+    delete payload.studentId;
+    this.loading.set(true);
+    this.svc.update(target.id, payload).subscribe({
+      next: () => {
+        this.toast.success('Documento actualizado');
+        this.loading.set(false);
+        this.closeEditModal();
+        this.load();
+      },
+      error: (e: any) => {
+        const message = e.error?.message || 'Error al editar';
+        this.toast.error(message);
+        this.error.set(message);
+        this.loading.set(false);
+      }
+    });
+  }
+
   download(id: string) {
     this.loading.set(true);
     this.svc.download(id).subscribe({
       next: (r: any) => {
-        this.toast.info('URL temporal (1h): ' + r.url);
-        // Opcional: abrir en nueva pestaña si esAllowedUrl
         if (r.url && this.isAllowedUrl(r.url)) {
           window.open(r.url, '_blank');
+        } else {
+          this.toast.info('URL temporal (1h): ' + r.url);
         }
         this.loading.set(false);
       },
@@ -455,37 +449,16 @@ export class DocumentsComponent implements OnInit {
     });
   }
 
-  edit(d: any) {
-    const raw = prompt('Nuevo nombre', d.name);
-    if (raw === null) return;
-    const sanitized = this.sanitize(raw);
-    if (!sanitized) {
-      this.toast.error('Nombre no puede estar vacío');
-      return;
-    }
+  confirmDelete() {
+    const target = this.deleteTarget();
+    if (!target) return;
     this.loading.set(true);
-    this.svc.update(d.id, { name: sanitized }).subscribe({
-      next: () => {
-        this.toast.success('Documento actualizado');
-        this.loading.set(false);
-        this.load();
-      },
-      error: (e: any) => {
-        const message = e.error?.message || 'Error al editar';
-        this.toast.error(message);
-        this.error.set(message);
-        this.loading.set(false);
-      }
-    });
-  }
-
-  remove(id: string) {
-    if (!confirm('¿Eliminar documento?')) return;
-    this.loading.set(true);
-    this.svc.remove(id).subscribe({
+    this.svc.remove(target.id).subscribe({
       next: () => {
         this.toast.success('Documento eliminado');
         this.loading.set(false);
+        this.closeDeleteModal();
+        this.page.set(1);
         this.load();
       },
       error: (e: any) => {
@@ -498,18 +471,14 @@ export class DocumentsComponent implements OnInit {
   }
 
   viewHistory(id: string) {
-    this.loading.set(true);
     this.svc.history(id).subscribe({
       next: (r: any) => {
         const data = Array.isArray(r) ? r : r.data ?? [];
         this.history.set(data);
-        this.loading.set(false);
       },
       error: (e: any) => {
         const message = e.error?.message || 'Error al cargar historial';
         this.toast.error(message);
-        this.error.set(message);
-        this.loading.set(false);
       }
     });
   }

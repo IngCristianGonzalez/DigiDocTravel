@@ -1,0 +1,498 @@
+<div class="docs">
+  <!-- Header -->
+  <div class="docs__header">
+    <div class="docs__header-top">
+      <div class="docs__header-left">
+        <div class="docs__icon-box">
+          <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <div>
+          <h1 class="docs__title">Gestión Documental</h1>
+          <p class="docs__subtitle">Registro, carga, consulta, historial y descarga</p>
+        </div>
+      </div>
+      <div class="docs__header-actions">
+        <p-button
+          icon="pi pi-upload"
+          label="Registrar documento"
+          size="small"
+          (onClick)="openCreateModal()">
+        </p-button>
+        <p-button
+          icon="pi pi-refresh"
+          label="Recargar"
+          [loading]="loading()"
+          [disabled]="loading()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="load()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="docs__quick-stats">
+      <div class="docs__quick-stat">
+        <div class="docs__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
+        <div>
+          <p class="docs__quick-stat-label">Total registrados</p>
+          <p class="docs__quick-stat-value">{{ total() }}</p>
+        </div>
+      </div>
+      <div class="docs__quick-stat">
+        <div class="docs__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+        <div>
+          <p class="docs__quick-stat-label">En esta página</p>
+          <p class="docs__quick-stat-value">{{ docs().length }}</p>
+        </div>
+      </div>
+      <div class="docs__quick-stat">
+        <div class="docs__quick-stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div>
+          <p class="docs__quick-stat-label">Página</p>
+          <p class="docs__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <app-loading [show]="loading()" message="Cargando documentos..."></app-loading>
+  <app-error [message]="error()" (retry)="load()"></app-error>
+
+  @if (msg()) {
+    <div class="docs__msg-banner" [class.docs__msg-banner--success]="!error()" [class.docs__msg-banner--error]="!!error()">
+      <i class="fa-solid" [class.fa-circle-check]="!error()" [class.fa-triangle-exclamation]="!!error()"></i> {{ msg() }}
+    </div>
+  }
+
+  <!-- Toolbar Buscar + filtro tipo -->
+  <div class="docs__toolbar">
+    <div class="docs__search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input
+        pInputText
+        placeholder="Buscar por nombre o tipo..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="resetAndLoad()"
+        aria-label="Buscar documentos"
+      />
+    </div>
+    <div class="docs__toolbar-actions">
+      <p-dropdown
+        [options]="typeOptions"
+        [ngModel]="filterType()"
+        (ngModelChange)="filterType.set($event); resetAndLoad()"
+        placeholder="Todos los tipos"
+        [showClear]="true"
+        ariaLabel="Filtrar por tipo"
+      />
+      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
+      @if (search() || filterType()) {
+        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); filterType.set(''); resetAndLoad()"></p-button>
+      }
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="docs__table-card">
+    <div class="docs__table-header">
+      <h3 class="docs__table-title"><i class="fa-solid fa-table-list"></i> Documentos</h3>
+      <span class="docs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+    </div>
+
+    <div class="table-wrapper">
+      <p-table
+        [value]="loading() ? skeletonRows : docs()"
+        [lazy]="true"
+        [paginator]="true"
+        [rows]="limit()"
+        [totalRecords]="total()"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="p-datatable-sm"
+        [scrollable]="true"
+        scrollHeight="flex"
+        [tableStyle]="{ 'min-width': '70rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Nombre</th>
+            <th style="width: 120px">Tipo</th>
+            <th style="width: 130px">Categoría</th>
+            <th style="width: 120px">Estado</th>
+            <th style="width: 208px; text-align: center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-d>
+          @if (loading()) {
+            <tr>
+              <td><p-skeleton height="1.1rem" width="11rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="6rem"></p-skeleton></td>
+              <td><p-skeleton height="1.1rem" width="5rem"></p-skeleton></td>
+              <td><p-skeleton height="1.9rem" width="12rem" borderRadius="6px"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>
+                <span class="doc-cell">
+                  <span class="doc-avatar" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></span>
+                  <span class="td-ellipsis" [pTooltip]="d.name" tooltipPosition="top"><strong class="doc-name">{{ d.name }}</strong></span>
+                </span>
+              </td>
+              <td><p-tag [value]="d.type" severity="secondary"></p-tag></td>
+              <td>{{ d.category || '—' }}</td>
+              <td><p-tag [value]="d.status || 'pending'" [severity]="statusSeverity(d.status)"></p-tag></td>
+              <td>
+                <div class="row-actions">
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(d)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-download" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="download(d.id)" pTooltip="Descargar" tooltipPosition="top" ariaLabel="Descargar documento"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(d)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar documento"></p-button>
+                  <p-button icon="pi pi-history" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="openHistory(d)" pTooltip="Historial" tooltipPosition="top" ariaLabel="Ver historial"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(d)" pTooltip="Eliminar" tooltipPosition="top" ariaLabel="Eliminar documento"></p-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
+                <div>
+                  <p class="empty-state__title">No se encontraron documentos</p>
+                  <p class="empty-state__desc">Prueba con otro filtro o registra el primer documento.</p>
+                </div>
+                @if (search() || filterType()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); filterType.set(''); resetAndLoad()"></p-button>
+                } @else {
+                  <p-button icon="pi pi-upload" label="Registrar documento" size="small" (onClick)="openCreateModal()"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<!-- Campos compartidos crear/editar -->
+<ng-template #docFormFields let-editing="editing">
+  <div class="field field--full" [class.field--error]="formErrors().studentId">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-studentId"
+        [ngModel]="form().studentId"
+        (ngModelChange)="updateForm('studentId', $event)"
+        [class.p-invalid]="!!formErrors().studentId"
+        [disabled]="editing"
+        autocomplete="off"
+        placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+      />
+      <label for="m-studentId">Student ID (UUID) *</label>
+    </p-floatLabel>
+    @if (formErrors().studentId) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().type">
+    <p-floatLabel>
+      <p-dropdown
+        inputId="m-type"
+        [options]="typeOptions"
+        [ngModel]="form().type"
+        (ngModelChange)="updateForm('type', $event)"
+        [class.p-invalid]="!!formErrors().type"
+        styleClass="w-full"
+        appendTo="body"
+      />
+      <label for="m-type">Tipo *</label>
+    </p-floatLabel>
+    @if (formErrors().type) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().type }}</small>
+    }
+  </div>
+
+  <div class="field" [class.field--error]="formErrors().name">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-name"
+        [ngModel]="form().name"
+        (ngModelChange)="updateForm('name', $event)"
+        [class.p-invalid]="!!formErrors().name"
+        autocomplete="off"
+        placeholder="Ej: Pasaporte 2026"
+        maxlength="150"
+      />
+      <label for="m-name">Nombre *</label>
+    </p-floatLabel>
+    @if (formErrors().name) {
+      <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().name }}</small>
+    }
+  </div>
+
+  <div class="field">
+    <p-floatLabel>
+      <p-dropdown
+        inputId="m-category"
+        [options]="categoryOptions"
+        [ngModel]="form().category"
+        (ngModelChange)="updateForm('category', $event)"
+        [showClear]="true"
+        placeholder="Sin categoría"
+        styleClass="w-full"
+        appendTo="body"
+      />
+      <label for="m-category">Categoría <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+  </div>
+
+  <div class="field field--full">
+    <p-floatLabel>
+      <input
+        pInputText
+        id="m-description"
+        [ngModel]="form().description"
+        (ngModelChange)="updateForm('description', $event)"
+        autocomplete="off"
+        placeholder="Descripción breve"
+        maxlength="500"
+      />
+      <label for="m-description">Descripción <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+  </div>
+</ng-template>
+
+<!-- Modal Registrar -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="docs-dialog register-modal"
+  aria-label="Registrar documento"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-upload"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar documento</span>
+        <span class="register-modal__subtitle">Carga el archivo y completa los datos</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="docs__form-grid">
+    <ng-container *ngTemplateOutlet="docFormFields; context: { editing: false }"></ng-container>
+
+    <div class="field field--full" [class.field--error]="fileError()">
+      <label class="field__label-static" for="m-file">Archivo (PDF, JPG, PNG — máx 10MB)</label>
+      <input
+        type="file"
+        id="m-file"
+        (change)="onFile($event)"
+        accept=".pdf,.jpg,.jpeg,.png"
+        class="docs__file-input"
+      />
+      @if (fileError()) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ fileError() }}</small>
+      } @else if (form().fileUrl) {
+        <span class="field__hint field__hint--success"><i class="fa-solid fa-circle-check"></i> {{ form().fileType }} · {{ form().fileSize }} bytes</span>
+      } @else {
+        <span class="field__hint">Se valida tipo, tamaño y contenido (magic bytes)</span>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Editar -->
+<p-dialog
+  [visible]="showEditModal()"
+  (visibleChange)="showEditModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '640px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="docs-dialog register-modal"
+  aria-label="Editar documento"
+  (onHide)="closeEditModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Editar documento</span>
+        <span class="register-modal__subtitle">{{ editingDoc()?.name }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="docs__form-grid">
+    <ng-container *ngTemplateOutlet="docFormFields; context: { editing: true }"></ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Detalle -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="docs-dialog register-modal"
+  aria-label="Detalle de documento"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de documento</span>
+        <span class="register-modal__subtitle">{{ detailDoc()?.name }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailDoc(); as d) {
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Nombre</dt><dd>{{ d.name }}</dd></div>
+      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ d.type }}</dd></div>
+      <div class="detail-list__row"><dt>Categoría</dt><dd>{{ d.category || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>Estado</dt><dd>{{ d.status || 'pending' }}</dd></div>
+      <div class="detail-list__row"><dt>Descripción</dt><dd>{{ d.description || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>Archivo</dt><dd class="detail-list__break">{{ d.fileUrl || 'Sin archivo' }}@if (d.fileSize) { · {{ d.fileSize }} bytes }</dd></div>
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button label="Descargar" icon="pi pi-download" severity="success" type="button" (onClick)="detailDoc() && download(detailDoc()!.id)"></p-button>
+      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Historial -->
+<p-dialog
+  [visible]="showHistoryModal()"
+  (visibleChange)="showHistoryModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  styleClass="docs-dialog register-modal"
+  aria-label="Historial de documento"
+  (onHide)="closeHistoryModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Historial de cambios</span>
+        <span class="register-modal__subtitle">{{ historyDoc()?.name }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="history-list">
+    @for (h of history(); track h.id || $index) {
+      <div class="history-item">
+        <span class="history-item__action">{{ h.action }}</span>
+        <span class="history-item__date"><i class="fa-regular fa-clock"></i>{{ h.createdAt | date:'short' }}</span>
+        <span class="history-item__changes">{{ h.changes | json }}</span>
+      </div>
+    } @empty {
+      <div class="history-empty"><i class="fa-regular fa-folder-open"></i> Sin movimientos registrados</div>
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeHistoryModal()" icon="pi pi-times"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Eliminar -->
+<p-dialog
+  [visible]="showDeleteModal()"
+  (visibleChange)="showDeleteModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="docs-dialog register-modal"
+  aria-label="Eliminar documento"
+  (onHide)="closeDeleteModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Eliminar documento</span>
+        <span class="register-modal__subtitle">Esta acción no se puede deshacer</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="delete-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>Se eliminará el registro y su archivo asociado de forma permanente.</span>
+  </div>
+
+  @if (deleteTarget(); as t) {
+    <p class="delete-target">{{ t.name }} · {{ t.type }}</p>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button label="Eliminar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
