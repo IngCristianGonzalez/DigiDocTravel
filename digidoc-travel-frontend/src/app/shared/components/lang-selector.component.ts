@@ -1,70 +1,66 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { I18nService, AppLang } from '../../core/i18n/i18n.service';
 
 /**
- * Selector de idioma ES / English (AU).
+ * Selector de idioma ES / English (AU) como select nativo, sin banderas.
  * Pensado para pantallas pre-login; también reutilizable en el layout.
  * El idioma inicial es automático según el navegador (ver I18nService).
  */
 @Component({
   selector: 'app-lang-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
-    <div class="lang-selector" role="group" [attr.aria-label]="i18n.t('common.language')">
-      <button
-        type="button"
-        class="lang-selector__btn"
-        [class.lang-selector__btn--active]="i18n.lang() === 'es'"
-        (click)="i18n.setLang('es')"
-        aria-label="Español"
+    <label class="lang-selector">
+      <span class="sr-only">{{ i18n.t('common.language') }}</span>
+      <select
+        class="lang-selector__select"
+        [ngModel]="i18n.lang()"
+        (ngModelChange)="setLang($event)"
+        [attr.aria-label]="i18n.t('common.language')"
       >
-        <span aria-hidden="true">🇪🇸</span> ES
-      </button>
-      <button
-        type="button"
-        class="lang-selector__btn"
-        [class.lang-selector__btn--active]="i18n.lang() === 'en-AU'"
-        (click)="i18n.setLang('en-AU')"
-        aria-label="English (Australia)"
-      >
-        <span aria-hidden="true">🇦🇺</span> EN-AU
-      </button>
-    </div>
+        <option value="es">Español</option>
+        <option value="en-AU">English (AU)</option>
+      </select>
+    </label>
   `,
   styles: [`
     .lang-selector {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      background: var(--sl-gray-100);
-      border: 1px solid var(--sl-gray-200);
-      border-radius: 9999px;
-      padding: 3px;
     }
-    .lang-selector__btn {
-      border: none;
-      background: transparent;
-      border-radius: 9999px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--sl-gray-600);
+    .lang-selector__select {
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--sl-gray-700);
+      background: var(--sl-white);
+      border: 1px solid var(--sl-gray-300);
+      border-radius: 6px;
+      padding: 6px 8px;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
       line-height: 1.4;
     }
-    .lang-selector__btn:hover {
-      background: var(--sl-gray-200);
-      color: var(--sl-black);
+    .lang-selector__select:hover {
+      border-color: var(--sl-gray-400);
     }
-    .lang-selector__btn--active {
-      background: var(--sl-white);
-      color: var(--sl-black);
-      box-shadow: var(--shadow-xs);
+    .lang-selector__select:focus-visible {
+      outline: 2px solid var(--sl-orange-500);
+      outline-offset: 1px;
+      border-color: var(--sl-orange-500);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
     }
   `],
 })
