@@ -7,20 +7,20 @@
           <i class="fa-solid fa-passport"></i>
         </div>
         <div>
-          <h1 class="visas__title">Seguimiento de Visas</h1>
-          <p class="visas__subtitle">Registro, estado y alertas de vencimiento</p>
+          <h1 class="visas__title">{{ i18n.t('visas.title') }}</h1>
+          <p class="visas__subtitle">{{ i18n.t('visas.subtitle') }}</p>
         </div>
       </div>
       <div class="visas__header-actions">
         <p-button
           icon="pi pi-plus"
-          label="Registrar visa"
+          [label]="i18n.t('visas.registerVisa')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -35,21 +35,21 @@
       <div class="visas__quick-stat">
         <div class="visas__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="visas__quick-stat-label">Total registradas</p>
+          <p class="visas__quick-stat-label">{{ i18n.t('visas.statsTotal') }}</p>
           <p class="visas__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="visas__quick-stat">
         <div class="visas__quick-stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
         <div>
-          <p class="visas__quick-stat-label">Vista actual</p>
-          <p class="visas__quick-stat-value">{{ expiringMode() ? 'Por vencer (90 días)' : 'Todas' }}</p>
+          <p class="visas__quick-stat-label">{{ i18n.t('visas.currentView') }}</p>
+          <p class="visas__quick-stat-value">{{ expiringMode() ? i18n.t('visas.viewExpiring') : i18n.t('visas.viewAll') }}</p>
         </div>
       </div>
       <div class="visas__quick-stat">
         <div class="visas__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="visas__quick-stat-label">Página</p>
+          <p class="visas__quick-stat-label">{{ i18n.t('visas.statsPage') }}</p>
           <p class="visas__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -57,7 +57,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando visas..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('visas.loading')"></app-loading>
   <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
 
   @if (msg()) {
@@ -68,17 +68,17 @@
 
   <div class="visas__notice">
     <i class="fa-solid fa-bell"></i>
-    <span>El backend genera alerta y notifica al equipo cuando una visa vence en 90 días.</span>
+    <span>{{ i18n.t('visas.notice') }}</span>
   </div>
 
   <!-- Vista: Todas / Por vencer -->
   <div class="tabs-control-wrapper">
     <div class="tabs-container">
       <button class="tab-button" [class.tab-active]="viewMode() === 'all'" (click)="setViewMode('all')">
-        <span>Todas</span>
+        <span>{{ i18n.t('visas.tabAll') }}</span>
       </button>
       <button class="tab-button" [class.tab-active]="viewMode() === 'expiring'" (click)="setViewMode('expiring')">
-        <span>Por vencer · 90 días</span>
+        <span>{{ i18n.t('visas.tabExpiring') }}</span>
       </button>
     </div>
   </div>
@@ -86,11 +86,11 @@
   <!-- Tabla -->
   <div class="visas__table-card">
     <div class="visas__table-header">
-      <h3 class="visas__table-title"><i class="fa-solid fa-table-list"></i> Visas</h3>
+      <h3 class="visas__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('visas.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="visas__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="visas__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -112,54 +112,54 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Tipo</span></th>
-            <th style="width: 130px"><span class="erp-col-head">Número</span></th>
-            <th style="width: 130px"><span class="erp-col-head">País</span></th>
-            <th style="width: 130px"><span class="erp-col-head">Vencimiento</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Días rest.</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('visas.colType') }}</span></th>
+            <th style="width: 130px"><span class="erp-col-head">{{ i18n.t('visas.colNumber') }}</span></th>
+            <th style="width: 130px"><span class="erp-col-head">{{ i18n.t('visas.colCountry') }}</span></th>
+            <th style="width: 130px"><span class="erp-col-head">{{ i18n.t('visas.colExpiry') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('visas.colDaysLeft') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter field="visaType" [showMenu]="false" matchMode="equals" placeholder="Tipo">
+              <p-columnFilter field="visaType" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('visas.colType')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por tipo"></p-dropdown>
+                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('visas.filterTypeAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="visaNumber" [showMenu]="false" matchMode="contains" placeholder="Filtrar número">
+              <p-columnFilter type="text" field="visaNumber" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('visas.filterNumber')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar número" [ngModel]="fNumber()" (ngModelChange)="fNumber.set($event); onColumnFilter()" aria-label="Filtrar por número" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('visas.filterNumber')" [ngModel]="fNumber()" (ngModelChange)="fNumber.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('visas.filterNumberAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="country" [showMenu]="false" matchMode="contains" placeholder="Filtrar país">
+              <p-columnFilter type="text" field="country" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('visas.filterCountry')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar país" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event); onColumnFilter()" aria-label="Filtrar por país" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('visas.filterCountry')" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('visas.filterCountryAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="date" field="expiryDate" [showMenu]="false" matchMode="equals" placeholder="Vencimiento">
+              <p-columnFilter type="date" field="expiryDate" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('visas.colExpiry')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fExpiry()" (ngModelChange)="fExpiry.set($event); onColumnFilter()" aria-label="Filtrar por vencimiento" />
+                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fExpiry()" (ngModelChange)="fExpiry.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('visas.filterExpiryAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="numeric" field="daysLeft" [showMenu]="false" matchMode="equals" placeholder="Días">
+              <p-columnFilter type="numeric" field="daysLeft" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('visas.filterDays')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="number" class="erp-filter-input" placeholder="Días" [ngModel]="fDays()" (ngModelChange)="fDays.set($event); onColumnFilter()" aria-label="Filtrar por días restantes" />
+                  <input pInputText type="number" class="erp-filter-input" [placeholder]="i18n.t('visas.filterDays')" [ngModel]="fDays()" (ngModelChange)="fDays.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('visas.filterDaysAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('visas.filterStatusAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -190,8 +190,8 @@
               <td><p-tag [value]="statusOf(v)" [severity]="statusSeverity(statusOf(v))"></p-tag></td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(v)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
-                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(v)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar visa"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(v)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(v)" [pTooltip]="i18n.t('common.edit')" tooltipPosition="top" [ariaLabel]="i18n.t('common.edit')"></p-button>
                 </div>
               </td>
             </tr>
@@ -204,13 +204,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron visas</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra la primera visa.</p>
+                  <p class="empty-state__title">{{ i18n.t('visas.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('visas.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-plus" label="Registrar visa" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-plus" [label]="i18n.t('visas.registerVisa')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -233,9 +233,9 @@
         [class.p-invalid]="!!formErrors().studentId"
         [disabled]="editing"
         autocomplete="off"
-        placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+        [placeholder]="i18n.t('visas.phStudentId')"
       />
-      <label for="m-studentId">Student ID (UUID) *</label>
+      <label for="m-studentId">{{ i18n.t('visas.fieldStudentId') }} *</label>
     </p-floatLabel>
     @if (formErrors().studentId) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
@@ -252,7 +252,7 @@
         styleClass="w-full"
         appendTo="body"
       />
-      <label for="m-visaType">Tipo de visa *</label>
+      <label for="m-visaType">{{ i18n.t('visas.fieldVisaType') }} *</label>
     </p-floatLabel>
     @if (formErrors().visaType) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().visaType }}</small>
@@ -268,10 +268,10 @@
         (ngModelChange)="updateForm('visaNumber', $event)"
         [class.p-invalid]="!!formErrors().visaNumber"
         autocomplete="off"
-        placeholder="Ej: US123456"
+        [placeholder]="i18n.t('visas.phVisaNumber')"
         maxlength="50"
       />
-      <label for="m-visaNumber">Número <span class="field__optional">(opcional)</span></label>
+      <label for="m-visaNumber">{{ i18n.t('visas.fieldVisaNumber') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
     </p-floatLabel>
     @if (formErrors().visaNumber) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().visaNumber }}</small>
@@ -287,10 +287,10 @@
         (ngModelChange)="updateForm('country', $event)"
         [class.p-invalid]="!!formErrors().country"
         autocomplete="country-name"
-        placeholder="Ej: USA"
+        [placeholder]="i18n.t('visas.phCountry')"
         maxlength="100"
       />
-      <label for="m-country">País *</label>
+      <label for="m-country">{{ i18n.t('visas.fieldCountry') }} *</label>
     </p-floatLabel>
     @if (formErrors().country) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().country }}</small>
@@ -298,7 +298,7 @@
   </div>
 
   <div class="field" [class.field--error]="formErrors().issueDate">
-    <label class="field__label-static" for="m-issueDate">Fecha de expedición *</label>
+    <label class="field__label-static" for="m-issueDate">{{ i18n.t('visas.fieldIssueDate') }} *</label>
     <input
       pInputText
       type="date"
@@ -313,7 +313,7 @@
   </div>
 
   <div class="field" [class.field--error]="formErrors().expiryDate">
-    <label class="field__label-static" for="m-expiryDate">Fecha de vencimiento *</label>
+    <label class="field__label-static" for="m-expiryDate">{{ i18n.t('visas.fieldExpiryDate') }} *</label>
     <input
       pInputText
       type="date"
@@ -341,15 +341,15 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="visas-dialog register-modal"
-  aria-label="Registrar visa"
+  [attr.aria-label]="i18n.t('visas.createTitle')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-passport"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Registrar visa</span>
-        <span class="register-modal__subtitle">El vencimiento debe ser posterior a la expedición</span>
+        <span class="register-modal__title">{{ i18n.t('visas.createTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('visas.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
@@ -360,8 +360,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.register')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -379,14 +379,14 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="visas-dialog register-modal"
-  aria-label="Editar visa"
+  [attr.aria-label]="i18n.t('visas.editTitle')"
   (onHide)="closeEditModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Editar visa</span>
+        <span class="register-modal__title">{{ i18n.t('visas.editTitle') }}</span>
         <span class="register-modal__subtitle">{{ editingVisa()?.visaNumber || editingVisa()?.visaType }}</span>
       </span>
     </div>
@@ -398,8 +398,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -416,14 +416,14 @@
   [dismissableMask]="false"
   [style]="{ width: '520px', maxWidth: '95vw' }"
   styleClass="visas-dialog register-modal"
-  aria-label="Detalle de visa"
+  [attr.aria-label]="i18n.t('visas.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Detalle de visa</span>
+        <span class="register-modal__title">{{ i18n.t('visas.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailVisa()?.visaNumber || detailVisa()?.visaType }}</span>
       </span>
     </div>
@@ -431,19 +431,19 @@
 
   @if (detailVisa(); as v) {
     <dl class="detail-list">
-      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ v.visaType }}</dd></div>
-      <div class="detail-list__row"><dt>Número</dt><dd>{{ v.visaNumber || '—' }}</dd></div>
-      <div class="detail-list__row"><dt>País</dt><dd>{{ v.country }}</dd></div>
-      <div class="detail-list__row"><dt>Expedición</dt><dd>{{ v.issueDate | date:'yyyy-MM-dd' }}</dd></div>
-      <div class="detail-list__row"><dt>Vencimiento</dt><dd>{{ v.expiryDate | date:'yyyy-MM-dd' }} ({{ daysLeftOf(v) }} días)</dd></div>
-      <div class="detail-list__row"><dt>Estado</dt><dd>{{ statusOf(v) }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('visas.colType') }}</dt><dd>{{ v.visaType }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('visas.colNumber') }}</dt><dd>{{ v.visaNumber || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('visas.colCountry') }}</dt><dd>{{ v.country }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('visas.detailIssue') }}</dt><dd>{{ v.issueDate | date:'yyyy-MM-dd' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('visas.detailExpiry') }}</dt><dd>{{ v.expiryDate | date:'yyyy-MM-dd' }} ({{ daysLeftOf(v) }} {{ i18n.t('visas.daysSuffix') }})</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('common.status') }}</dt><dd>{{ statusOf(v) }}</dd></div>
     </dl>
   }
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
-      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.edit')" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

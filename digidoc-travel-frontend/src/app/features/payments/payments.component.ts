@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PaymentsService } from './payments.service';
@@ -6,6 +6,7 @@ import { PaymentPlan, Installment } from '../../shared/interfaces/api.interface'
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17 (mismo patrón que el resto de módulos)
 import { ButtonModule } from 'primeng/button';
@@ -79,6 +80,7 @@ export class PaymentsComponent implements OnInit {
   private readonly uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   constructor(private svc: PaymentsService, private toast: ToastService) {}
+  public i18n = inject(I18nService);
 
   ngOnInit() {
     this.load();
@@ -173,19 +175,19 @@ export class PaymentsComponent implements OnInit {
     const f = this.form();
     const errors: any = {};
     const studentId = String(f.studentId ?? '').trim();
-    if (!studentId) errors.studentId = 'El Student ID es obligatorio';
-    else if (!this.uuidRegex.test(studentId)) errors.studentId = 'Debe ser un UUID válido';
-    if (!String(f.concept ?? '').trim()) errors.concept = 'El concepto es obligatorio';
-    else if (/<\s*script/i.test(f.concept)) errors.concept = 'Contenido no permitido';
+    if (!studentId) errors.studentId = this.i18n.t('payments.errStudentRequired');
+    else if (!this.uuidRegex.test(studentId)) errors.studentId = this.i18n.t('payments.errStudentUuid');
+    if (!String(f.concept ?? '').trim()) errors.concept = this.i18n.t('payments.errConceptRequired');
+    else if (/<\s*script/i.test(f.concept)) errors.concept = this.i18n.t('payments.errNotAllowed');
     if (f.totalAmount === null || f.totalAmount === undefined || String(f.totalAmount).trim() === '')
-      errors.totalAmount = 'El monto total es obligatorio';
+      errors.totalAmount = this.i18n.t('payments.errTotalRequired');
     else if (isNaN(Number(f.totalAmount)) || Number(f.totalAmount) <= 0)
-      errors.totalAmount = 'El monto debe ser mayor a 0';
+      errors.totalAmount = this.i18n.t('payments.errTotalGt0');
     if (f.installments === null || f.installments === undefined || String(f.installments).trim() === '')
-      errors.installments = 'Las cuotas son obligatorias';
+      errors.installments = this.i18n.t('payments.errQuotasRequired');
     else if (!Number.isInteger(Number(f.installments)) || Number(f.installments) < 1)
-      errors.installments = 'Deben ser >= 1 y entero';
-    if (!String(f.startDate ?? '').trim()) errors.startDate = 'La fecha de inicio es obligatoria';
+      errors.installments = this.i18n.t('payments.errQuotasInt');
+    if (!String(f.startDate ?? '').trim()) errors.startDate = this.i18n.t('payments.errStartRequired');
     this.formErrors.set(errors);
     return Object.keys(errors).length === 0;
   }
@@ -210,7 +212,7 @@ export class PaymentsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar planes';
+        const message = e.error?.message || e.message || this.i18n.t('payments.errLoad');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -232,7 +234,7 @@ export class PaymentsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar pendientes';
+        const message = e.error?.message || e.message || this.i18n.t('payments.errLoadPending');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -269,13 +271,13 @@ export class PaymentsComponent implements OnInit {
 
   create() {
     if (!this.validateForm()) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('payments.errFixForm'));
       return;
     }
     const raw = this.form();
     const concept = this.sanitize(String(raw.concept ?? ''));
     if (!concept || /<\s*script/i.test(concept)) {
-      this.toast.error('Concepto inválido');
+      this.toast.error(this.i18n.t('payments.errConceptInvalid'));
       return;
     }
     const payload = {
@@ -290,15 +292,15 @@ export class PaymentsComponent implements OnInit {
     // Crear plan genera cuotas automáticamente
     this.svc.create(payload).subscribe({
       next: () => {
-        this.msg.set('Plan creado con cuotas');
-        this.toast.success('Plan creado con cuotas');
+        this.msg.set(this.i18n.t('payments.okCreated'));
+        this.toast.success(this.i18n.t('payments.okCreated'));
         this.loading.set(false);
         this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al crear plan';
+        const message = e.error?.message || e.message || this.i18n.t('payments.errCreate');
         this.msg.set(message);
         this.error.set(message);
         this.toast.error(message);
@@ -310,17 +312,17 @@ export class PaymentsComponent implements OnInit {
   viewInstallments(planId: string) {
     const id = this.sanitize(planId);
     if (!id) {
-      this.toast.error('ID de plan no válido');
+      this.toast.error(this.i18n.t('payments.errBadId'));
       return;
     }
     this.svc.installments(id).subscribe({
       next: (r: any) => {
         const data = Array.isArray(r) ? r : r?.data ?? [];
         this.installments.set(data);
-        if (data.length === 0) this.toast.info('Este plan no tiene cuotas registradas');
+        if (data.length === 0) this.toast.info(this.i18n.t('payments.infoNoQuotas'));
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al cargar cuotas');
+        this.toast.error(e.error?.message || this.i18n.t('payments.errQuotasLoad'));
       }
     });
   }
@@ -331,23 +333,23 @@ export class PaymentsComponent implements OnInit {
     const amount = Number(this.payAmount);
     this.payError.set(null);
     if (!amount || isNaN(amount) || amount <= 0) {
-      this.payError.set('El monto pagado debe ser mayor a 0');
+      this.payError.set(this.i18n.t('payments.errPayGt0'));
       return;
     }
     if (!this.payDate()) {
-      this.payError.set('La fecha de pago es obligatoria');
+      this.payError.set(this.i18n.t('payments.errPayDate'));
       return;
     }
     this.loading.set(true);
     this.svc.pay(target.id, { amount, paymentDate: this.payDate(), method: this.payMethod() }).subscribe({
       next: () => {
         this.installments.set(this.installments().map(i => i.id === target.id ? { ...i, status: 'paid' } : i));
-        this.toast.success('Pago registrado correctamente');
+        this.toast.success(this.i18n.t('payments.okPaid'));
         this.loading.set(false);
         this.closePayModal();
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al registrar pago';
+        const message = e.error?.message || e.message || this.i18n.t('payments.errPay');
         this.payError.set(message);
         this.toast.error(message);
         this.loading.set(false);

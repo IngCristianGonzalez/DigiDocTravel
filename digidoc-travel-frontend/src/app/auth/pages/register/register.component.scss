@@ -192,6 +192,13 @@
   max-width: 420px;
 }
 
+// --- Language selector (pre-login, top-right) ---
+.register__lang {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
 // --- Mobile Brand ---
 .register__mobile-brand {
   display: none;

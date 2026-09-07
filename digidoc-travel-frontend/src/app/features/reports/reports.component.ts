@@ -1,10 +1,11 @@
-import { Component, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportsService } from './reports.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17
 import { ButtonModule } from 'primeng/button';
@@ -21,6 +22,7 @@ export type ReportType = 'students' | 'documents' | 'visas' | 'payments';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReportsComponent {
+  public i18n = inject(I18nService);
   loading = signal(false);
   error = signal<string | null>(null);
   data = signal<any>(null);
@@ -28,12 +30,22 @@ export class ReportsComponent {
   exportMsg = signal('');
   page = signal(1);
 
-  readonly reportTabs: { value: ReportType; label: string }[] = [
-    { value: 'students', label: 'Estudiantes' },
-    { value: 'documents', label: 'Documentos' },
-    { value: 'visas', label: 'Visas' },
-    { value: 'payments', label: 'Pagos' },
-  ];
+  get reportTabs(): { value: ReportType; label: string }[] {
+    return [
+      { value: 'students', label: this.i18n.t('reports.tabStudents') },
+      { value: 'documents', label: this.i18n.t('reports.tabDocuments') },
+      { value: 'visas', label: this.i18n.t('reports.tabVisas') },
+      { value: 'payments', label: this.i18n.t('reports.tabPayments') },
+    ];
+  }
+
+  currentTypeLabel(): string {
+    const t = this.currentType();
+    if (t === 'students') return this.i18n.t('reports.tabStudents');
+    if (t === 'documents') return this.i18n.t('reports.tabDocuments');
+    if (t === 'visas') return this.i18n.t('reports.tabVisas');
+    return this.i18n.t('reports.tabPayments');
+  }
 
   // Seguridad: whitelist de tipos permitidos
   private readonly allowedTypes = ['students', 'documents', 'visas', 'payments'] as const;
@@ -95,7 +107,7 @@ export class ReportsComponent {
 
     // Seguridad: validar type en whitelist [students,documents,visas,payments]
     if (!sanitizedType || !this.isValidType(sanitizedType)) {
-      const msg = `Tipo de reporte no permitido: ${sanitizedType || type}. Permitidos: ${this.allowedTypes.join(', ')}`;
+      const msg = this.i18n.t('reports.invalidType', { type: sanitizedType || type, allowed: this.allowedTypes.join(', ') });
       this.error.set(msg);
       this.toast.error(msg);
       return;
@@ -117,10 +129,10 @@ export class ReportsComponent {
       next: (r) => {
         this.data.set(r);
         this.loading.set(false);
-        this.toast.success(`Reporte ${sanitizedType} cargado correctamente`);
+        this.toast.success(this.i18n.t('reports.loadedOk', { type: sanitizedType }));
       },
       error: (e) => {
-        const message = e?.error?.message || e?.message || `Error al cargar reporte ${sanitizedType}`;
+        const message = e?.error?.message || e?.message || this.i18n.t('reports.loadError', { type: sanitizedType });
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -132,7 +144,7 @@ export class ReportsComponent {
     // Sanitizar y validar formato
     const sanitizedFmt = this.sanitize(fmt) as 'pdf' | 'excel';
     if (!(this.allowedExport as readonly string[]).includes(sanitizedFmt)) {
-      const msg = `Formato de exportación no permitido: ${sanitizedFmt}`;
+      const msg = this.i18n.t('reports.invalidFormat', { format: sanitizedFmt });
       this.toast.error(msg);
       this.error.set(msg);
       return;
@@ -141,7 +153,7 @@ export class ReportsComponent {
     // Seguridad: validar type en whitelist antes de export
     const type = this.sanitize(this.currentType());
     if (!this.isValidType(type)) {
-      const msg = `Tipo de reporte no permitido para exportar: ${type}`;
+      const msg = this.i18n.t('reports.invalidExportType', { type });
       this.toast.error(msg);
       this.error.set(msg);
       return;
@@ -155,12 +167,12 @@ export class ReportsComponent {
       next: (r) => {
         const filename = this.sanitize(r.filename || `${type}.${sanitizedFmt}`);
         const contentType = this.sanitize(r.contentType || '');
-        this.exportMsg.set(`Exportado: ${filename} (${contentType})`);
-        this.toast.success(`Exportado: ${filename} (${contentType})`);
+        this.exportMsg.set(this.i18n.t('reports.exportedOk', { filename, contentType }));
+        this.toast.success(this.i18n.t('reports.exportedOk', { filename, contentType }));
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e?.error?.message || e?.message || 'Error al exportar reporte';
+        const message = e?.error?.message || e?.message || this.i18n.t('reports.exportError');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);

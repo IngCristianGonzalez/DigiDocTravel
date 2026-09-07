@@ -1,45 +1,47 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth/services/auth.service';
 import { ToastComponent } from '../shared/components/toast.component';
+import { LangSelectorComponent } from '../shared/components/lang-selector.component';
+import { I18nService } from '../core/i18n/i18n.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ToastComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ToastComponent, LangSelectorComponent],
   template: `
     <app-toast></app-toast>
     <div class="layout">
       <nav class="sidebar" [class.sidebar--collapsed]="collapsed()">
         <div class="sidebar__top">
           <h2 class="sidebar__brand"><i class="fa-solid fa-plane-departure"></i> <span class="brand-label">DigiDoc Travel</span></h2>
-          <button class="collapse-btn" (click)="collapsed.set(!collapsed())" [attr.aria-label]="collapsed() ? 'Expandir menú' : 'Colapsar menú'" [title]="collapsed() ? 'Expandir' : 'Colapsar'">
+          <button class="collapse-btn" (click)="collapsed.set(!collapsed())" [attr.aria-label]="collapsed() ? i18n.t('nav.expand') : i18n.t('nav.collapse')" [title]="collapsed() ? i18n.t('nav.expand') : i18n.t('nav.collapse')">
             <i class="fa-solid" [class.fa-chevron-left]="!collapsed()" [class.fa-chevron-right]="collapsed()"></i>
           </button>
         </div>
 
         <!-- Dashboard directo -->
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link" [title]="collapsed() ? 'Dashboard' : ''">
-          <i class="fa-solid fa-chart-line w-5 text-center"></i> <span class="nav-label">Dashboard</span>
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link" [title]="collapsed() ? i18n.t('nav.dashboard') : ''">
+          <i class="fa-solid fa-chart-line w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.dashboard') }}</span>
         </a>
 
         <!-- Acordeón: Académico -->
         <div class="accordion">
-          <button class="accordion__header" (click)="toggle('academico')" [class.accordion__header--open]="isOpen('academico')" [title]="collapsed() ? 'Académico' : ''">
-            <span><i class="fa-solid fa-graduation-cap"></i> <span class="accordion-label">Académico</span></span>
+          <button class="accordion__header" (click)="toggle('academico')" [class.accordion__header--open]="isOpen('academico')" [title]="collapsed() ? i18n.t('nav.academic') : ''">
+            <span><i class="fa-solid fa-graduation-cap"></i> <span class="accordion-label">{{ i18n.t('nav.academic') }}</span></span>
             <i class="fa-solid fa-chevron-down accordion__chevron" [class.accordion__chevron--open]="isOpen('academico')"></i>
           </button>
           @if (isOpen('academico')) {
             <div class="accordion__body">
-              <a routerLink="/students" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Estudiantes' : ''">
-                <i class="fa-solid fa-users w-5 text-center"></i> <span class="nav-label">Estudiantes</span>
+              <a routerLink="/students" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.students') : ''">
+                <i class="fa-solid fa-users w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.students') }}</span>
               </a>
-              <a routerLink="/documents" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Documentos' : ''">
-                <i class="fa-solid fa-file-lines w-5 text-center"></i> <span class="nav-label">Documentos</span>
+              <a routerLink="/documents" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.documents') : ''">
+                <i class="fa-solid fa-file-lines w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.documents') }}</span>
               </a>
-              <a routerLink="/visas" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Visas' : ''">
-                <i class="fa-solid fa-passport w-5 text-center"></i> <span class="nav-label">Visas</span>
+              <a routerLink="/visas" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.visas') : ''">
+                <i class="fa-solid fa-passport w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.visas') }}</span>
               </a>
             </div>
           }
@@ -47,17 +49,17 @@ import { ToastComponent } from '../shared/components/toast.component';
 
         <!-- Acordeón: Operativo -->
         <div class="accordion">
-          <button class="accordion__header" (click)="toggle('operativo')" [class.accordion__header--open]="isOpen('operativo')" [title]="collapsed() ? 'Operativo' : ''">
-            <span><i class="fa-solid fa-briefcase"></i> <span class="accordion-label">Operativo</span></span>
+          <button class="accordion__header" (click)="toggle('operativo')" [class.accordion__header--open]="isOpen('operativo')" [title]="collapsed() ? i18n.t('nav.operations') : ''">
+            <span><i class="fa-solid fa-briefcase"></i> <span class="accordion-label">{{ i18n.t('nav.operations') }}</span></span>
             <i class="fa-solid fa-chevron-down accordion__chevron" [class.accordion__chevron--open]="isOpen('operativo')"></i>
           </button>
           @if (isOpen('operativo')) {
             <div class="accordion__body">
-              <a routerLink="/payments" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Pagos' : ''">
-                <i class="fa-solid fa-credit-card w-5 text-center"></i> <span class="nav-label">Pagos</span>
+              <a routerLink="/payments" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.payments') : ''">
+                <i class="fa-solid fa-credit-card w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.payments') }}</span>
               </a>
-              <a routerLink="/events" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Eventos' : ''">
-                <i class="fa-solid fa-calendar-days w-5 text-center"></i> <span class="nav-label">Eventos</span>
+              <a routerLink="/events" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.events') : ''">
+                <i class="fa-solid fa-calendar-days w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.events') }}</span>
               </a>
             </div>
           }
@@ -65,23 +67,23 @@ import { ToastComponent } from '../shared/components/toast.component';
 
         <!-- Acordeón: Sistema -->
         <div class="accordion">
-          <button class="accordion__header" (click)="toggle('sistema')" [class.accordion__header--open]="isOpen('sistema')" [title]="collapsed() ? 'Sistema' : ''">
-            <span><i class="fa-solid fa-gear"></i> <span class="accordion-label">Sistema</span></span>
+          <button class="accordion__header" (click)="toggle('sistema')" [class.accordion__header--open]="isOpen('sistema')" [title]="collapsed() ? i18n.t('nav.system') : ''">
+            <span><i class="fa-solid fa-gear"></i> <span class="accordion-label">{{ i18n.t('nav.system') }}</span></span>
             <i class="fa-solid fa-chevron-down accordion__chevron" [class.accordion__chevron--open]="isOpen('sistema')"></i>
           </button>
           @if (isOpen('sistema')) {
             <div class="accordion__body">
-              <a routerLink="/notifications" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Notificaciones' : ''">
-                <i class="fa-solid fa-bell w-5 text-center"></i> <span class="nav-label">Notificaciones</span>
+              <a routerLink="/notifications" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.notifications') : ''">
+                <i class="fa-solid fa-bell w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.notifications') }}</span>
               </a>
               @if (canAccessUsers()) {
-                <a routerLink="/users" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Usuarios' : ''">
-                  <i class="fa-solid fa-users-gear w-5 text-center"></i> <span class="nav-label">Usuarios (Admin)</span>
+                <a routerLink="/users" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.usersAdmin') : ''">
+                  <i class="fa-solid fa-users-gear w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.usersAdmin') }}</span>
                 </a>
               }
               @if (canAccessReports()) {
-                <a routerLink="/reports" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Reportes' : ''">
-                  <i class="fa-solid fa-chart-bar w-5 text-center"></i> <span class="nav-label">Reportes (Admin/Sup)</span>
+                <a routerLink="/reports" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? i18n.t('nav.reportsAdmin') : ''">
+                  <i class="fa-solid fa-chart-bar w-5 text-center"></i> <span class="nav-label">{{ i18n.t('nav.reportsAdmin') }}</span>
                 </a>
               }
             </div>
@@ -90,9 +92,10 @@ import { ToastComponent } from '../shared/components/toast.component';
 
         <!-- Bloque usuario/rol - más arriba (no margin-top:auto) -->
         <div class="user-block">
-          <div class="user-block__role"><i class="fa-solid fa-user-shield"></i> <span class="user-label">Rol: {{auth.user()?.roles?.[0]?.name || 'usuario'}}</span></div>
+          <div class="user-block__role"><i class="fa-solid fa-user-shield"></i> <span class="user-label">{{ i18n.t('nav.role') }}: {{auth.user()?.roles?.[0]?.name || i18n.t('nav.defaultRole')}}</span></div>
           <div class="user-block__email"><i class="fa-solid fa-envelope"></i> <span class="user-label">{{auth.user()?.email}}</span></div>
-          <button (click)="auth.logout()" class="user-block__logout" [title]="collapsed() ? 'Cerrar sesión' : ''"><i class="fa-solid fa-right-from-bracket"></i> <span class="user-label">Cerrar sesión</span></button>
+          <button (click)="auth.logout()" class="user-block__logout" [title]="collapsed() ? i18n.t('nav.logout') : ''"><i class="fa-solid fa-right-from-bracket"></i> <span class="user-label">{{ i18n.t('nav.logout') }}</span></button>
+          <app-lang-selector></app-lang-selector>
         </div>
 
         <div class="sidebar__spacer"></div>
@@ -341,6 +344,7 @@ import { ToastComponent } from '../shared/components/toast.component';
   `]
 })
 export class LayoutComponent {
+  public i18n = inject(I18nService);
   constructor(public auth: AuthService) {}
   canAccessUsers = computed(() => this.auth.hasRole('admin'));
   canAccessReports = computed(() => this.auth.hasRole('admin') || this.auth.hasRole('supervisor'));

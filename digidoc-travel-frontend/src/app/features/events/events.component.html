@@ -7,20 +7,20 @@
           <i class="fa-solid fa-calendar-days"></i>
         </div>
         <div>
-          <h1 class="events__title">Gestión de Eventos</h1>
-          <p class="events__subtitle">Creación, QR, enlace único y recordatorios</p>
+          <h1 class="events__title">{{ i18n.t('events.title') }}</h1>
+          <p class="events__subtitle">{{ i18n.t('events.subtitle') }}</p>
         </div>
       </div>
       <div class="events__header-actions">
         <p-button
           icon="pi pi-plus"
-          label="Crear evento"
+          [label]="i18n.t('events.create')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -35,21 +35,21 @@
       <div class="events__quick-stat">
         <div class="events__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="events__quick-stat-label">Total registrados</p>
+          <p class="events__quick-stat-label">{{ i18n.t('common.total') }}</p>
           <p class="events__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="events__quick-stat">
         <div class="events__quick-stat-icon"><i class="fa-solid fa-calendar-check"></i></div>
         <div>
-          <p class="events__quick-stat-label">En esta página</p>
+          <p class="events__quick-stat-label">{{ i18n.t('common.onThisPage') }}</p>
           <p class="events__quick-stat-value">{{ events().length }}</p>
         </div>
       </div>
       <div class="events__quick-stat">
         <div class="events__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="events__quick-stat-label">Página</p>
+          <p class="events__quick-stat-label">{{ i18n.t('events.page') }}</p>
           <p class="events__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -57,7 +57,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando eventos..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('events.loading')"></app-loading>
   <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
 
   @if (msg()) {
@@ -68,17 +68,17 @@
 
   <div class="events__notice">
     <i class="fa-solid fa-bell"></i>
-    <span>El backend envía recordatorios 24h antes por email/notificación.</span>
+    <span>{{ i18n.t('events.notice24h') }}</span>
   </div>
 
   <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="events__table-card">
     <div class="events__table-header">
-      <h3 class="events__table-title"><i class="fa-solid fa-table-list"></i> Eventos</h3>
+      <h3 class="events__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('events.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="events__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="events__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -100,38 +100,38 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Título</span></th>
-            <th style="width: 150px"><span class="erp-col-head">Fecha</span></th>
-            <th style="width: 160px"><span class="erp-col-head">Ubicación</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 144px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('events.colTitle') }}</span></th>
+            <th style="width: 150px"><span class="erp-col-head">{{ i18n.t('events.colDate') }}</span></th>
+            <th style="width: 160px"><span class="erp-col-head">{{ i18n.t('events.colLocation') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 144px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="title" [showMenu]="false" matchMode="contains" placeholder="Filtrar título">
+              <p-columnFilter type="text" field="title" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('events.filterTitlePh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar título" [ngModel]="fTitle()" (ngModelChange)="fTitle.set($event); onColumnFilter()" aria-label="Filtrar por título" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('events.filterTitlePh')" [ngModel]="fTitle()" (ngModelChange)="fTitle.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('events.filterTitleAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="date" field="eventDate" [showMenu]="false" matchMode="equals" placeholder="Fecha">
+              <p-columnFilter type="date" field="eventDate" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('events.colDate')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fDate()" (ngModelChange)="fDate.set($event); onColumnFilter()" aria-label="Filtrar por fecha" />
+                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fDate()" (ngModelChange)="fDate.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('events.filterDateAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="location" [showMenu]="false" matchMode="contains" placeholder="Filtrar ubicación">
+              <p-columnFilter type="text" field="location" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('events.filterLocationPh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar ubicación" [ngModel]="fLocation()" (ngModelChange)="fLocation.set($event); onColumnFilter()" aria-label="Filtrar por ubicación" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('events.filterLocationPh')" [ngModel]="fLocation()" (ngModelChange)="fLocation.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('events.filterLocationAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('events.filterStatusAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -157,12 +157,12 @@
               <td>
                 <span class="td-ellipsis" [pTooltip]="e.location || '—'" tooltipPosition="top">{{ e.location || '—' }}</span>
               </td>
-              <td><p-tag [value]="isUpcoming(e.eventDate) ? 'Próximo' : 'Pasado'" [severity]="isUpcoming(e.eventDate) ? 'success' : 'secondary'"></p-tag></td>
+              <td><p-tag [value]="isUpcoming(e.eventDate) ? i18n.t('events.upcoming') : i18n.t('events.past')" [severity]="isUpcoming(e.eventDate) ? 'success' : 'secondary'"></p-tag></td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(e)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
-                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(e)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar evento"></p-button>
-                  <p-button icon="pi pi-qrcode" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openQr(e)" pTooltip="QR y enlace" tooltipPosition="top" ariaLabel="Ver QR y enlace"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(e)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(e)" [pTooltip]="i18n.t('common.edit')" tooltipPosition="top" [ariaLabel]="i18n.t('events.editAria')"></p-button>
+                  <p-button icon="pi pi-qrcode" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openQr(e)" [pTooltip]="i18n.t('events.qrLink')" tooltipPosition="top" [ariaLabel]="i18n.t('events.qrAria')"></p-button>
                 </div>
               </td>
             </tr>
@@ -175,13 +175,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron eventos</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o crea el primer evento para comenzar.</p>
+                  <p class="empty-state__title">{{ i18n.t('events.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('events.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-plus" label="Crear evento" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-plus" [label]="i18n.t('events.create')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -203,10 +203,10 @@
         (ngModelChange)="updateForm('title', $event)"
         [class.p-invalid]="!!formErrors().title"
         autocomplete="off"
-        placeholder="Ej: Feria de universidades"
+        [placeholder]="i18n.t('events.titlePh')"
         maxlength="150"
       />
-      <label for="m-title">Título *</label>
+      <label for="m-title">{{ i18n.t('events.formTitle') }}</label>
     </p-floatLabel>
     @if (formErrors().title) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().title }}</small>
@@ -214,7 +214,7 @@
   </div>
 
   <div class="field field--full" [class.field--error]="formErrors().eventDate">
-    <label class="field__label-static" for="m-eventDate">Fecha y hora *</label>
+    <label class="field__label-static" for="m-eventDate">{{ i18n.t('events.dateTime') }}</label>
     <input
       pInputText
       type="datetime-local"
@@ -226,7 +226,7 @@
     @if (formErrors().eventDate) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().eventDate }}</small>
     } @else {
-      <span class="field__hint">Se guarda en formato ISO</span>
+      <span class="field__hint">{{ i18n.t('events.isoHint') }}</span>
     }
   </div>
 
@@ -238,10 +238,10 @@
         [ngModel]="form().description"
         (ngModelChange)="updateForm('description', $event)"
         autocomplete="off"
-        placeholder="Descripción breve"
+        [placeholder]="i18n.t('events.descPh')"
         maxlength="500"
       />
-      <label for="m-description">Descripción <span class="field__optional">(opcional)</span></label>
+      <label for="m-description">{{ i18n.t('events.description') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
     </p-floatLabel>
     @if (formErrors().description) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().description }}</small>
@@ -256,10 +256,10 @@
         [ngModel]="form().location"
         (ngModelChange)="updateForm('location', $event)"
         autocomplete="off"
-        placeholder="Ej: Auditorio principal"
+        [placeholder]="i18n.t('events.locationPh')"
         maxlength="150"
       />
-      <label for="m-location">Ubicación <span class="field__optional">(opcional)</span></label>
+      <label for="m-location">{{ i18n.t('events.location') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
     </p-floatLabel>
   </div>
 </ng-template>
@@ -277,15 +277,15 @@
   [style]="{ width: '600px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="events-dialog register-modal"
-  aria-label="Crear evento"
+  [attr.aria-label]="i18n.t('events.createTitle')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-plus"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Crear evento</span>
-        <span class="register-modal__subtitle">Se genera QR y enlace único automáticamente</span>
+        <span class="register-modal__title">{{ i18n.t('events.createTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('events.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
@@ -296,8 +296,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Crear" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.create')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -315,14 +315,14 @@
   [style]="{ width: '600px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="events-dialog register-modal"
-  aria-label="Editar evento"
+  [attr.aria-label]="i18n.t('events.editTitle')"
   (onHide)="closeEditModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Editar evento</span>
+        <span class="register-modal__title">{{ i18n.t('events.editTitle') }}</span>
         <span class="register-modal__subtitle">{{ editingEvent()?.title }}</span>
       </span>
     </div>
@@ -334,8 +334,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -352,14 +352,14 @@
   [dismissableMask]="false"
   [style]="{ width: '520px', maxWidth: '95vw' }"
   styleClass="events-dialog register-modal"
-  aria-label="Detalle de evento"
+  [attr.aria-label]="i18n.t('events.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Detalle de evento</span>
+        <span class="register-modal__title">{{ i18n.t('events.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailEvent()?.title }}</span>
       </span>
     </div>
@@ -367,18 +367,18 @@
 
   @if (detailEvent(); as e) {
     <dl class="detail-list">
-      <div class="detail-list__row"><dt>Título</dt><dd>{{ e.title }}</dd></div>
-      <div class="detail-list__row"><dt>Fecha</dt><dd>{{ e.eventDate | date:'medium' }}</dd></div>
-      <div class="detail-list__row"><dt>Ubicación</dt><dd>{{ e.location || '—' }}</dd></div>
-      <div class="detail-list__row"><dt>Descripción</dt><dd>{{ e.description || '—' }}</dd></div>
-      <div class="detail-list__row"><dt>Recordatorio</dt><dd>{{ e.reminderSent ? 'Enviado' : 'Pendiente' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('events.colTitle') }}</dt><dd>{{ e.title }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('events.colDate') }}</dt><dd>{{ e.eventDate | date:'medium' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('events.colLocation') }}</dt><dd>{{ e.location || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('events.description') }}</dt><dd>{{ e.description || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('events.reminder') }}</dt><dd>{{ e.reminderSent ? i18n.t('events.sent') : i18n.t('events.pending') }}</dd></div>
     </dl>
   }
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
-      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.edit')" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -395,14 +395,14 @@
   [dismissableMask]="false"
   [style]="{ width: '440px', maxWidth: '95vw' }"
   styleClass="events-dialog register-modal"
-  aria-label="QR y enlace del evento"
+  [attr.aria-label]="i18n.t('events.qrTitle')"
   (onHide)="closeQrModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-qrcode"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">QR y enlace único</span>
+        <span class="register-modal__title">{{ i18n.t('events.qrTitle') }}</span>
         <span class="register-modal__subtitle">{{ qrEvent()?.title }}</span>
       </span>
     </div>
@@ -410,21 +410,21 @@
 
   <div class="qr-box">
     @if (qrData()?.qrCode) {
-      <img [src]="qrData()!.qrCode" alt="Código QR del evento" class="qr-box__img" width="160" height="160" />
+      <img [src]="qrData()!.qrCode" [alt]="i18n.t('events.qrAlt')" class="qr-box__img" width="160" height="160" />
     } @else {
-      <div class="qr-box__empty"><i class="fa-solid fa-spinner fa-spin"></i> Generando QR...</div>
+      <div class="qr-box__empty"><i class="fa-solid fa-spinner fa-spin"></i> {{ i18n.t('events.generating') }}</div>
     }
     @if (shareLink()) {
       <div class="qr-box__link">
         <span class="qr-box__url">{{ shareLink() }}</span>
-        <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" (onClick)="copyLink()" pTooltip="Copiar enlace" tooltipPosition="top" ariaLabel="Copiar enlace"></p-button>
+        <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" (onClick)="copyLink()" [pTooltip]="i18n.t('events.copyLink')" tooltipPosition="top" [ariaLabel]="i18n.t('events.copyLink')"></p-button>
       </div>
     }
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeQrModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeQrModal()" icon="pi pi-times"></p-button>
     </div>
   </ng-template>
 </p-dialog>

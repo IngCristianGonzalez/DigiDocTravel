@@ -7,20 +7,20 @@
           <i class="fa-solid fa-user-gear"></i>
         </div>
         <div>
-          <h1 class="users__title">Gestión de Usuarios</h1>
-          <p class="users__subtitle">Registro, consulta, edición, roles y desactivación</p>
+          <h1 class="users__title">{{ i18n.t('users.title') }}</h1>
+          <p class="users__subtitle">{{ i18n.t('users.subtitle') }}</p>
         </div>
       </div>
       <div class="users__header-actions">
         <p-button
           icon="pi pi-user-plus"
-          label="Registrar usuario"
+          [label]="i18n.t('users.registerUser')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -36,21 +36,21 @@
       <div class="users__quick-stat">
         <div class="users__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="users__quick-stat-label">Total registrados</p>
+          <p class="users__quick-stat-label">{{ i18n.t('common.total') }}</p>
           <p class="users__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="users__quick-stat">
         <div class="users__quick-stat-icon"><i class="fa-solid fa-users"></i></div>
         <div>
-          <p class="users__quick-stat-label">En esta página</p>
+          <p class="users__quick-stat-label">{{ i18n.t('common.onThisPage') }}</p>
           <p class="users__quick-stat-value">{{ users().length }}</p>
         </div>
       </div>
       <div class="users__quick-stat">
         <div class="users__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="users__quick-stat-label">Página</p>
+          <p class="users__quick-stat-label">{{ i18n.t('common.page') }}</p>
           <p class="users__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -58,7 +58,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando usuarios..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('users.loading')"></app-loading>
   <app-error [message]="error()" (retry)="load()"></app-error>
 
   @if (msg()) {
@@ -70,11 +70,11 @@
   <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="users__table-card">
     <div class="users__table-header">
-      <h3 class="users__table-title"><i class="fa-solid fa-table-list"></i> Usuarios</h3>
+      <h3 class="users__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('users.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="users__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="users__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -96,38 +96,38 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Nombre</span></th>
-            <th><span class="erp-col-head">Email</span></th>
-            <th style="width: 200px"><span class="erp-col-head">Roles</span></th>
-            <th style="width: 150px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('users.colName') }}</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('users.colEmail') }}</span></th>
+            <th style="width: 200px"><span class="erp-col-head">{{ i18n.t('users.colRoles') }}</span></th>
+            <th style="width: 150px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('users.filterName')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('users.filterName')" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('users.filterByName')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" placeholder="Filtrar email">
+              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('users.filterEmail')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar email" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" aria-label="Filtrar por email" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('users.filterEmail')" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('users.filterByEmail')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="roles" [showMenu]="false" matchMode="contains" placeholder="Filtrar rol">
+              <p-columnFilter field="roles" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('users.filterRole')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar rol" [ngModel]="fRole()" (ngModelChange)="fRole.set($event); onColumnFilter()" aria-label="Filtrar por rol" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('users.filterRole')" [ngModel]="fRole()" (ngModelChange)="fRole.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('users.filterByRole')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('users.filterByStatus')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -167,14 +167,14 @@
                 }
               </td>
               <td>
-                <p-tag [value]="u.status ? 'Activo' : 'Inactivo'" [severity]="u.status ? 'success' : 'secondary'"></p-tag>
+                <p-tag [value]="u.status ? i18n.t('common.active') : i18n.t('common.inactive')" [severity]="u.status ? 'success' : 'secondary'"></p-tag>
               </td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(u)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
-                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(u)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar usuario"></p-button>
-                  <p-button icon="pi pi-users" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openRoles(u)" pTooltip="Asignar roles" tooltipPosition="top" ariaLabel="Asignar roles"></p-button>
-                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" [disabled]="!u.status" (onClick)="openDelete(u)" pTooltip="Desactivar" tooltipPosition="top" ariaLabel="Desactivar usuario"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(u)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(u)" [pTooltip]="i18n.t('common.edit')" tooltipPosition="top" [ariaLabel]="i18n.t('users.editUser')"></p-button>
+                  <p-button icon="pi pi-users" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openRoles(u)" [pTooltip]="i18n.t('users.assignRoles')" tooltipPosition="top" [ariaLabel]="i18n.t('users.assignRoles')"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" [disabled]="!u.status" (onClick)="openDelete(u)" [pTooltip]="i18n.t('common.deactivate')" tooltipPosition="top" [ariaLabel]="i18n.t('users.deactivateUser')"></p-button>
                 </div>
               </td>
             </tr>
@@ -187,13 +187,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron usuarios</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer usuario.</p>
+                  <p class="empty-state__title">{{ i18n.t('users.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('users.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-user-plus" label="Registrar usuario" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-user-plus" [label]="i18n.t('users.registerUser')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -217,22 +217,22 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="users-dialog register-modal"
-  aria-label="Registrar usuario"
+  [attr.aria-label]="i18n.t('users.createTitle')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-user-plus"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Registrar usuario</span>
-        <span class="register-modal__subtitle">Crea un nuevo acceso a la plataforma</span>
+        <span class="register-modal__title">{{ i18n.t('users.createTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('users.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="users__modal-intro">
     <i class="fa-solid fa-circle-info"></i>
-    <span>La contraseña debe tener mínimo 8 caracteres con mayúscula, minúscula, número y especial. Los campos * son obligatorios.</span>
+    <span>{{ i18n.t('users.createIntro') }}</span>
   </div>
 
   <div class="users__form-grid">
@@ -249,12 +249,12 @@
           [class.p-invalid]="!!formErrors().password"
           autocomplete="new-password"
         />
-        <label for="m-password">Contraseña *</label>
+        <label for="m-password">{{ i18n.t('users.password') }}</label>
       </p-floatLabel>
       @if (formErrors().password) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().password }}</small>
       } @else {
-        <span class="field__hint">Mín 8: mayúscula, minúscula, número y especial</span>
+        <span class="field__hint">{{ i18n.t('users.passwordHint') }}</span>
       }
     </div>
   </div>
@@ -269,9 +269,9 @@
           (ngModelChange)="updateForm('firstName', $event)"
           [class.p-invalid]="!!formErrors().firstName"
           autocomplete="given-name"
-          placeholder="Ej: Juan"
+          [placeholder]="i18n.t('users.firstNamePh')"
         />
-        <label for="m-firstName">Nombre *</label>
+        <label for="m-firstName">{{ i18n.t('users.firstName') }}</label>
       </p-floatLabel>
       @if (formErrors().firstName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
@@ -287,9 +287,9 @@
           (ngModelChange)="updateForm('lastName', $event)"
           [class.p-invalid]="!!formErrors().lastName"
           autocomplete="family-name"
-          placeholder="Ej: Pérez"
+          [placeholder]="i18n.t('users.lastNamePh')"
         />
-        <label for="m-lastName">Apellido *</label>
+        <label for="m-lastName">{{ i18n.t('users.lastName') }}</label>
       </p-floatLabel>
       @if (formErrors().lastName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
@@ -306,10 +306,10 @@
           (ngModelChange)="updateForm('email', $event)"
           [class.p-invalid]="!!formErrors().email"
           autocomplete="email"
-          placeholder="Ej: nombre@dominio.com"
+          [placeholder]="i18n.t('users.emailPh')"
           maxlength="255"
         />
-        <label for="m-email">Email *</label>
+        <label for="m-email">{{ i18n.t('users.email') }}</label>
       </p-floatLabel>
       @if (formErrors().email) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
@@ -319,8 +319,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.register')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -337,14 +337,14 @@
   [dismissableMask]="false"
   [style]="{ width: '520px', maxWidth: '95vw' }"
   styleClass="users-dialog register-modal"
-  aria-label="Detalle de usuario"
+  [attr.aria-label]="i18n.t('users.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Detalle de usuario</span>
+        <span class="register-modal__title">{{ i18n.t('users.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailUser()?.email }}</span>
       </span>
     </div>
@@ -352,11 +352,11 @@
 
   @if (detailUser(); as d) {
     <dl class="detail-list">
-      <div class="detail-list__row"><dt>Nombre</dt><dd>{{ d.firstName }} {{ d.lastName }}</dd></div>
-      <div class="detail-list__row"><dt>Email</dt><dd class="detail-list__break">{{ d.email }}</dd></div>
-      <div class="detail-list__row"><dt>Estado</dt><dd>{{ d.status ? 'Activo' : 'Inactivo' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('users.colName') }}</dt><dd>{{ d.firstName }} {{ d.lastName }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('users.colEmail') }}</dt><dd class="detail-list__break">{{ d.email }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('common.status') }}</dt><dd>{{ d.status ? i18n.t('common.active') : i18n.t('common.inactive') }}</dd></div>
       <div class="detail-list__row">
-        <dt>Roles</dt>
+        <dt>{{ i18n.t('users.colRoles') }}</dt>
         <dd>
           @if (d.roles?.length) {
             <span class="role-chips">
@@ -372,8 +372,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
-      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.edit')" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -391,14 +391,14 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="users-dialog register-modal"
-  aria-label="Editar usuario"
+  [attr.aria-label]="i18n.t('users.editTitle')"
   (onHide)="closeEditModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Editar usuario</span>
+        <span class="register-modal__title">{{ i18n.t('users.editTitle') }}</span>
         <span class="register-modal__subtitle">{{ editingUser()?.email }}</span>
       </span>
     </div>
@@ -410,8 +410,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -428,21 +428,21 @@
   [dismissableMask]="false"
   [style]="{ width: '480px', maxWidth: '95vw' }"
   styleClass="users-dialog register-modal"
-  aria-label="Asignar roles"
+  [attr.aria-label]="i18n.t('users.rolesTitle')"
   (onHide)="closeRolesModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-users"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Asignar roles</span>
+        <span class="register-modal__title">{{ i18n.t('users.rolesTitle') }}</span>
         <span class="register-modal__subtitle">{{ rolesUser()?.email }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="field">
-    <label class="field__label-static" for="roles-multiselect">Roles *</label>
+    <label class="field__label-static" for="roles-multiselect">{{ i18n.t('users.rolesLabel') }}</label>
     <p-multiSelect
       inputId="roles-multiselect"
       [options]="allRoles()"
@@ -450,19 +450,19 @@
       (ngModelChange)="selectedRoleIds.set($event)"
       optionLabel="name"
       optionValue="id"
-      placeholder="Selecciona roles"
+      [placeholder]="i18n.t('users.rolesPh')"
       [showClear]="true"
       styleClass="w-full"
       appendTo="body"
-      [emptyMessage]="'Sin roles disponibles'"
+      [emptyMessage]="i18n.t('users.noRoles')"
     />
-    <span class="field__hint">{{ allRoles().length }} roles disponibles</span>
+    <span class="field__hint">{{ i18n.t('users.rolesAvailable', { count: allRoles().length }) }}</span>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeRolesModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveRoles()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeRolesModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveRoles()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -479,22 +479,22 @@
   [dismissableMask]="false"
   [style]="{ width: '480px', maxWidth: '95vw' }"
   styleClass="users-dialog register-modal"
-  aria-label="Desactivar usuario"
+  [attr.aria-label]="i18n.t('users.deactivateTitle')"
   (onHide)="closeDeleteModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Desactivar usuario</span>
-        <span class="register-modal__subtitle">El acceso quedará bloqueado</span>
+        <span class="register-modal__title">{{ i18n.t('users.deactivateTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('users.deactivateSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="delete-warning">
     <i class="fa-solid fa-triangle-exclamation"></i>
-    <span>El usuario no podrá iniciar sesión. Podrá reactivarse desde administración.</span>
+    <span>{{ i18n.t('users.deactivateWarning') }}</span>
   </div>
 
   @if (deleteTarget(); as t) {
@@ -503,8 +503,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
-      <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.deactivate')" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

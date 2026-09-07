@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DocumentsService } from './documents.service';
@@ -6,6 +6,7 @@ import { Document } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17 (mismo patrón que Students/Users)
 import { ButtonModule } from 'primeng/button';
@@ -41,6 +42,7 @@ import { DropdownModule } from 'primeng/dropdown';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentsComponent implements OnInit {
+  readonly i18n = inject(I18nService);
   loading = signal(false);
   error = signal<string | null>(null);
   docs = signal<Document[]>([]);
@@ -108,7 +110,7 @@ export class DocumentsComponent implements OnInit {
     this.showDetailModal.set(true);
     this.svc.get(d.id).subscribe({
       next: (v: any) => this.detailDoc.set(v?.data ?? v),
-      error: (e) => this.toast.error(e.error?.message || 'Error al obtener documento'),
+      error: (e) => this.toast.error(e.error?.message || this.i18n.t('docs.errorGet')),
     });
   }
 
@@ -228,10 +230,10 @@ export class DocumentsComponent implements OnInit {
     const f = this.form();
     const errors: any = {};
     const studentId = String(f.studentId ?? '').trim();
-    if (!studentId) errors.studentId = 'Student ID es obligatorio';
-    else if (!this.uuidRegex.test(studentId)) errors.studentId = 'Debe ser un UUID válido';
-    if (!f.type || !String(f.type).trim()) errors.type = 'Tipo es obligatorio';
-    if (!f.name || !String(f.name).trim()) errors.name = 'Nombre es obligatorio';
+    if (!studentId) errors.studentId = this.i18n.t('docs.validation.studentRequired');
+    else if (!this.uuidRegex.test(studentId)) errors.studentId = this.i18n.t('docs.validation.studentInvalid');
+    if (!f.type || !String(f.type).trim()) errors.type = this.i18n.t('docs.validation.typeRequired');
+    if (!f.name || !String(f.name).trim()) errors.name = this.i18n.t('docs.validation.nameRequired');
     this.formErrors.set(errors);
     return Object.keys(errors).length === 0;
   }
@@ -264,7 +266,7 @@ export class DocumentsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e: any) => {
-        const message = e.error?.message || e.message || 'Error al cargar documentos';
+        const message = e.error?.message || e.message || this.i18n.t('docs.errorLoad');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -308,7 +310,7 @@ export class DocumentsComponent implements OnInit {
     // Seguridad: validar file type/size antes de upload
     const ext = (selected.name?.split('.').pop()?.toLowerCase() || '');
     if (!this.allowedExt.includes(ext)) {
-      const msg = 'Tipo de archivo no permitido. Solo pdf, jpg, jpeg, png';
+      const msg = this.i18n.t('docs.fileExtInvalid');
       this.fileError.set(msg);
       this.toast.error(msg);
       this.file.set(null);
@@ -316,7 +318,7 @@ export class DocumentsComponent implements OnInit {
       return;
     }
     if (selected.type && !this.allowedMime.includes(selected.type)) {
-      const msg = 'Mimetype no permitido';
+      const msg = this.i18n.t('docs.fileMimeInvalid');
       this.fileError.set(msg);
       this.toast.error(msg);
       this.file.set(null);
@@ -324,7 +326,7 @@ export class DocumentsComponent implements OnInit {
       return;
     }
     if (selected.size > this.maxSize) {
-      const msg = 'Archivo excede 10MB';
+      const msg = this.i18n.t('docs.fileTooLarge');
       this.fileError.set(msg);
       this.toast.error(msg);
       this.file.set(null);
@@ -339,7 +341,7 @@ export class DocumentsComponent implements OnInit {
         const buffer = reader.result as ArrayBuffer;
         const mime = selected.type || 'application/octet-stream';
         if (!this.hasValidMagicBytes(buffer, mime)) {
-          const msg = 'Contenido no coincide con el tipo declarado (magic bytes)';
+          const msg = this.i18n.t('docs.fileMagicInvalid');
           this.fileError.set(msg);
           this.toast.error(msg);
           this.file.set(null);
@@ -352,30 +354,30 @@ export class DocumentsComponent implements OnInit {
           next: (r: any) => {
             const sanitizedUrl = this.sanitize(r.fileUrl || '');
             if (r.fileUrl && !this.isAllowedUrl(r.fileUrl)) {
-              this.fileError.set('URL de archivo no permitida (SSRF)');
-              this.toast.error('URL generada no permitida');
+              this.fileError.set(this.i18n.t('docs.fileUrlBlocked'));
+              this.toast.error(this.i18n.t('docs.toastUrlBlocked'));
               this.loading.set(false);
               return;
             }
             this.form.update(f => ({ ...f, fileUrl: sanitizedUrl || r.fileUrl, fileType: r.fileType, fileSize: r.fileSize }));
-            this.toast.success('Archivo cargado correctamente');
+            this.toast.success(this.i18n.t('docs.toastFileOk'));
             this.loading.set(false);
           },
           error: (err: any) => {
-            const message = err.error?.message || 'Error al subir archivo';
+            const message = err.error?.message || this.i18n.t('docs.errorUpload');
             this.fileError.set(message);
             this.toast.error(message);
             this.loading.set(false);
           }
         });
       } catch {
-        this.fileError.set('Error al validar archivo');
+        this.fileError.set(this.i18n.t('docs.fileValidateError'));
         this.loading.set(false);
       }
     };
     reader.onerror = () => {
-      this.fileError.set('Error al leer archivo');
-      this.toast.error('Error al leer archivo');
+      this.fileError.set(this.i18n.t('docs.fileReadError'));
+      this.toast.error(this.i18n.t('docs.fileReadError'));
     };
     // Leer solo primeros bytes para magic bytes
     reader.readAsArrayBuffer(selected.slice(0, 8));
@@ -383,21 +385,21 @@ export class DocumentsComponent implements OnInit {
 
   private buildPayload(): any | null {
     if (!this.validateForm()) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('docs.formFixErrors'));
       return null;
     }
     const sanitized = this.sanitizeForm(this.form());
     if (!sanitized.studentId || !sanitized.type || !sanitized.name) {
-      this.toast.error('Campos obligatorios vacíos tras sanitización');
+      this.toast.error(this.i18n.t('docs.formEmptyAfterSanitize'));
       return null;
     }
     if (!this.uuidRegex.test(sanitized.studentId)) {
-      this.formErrors.update(e => ({ ...e, studentId: 'Debe ser un UUID válido' }));
-      this.toast.error('Student ID inválido');
+      this.formErrors.update(e => ({ ...e, studentId: this.i18n.t('docs.validation.studentInvalid') }));
+      this.toast.error(this.i18n.t('docs.studentInvalidToast'));
       return null;
     }
     if (sanitized.fileUrl && !this.isAllowedUrl(sanitized.fileUrl)) {
-      this.toast.error('fileUrl no permitida');
+      this.toast.error(this.i18n.t('docs.fileUrlNotAllowed'));
       return null;
     }
     const payload: any = {
@@ -422,15 +424,15 @@ export class DocumentsComponent implements OnInit {
     this.error.set(null);
     this.svc.create(payload).subscribe({
       next: () => {
-        this.msg.set('Documento registrado');
-        this.toast.success('Documento registrado correctamente');
+        this.msg.set(this.i18n.t('docs.createdOk'));
+        this.toast.success(this.i18n.t('docs.createdToast'));
         this.loading.set(false);
         this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
       error: (e: any) => {
-        const message = e.error?.message || e.message || 'Error al crear documento';
+        const message = e.error?.message || e.message || this.i18n.t('docs.errorCreate');
         this.msg.set(message);
         this.error.set(message);
         this.toast.error(message);
@@ -449,13 +451,13 @@ export class DocumentsComponent implements OnInit {
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
       next: () => {
-        this.toast.success('Documento actualizado');
+        this.toast.success(this.i18n.t('docs.updatedToast'));
         this.loading.set(false);
         this.closeEditModal();
         this.load();
       },
       error: (e: any) => {
-        const message = e.error?.message || 'Error al editar';
+        const message = e.error?.message || this.i18n.t('docs.errorUpdate');
         this.toast.error(message);
         this.error.set(message);
         this.loading.set(false);
@@ -470,12 +472,12 @@ export class DocumentsComponent implements OnInit {
         if (r.url && this.isAllowedUrl(r.url)) {
           window.open(r.url, '_blank');
         } else {
-          this.toast.info('URL temporal (1h): ' + r.url);
+          this.toast.info(this.i18n.t('docs.tempUrl', { url: r.url }));
         }
         this.loading.set(false);
       },
       error: (e: any) => {
-        const message = e.error?.message || 'Error al descargar';
+        const message = e.error?.message || this.i18n.t('docs.errorDownload');
         this.toast.error(message);
         this.error.set(message);
         this.loading.set(false);
@@ -489,14 +491,14 @@ export class DocumentsComponent implements OnInit {
     this.loading.set(true);
     this.svc.remove(target.id).subscribe({
       next: () => {
-        this.toast.success('Documento eliminado');
+        this.toast.success(this.i18n.t('docs.deletedToast'));
         this.loading.set(false);
         this.closeDeleteModal();
         this.page.set(1);
         this.load();
       },
       error: (e: any) => {
-        const message = e.error?.message || 'Error al eliminar';
+        const message = e.error?.message || this.i18n.t('docs.errorDelete');
         this.toast.error(message);
         this.error.set(message);
         this.loading.set(false);
@@ -511,7 +513,7 @@ export class DocumentsComponent implements OnInit {
         this.history.set(data);
       },
       error: (e: any) => {
-        const message = e.error?.message || 'Error al cargar historial';
+        const message = e.error?.message || this.i18n.t('docs.errorHistory');
         this.toast.error(message);
       }
     });

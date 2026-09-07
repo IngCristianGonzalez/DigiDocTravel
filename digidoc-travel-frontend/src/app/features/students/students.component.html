@@ -7,23 +7,23 @@
           <i class="fa-solid fa-users"></i>
         </div>
         <div>
-          <h1 class="students__title">Gestión de Estudiantes</h1>
-          <p class="students__subtitle">Registro, consulta, edición y observaciones</p>
+          <h1 class="students__title">{{ i18n.t('students.title') }}</h1>
+          <p class="students__subtitle">{{ i18n.t('students.subtitle') }}</p>
         </div>
       </div>
       <div class="students__header-actions">
         <span class="students__updated">
-          <i class="fa-solid fa-shield-halved"></i> Validación OWASP activa
+          <i class="fa-solid fa-shield-halved"></i> {{ i18n.t('students.owasp') }}
         </span>
         <p-button
           icon="pi pi-user-plus"
-          label="Registrar estudiante"
+          [label]="i18n.t('students.register')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -39,21 +39,21 @@
       <div class="students__quick-stat students__quick-stat--slate">
         <div class="students__quick-stat-icon students__quick-stat-icon--slate"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="students__quick-stat-label">Total registrados</p>
+          <p class="students__quick-stat-label">{{ i18n.t('common.total') }}</p>
           <p class="students__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="students__quick-stat students__quick-stat--sky">
         <div class="students__quick-stat-icon students__quick-stat-icon--sky"><i class="fa-solid fa-graduation-cap"></i></div>
         <div>
-          <p class="students__quick-stat-label">En esta página</p>
+          <p class="students__quick-stat-label">{{ i18n.t('common.onThisPage') }}</p>
           <p class="students__quick-stat-value">{{ students().length }}</p>
         </div>
       </div>
       <div class="students__quick-stat students__quick-stat--emerald">
         <div class="students__quick-stat-icon students__quick-stat-icon--emerald"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="students__quick-stat-label">Página</p>
+          <p class="students__quick-stat-label">{{ i18n.t('common.page') }}</p>
           <p class="students__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -61,7 +61,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando estudiantes..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('students.loading')"></app-loading>
   <app-error [message]="error()" (retry)="load()"></app-error>
 
   @if (msg()) {
@@ -73,11 +73,11 @@
   <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="students__table-card">
     <div class="students__table-header">
-      <h3 class="students__table-title"><i class="fa-solid fa-table-list"></i> Estudiantes</h3>
+      <h3 class="students__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('students.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="students__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="students__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -99,46 +99,46 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Nombre</span></th>
-            <th style="width: 145px"><span class="erp-col-head">Identificación</span></th>
-            <th><span class="erp-col-head">Email</span></th>
-            <th style="width: 140px"><span class="erp-col-head">País</span></th>
-            <th style="width: 180px"><span class="erp-col-head">Asesor</span></th>
-            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('students.colName') }}</span></th>
+            <th style="width: 145px"><span class="erp-col-head">{{ i18n.t('students.colId') }}</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('students.colEmail') }}</span></th>
+            <th style="width: 140px"><span class="erp-col-head">{{ i18n.t('students.colCountry') }}</span></th>
+            <th style="width: 180px"><span class="erp-col-head">{{ i18n.t('students.colAdvisor') }}</span></th>
+            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('students.filterName')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('students.filterName')" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('students.filterByName')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="identification" [showMenu]="false" matchMode="contains" placeholder="Filtrar ID">
+              <p-columnFilter type="text" field="identification" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('students.filterId')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar ID" [ngModel]="fIdent()" (ngModelChange)="fIdent.set($event); onColumnFilter()" aria-label="Filtrar por identificación" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('students.filterId')" [ngModel]="fIdent()" (ngModelChange)="fIdent.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('students.filterById')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" placeholder="Filtrar email">
+              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('students.filterEmail')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar email" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" aria-label="Filtrar por email" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('students.filterEmail')" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('students.filterByEmail')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="countryOrigin" [showMenu]="false" matchMode="equals" placeholder="País">
+              <p-columnFilter field="countryOrigin" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('students.colCountry')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="countryNames()" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por país"></p-dropdown>
+                  <p-dropdown [options]="countryNames()" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('students.filterByCountry')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="text" field="advisor" [showMenu]="false" matchMode="contains" placeholder="Filtrar asesor">
+              <p-columnFilter type="text" field="advisor" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('students.filterAdvisor')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar asesor" [ngModel]="fAdvisor()" (ngModelChange)="fAdvisor.set($event); onColumnFilter()" aria-label="Filtrar por asesor" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('students.filterAdvisor')" [ngModel]="fAdvisor()" (ngModelChange)="fAdvisor.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('students.filterByAdvisor')" />
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -182,10 +182,10 @@
               </td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(s)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
-                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(s)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar estudiante"></p-button>
-                  <p-button icon="pi pi-comments" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openObs(s)" pTooltip="Observaciones" tooltipPosition="top" ariaLabel="Observaciones"></p-button>
-                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(s)" pTooltip="Desactivar" tooltipPosition="top" ariaLabel="Desactivar estudiante"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(s)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(s)" [pTooltip]="i18n.t('common.edit')" tooltipPosition="top" [ariaLabel]="i18n.t('students.editStudent')"></p-button>
+                  <p-button icon="pi pi-comments" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="openObs(s)" [pTooltip]="i18n.t('students.observations')" tooltipPosition="top" [ariaLabel]="i18n.t('students.observations')"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(s)" [pTooltip]="i18n.t('common.deactivate')" tooltipPosition="top" [ariaLabel]="i18n.t('students.deactivateStudent')"></p-button>
                 </div>
               </td>
             </tr>
@@ -198,13 +198,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron estudiantes</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer estudiante.</p>
+                  <p class="empty-state__title">{{ i18n.t('students.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('students.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-user-plus" label="Registrar estudiante" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-user-plus" [label]="i18n.t('students.register')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -236,22 +236,22 @@
   [style]="{ width: '720px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="students-dialog register-modal"
-  aria-label="Registrar estudiante"
+  [attr.aria-label]="i18n.t('students.createTitle')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-user-plus"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Registrar estudiante</span>
-        <span class="register-modal__subtitle">Crea un nuevo registro en el sistema</span>
+        <span class="register-modal__title">{{ i18n.t('students.createTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('students.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="students__modal-intro register-modal__intro">
     <i class="fa-solid fa-circle-info"></i>
-    <span>Completa los campos. El teléfono toma el indicativo del país seleccionado. Los campos marcados con * son obligatorios.</span>
+    <span>{{ i18n.t('students.createIntro') }}</span>
   </div>
 
   <div class="students__form-grid students__form-grid--modal register-modal__grid">
@@ -271,17 +271,17 @@
           (ngModelChange)="updateForm('firstName', $event)"
           [class.p-invalid]="!!formErrors().firstName"
           autocomplete="given-name"
-          placeholder="Ej: Juan"
+          [placeholder]="i18n.t('students.firstNamePh')"
           [attr.minlength]="MIN_NAME_LENGTH"
           [attr.maxlength]="MAX_NAME_LENGTH"
           aria-describedby="m-firstName-hint"
         />
-        <label for="m-firstName">Nombre *</label>
+        <label for="m-firstName">{{ i18n.t('students.firstName') }}</label>
       </p-floatLabel>
       @if (formErrors().firstName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
       } @else {
-        <span class="field__hint" id="m-firstName-hint">Mínimo 3 caracteres, solo letras</span>
+        <span class="field__hint" id="m-firstName-hint">{{ i18n.t('students.nameHint') }}</span>
       }
     </div>
 
@@ -295,17 +295,17 @@
           (ngModelChange)="updateForm('lastName', $event)"
           [class.p-invalid]="!!formErrors().lastName"
           autocomplete="family-name"
-          placeholder="Ej: Pérez"
+          [placeholder]="i18n.t('students.lastNamePh')"
           [attr.minlength]="MIN_NAME_LENGTH"
           [attr.maxlength]="MAX_NAME_LENGTH"
           aria-describedby="m-lastName-hint"
         />
-        <label for="m-lastName">Apellido *</label>
+        <label for="m-lastName">{{ i18n.t('students.lastName') }}</label>
       </p-floatLabel>
       @if (formErrors().lastName) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
       } @else {
-        <span class="field__hint" id="m-lastName-hint">Mínimo 3 caracteres, solo letras</span>
+        <span class="field__hint" id="m-lastName-hint">{{ i18n.t('students.nameHint') }}</span>
       }
     </div>
 
@@ -319,17 +319,17 @@
           (ngModelChange)="updateForm('identification', $event)"
           [class.p-invalid]="!!formErrors().identification"
           autocomplete="off"
-          placeholder="Ej: 123456789"
+          [placeholder]="i18n.t('students.idPh')"
           [attr.minlength]="MIN_ID_LENGTH"
           [attr.maxlength]="MAX_ID_LENGTH"
           aria-describedby="m-identification-hint"
         />
-        <label for="m-identification">Identificación *</label>
+        <label for="m-identification">{{ i18n.t('students.identification') }}</label>
       </p-floatLabel>
       @if (formErrors().identification) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().identification }}</small>
       } @else {
-        <span class="field__hint" id="m-identification-hint">Mínimo 4 caracteres, sin espacios</span>
+        <span class="field__hint" id="m-identification-hint">{{ i18n.t('students.idHint') }}</span>
       }
     </div>
 
@@ -344,16 +344,16 @@
           (ngModelChange)="updateForm('email', $event)"
           [class.p-invalid]="!!formErrors().email"
           autocomplete="email"
-          placeholder="Ej: nombre@dominio.com"
+          [placeholder]="i18n.t('students.emailPh')"
           maxlength="255"
           aria-describedby="m-email-hint"
         />
-        <label for="m-email">Email *</label>
+        <label for="m-email">{{ i18n.t('students.email') }}</label>
       </p-floatLabel>
       @if (formErrors().email) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
       } @else {
-        <span class="field__hint" id="m-email-hint">Ej: nombre@dominio.com — sin caracteres especiales</span>
+        <span class="field__hint" id="m-email-hint">{{ i18n.t('students.emailHint') }}</span>
       }
     </div>
 
@@ -368,7 +368,7 @@
           optionLabel="name"
           [filter]="true"
           filterBy="name"
-          filterPlaceholder="Buscar país..."
+          [filterPlaceholder]="i18n.t('students.searchCountry')"
           [showClear]="false"
           styleClass="w-full"
           appendTo="body"
@@ -390,12 +390,12 @@
           </div>
         </ng-template>
         </p-dropdown>
-        <label for="m-country">País origen *</label>
+        <label for="m-country">{{ i18n.t('students.country') }}</label>
       </p-floatLabel>
       @if (formErrors().countryOrigin) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().countryOrigin }}</small>
       } @else {
-        <span class="field__hint">Incluye bandera e indicativo</span>
+        <span class="field__hint">{{ i18n.t('students.countryHint') }}</span>
       }
     </div>
 
@@ -408,18 +408,18 @@
           [ngModel]="form().university"
           (ngModelChange)="onUniversityChange($event)"
           [filter]="true"
-          filterPlaceholder="Buscar universidad..."
+          [filterPlaceholder]="i18n.t('students.searchUniversity')"
           [showClear]="true"
           [disabled]="!universitiesForCountry().length"
           styleClass="w-full"
           appendTo="body"
-          [emptyMessage]="'Sin resultados'"
+          [emptyMessage]="i18n.t('students.noResults')"
         >
         </p-dropdown>
-        <label for="m-university">Universidad <span class="field__optional">(opcional)</span></label>
+        <label for="m-university">{{ i18n.t('students.university') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
       </p-floatLabel>
       @if (universitiesForCountry().length) {
-        <span class="field__hint">{{ universitiesForCountry().length }} universidades disponibles para {{ selectedCountry()?.name }}</span>
+        <span class="field__hint">{{ i18n.t('students.unisAvailable', { count: universitiesForCountry().length, country: selectedCountry()?.name ?? '' }) }}</span>
       }
       @if (formErrors().university) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().university }}</small>
@@ -428,7 +428,7 @@
 
     <!-- Teléfono con indicativo (ancho completo) -->
     <div class="field field--full" [class.field--error]="formErrors().phone">
-      <label class="field__label-static">Teléfono <span class="field__optional">(opcional)</span></label>
+      <label class="field__label-static">{{ i18n.t('students.phone') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
       <div class="phone-field">
         <span class="phone-field__prefix">
           <span class="phone-field__flag">{{ selectedCountry()?.flag }}</span>
@@ -436,7 +436,7 @@
         </span>
         <input
           pInputText
-          placeholder="Solo número — ej: 3001234567"
+          [placeholder]="i18n.t('students.phonePh')"
           [ngModel]="phoneNumber()"
           (ngModelChange)="onPhoneNumberChange($event)"
           [class.p-invalid]="!!formErrors().phone"
@@ -447,15 +447,15 @@
       @if (formErrors().phone) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().phone }}</small>
       } @else {
-        <span class="field__hint">Se guardará como {{ dialCode() }} + número (7–15 dígitos)</span>
+        <span class="field__hint">{{ i18n.t('students.phoneHint', { dial: dialCode() }) }}</span>
       }
     </div>
   </ng-template>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.register')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -473,14 +473,14 @@
   [style]="{ width: '560px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="students-dialog register-modal"
-  aria-label="Detalle de estudiante"
+  [attr.aria-label]="i18n.t('students.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Detalle de estudiante</span>
+        <span class="register-modal__title">{{ i18n.t('students.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailStudent()?.email }}</span>
       </span>
     </div>
@@ -489,31 +489,31 @@
   @if (detailStudent(); as d) {
     <dl class="detail-list">
       <div class="detail-list__row">
-        <dt>Nombre</dt>
+        <dt>{{ i18n.t('students.colName') }}</dt>
         <dd>{{ d.firstName }} {{ d.lastName }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>Identificación</dt>
+        <dt>{{ i18n.t('students.colId') }}</dt>
         <dd>{{ d.identification || '—' }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>Email</dt>
+        <dt>{{ i18n.t('students.colEmail') }}</dt>
         <dd class="detail-list__break">{{ d.email }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>Teléfono</dt>
+        <dt>{{ i18n.t('students.phoneShort') }}</dt>
         <dd>{{ d.phone || '—' }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>País origen</dt>
+        <dt>{{ i18n.t('students.countryShort') }}</dt>
         <dd>{{ d.countryOrigin || '—' }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>Universidad</dt>
+        <dt>{{ i18n.t('students.university') }}</dt>
         <dd>{{ d.university || '—' }}</dd>
       </div>
       <div class="detail-list__row">
-        <dt>Asesor</dt>
+        <dt>{{ i18n.t('students.colAdvisor') }}</dt>
         <dd class="detail-list__break">{{ d.advisor?.email || d.advisorId || '—' }}</dd>
       </div>
     </dl>
@@ -521,8 +521,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
-      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.edit')" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -540,14 +540,14 @@
   [style]="{ width: '720px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="students-dialog register-modal"
-  aria-label="Editar estudiante"
+  [attr.aria-label]="i18n.t('students.editTitle')"
   (onHide)="closeEditModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Editar estudiante</span>
+        <span class="register-modal__title">{{ i18n.t('students.editTitle') }}</span>
         <span class="register-modal__subtitle">{{ editingStudent()?.email }}</span>
       </span>
     </div>
@@ -555,7 +555,7 @@
 
   <div class="students__modal-intro register-modal__intro">
     <i class="fa-solid fa-circle-info"></i>
-    <span>Actualiza los campos necesarios. Los campos marcados con * son obligatorios.</span>
+    <span>{{ i18n.t('students.editIntro') }}</span>
   </div>
 
   <div class="students__form-grid students__form-grid--modal register-modal__grid">
@@ -563,7 +563,7 @@
   </div>
 
   <div class="detail-block detail-block--spaced">
-    <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> Asociar asesor</h4>
+    <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> {{ i18n.t('students.assignAdvisor') }}</h4>
     <div class="detail-block__row">
       <div class="detail-block__field field">
         <p-floatLabel>
@@ -577,14 +577,14 @@
           <label for="edit-advisorId">Advisor ID</label>
         </p-floatLabel>
       </div>
-      <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
+      <p-button icon="pi pi-link" [label]="i18n.t('students.link')" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
     </div>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -602,14 +602,14 @@
   [style]="{ width: '560px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="students-dialog register-modal"
-  aria-label="Observaciones de estudiante"
+  [attr.aria-label]="i18n.t('students.obsTitle')"
   (onHide)="closeObsModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-clipboard"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Observaciones</span>
+        <span class="register-modal__title">{{ i18n.t('students.obsTitle') }}</span>
         <span class="register-modal__subtitle">{{ obsStudent()?.firstName }} {{ obsStudent()?.lastName }} · {{ obsStudent()?.email }}</span>
       </span>
     </div>
@@ -626,13 +626,13 @@
           [class.p-invalid]="!!obsError()"
           (keyup.enter)="addObs()"
         />
-        <label for="obs-text-modal">Nueva observación</label>
+        <label for="obs-text-modal">{{ i18n.t('students.newObs') }}</label>
       </p-floatLabel>
       @if (obsError()) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ obsError() }}</small>
       }
     </div>
-    <p-button icon="pi pi-plus" label="Agregar" size="small" (onClick)="addObs()"></p-button>
+    <p-button icon="pi pi-plus" [label]="i18n.t('students.add')" size="small" (onClick)="addObs()"></p-button>
   </div>
 
   <div class="observations">
@@ -644,7 +644,7 @@
         </div>
       } @empty {
         <div class="obs-empty">
-          <i class="fa-regular fa-comment-dots"></i> Sin observaciones
+          <i class="fa-regular fa-comment-dots"></i> {{ i18n.t('students.noObs') }}
         </div>
       }
     </div>
@@ -652,7 +652,7 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeObsModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeObsModal()" icon="pi pi-times"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -669,22 +669,22 @@
   [dismissableMask]="false"
   [style]="{ width: '480px', maxWidth: '95vw' }"
   styleClass="students-dialog register-modal"
-  aria-label="Desactivar estudiante"
+  [attr.aria-label]="i18n.t('students.deactivateTitle')"
   (onHide)="closeDeleteModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Desactivar estudiante</span>
-        <span class="register-modal__subtitle">Esta acción cambia el estado del registro</span>
+        <span class="register-modal__title">{{ i18n.t('students.deactivateTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('students.deactivateSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="delete-warning">
     <i class="fa-solid fa-triangle-exclamation"></i>
-    <span>El estudiante dejará de estar activo en el sistema. Podrá reactivarse desde administración.</span>
+    <span>{{ i18n.t('students.deactivateWarning') }}</span>
   </div>
 
   @if (deleteTarget(); as t) {
@@ -693,8 +693,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
-      <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.deactivate')" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

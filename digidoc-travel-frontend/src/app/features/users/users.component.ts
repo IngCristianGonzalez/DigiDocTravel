@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsersService, AppUser, AppRole } from './users.service';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17 (mismo patrón que StudentsComponent)
 import { ButtonModule } from 'primeng/button';
@@ -44,6 +45,7 @@ import { DropdownModule } from 'primeng/dropdown';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersComponent implements OnInit {
+  public i18n = inject(I18nService);
   loading = signal(false);
   error = signal<string | null>(null);
   users = signal<AppUser[]>([]);
@@ -53,7 +55,9 @@ export class UsersComponent implements OnInit {
   fEmail = signal('');
   fRole = signal('');
   fStatus = signal('');
-  readonly statusOptions = ['Activo', 'Inactivo'];
+  get statusOptions(): string[] {
+    return [this.i18n.t('common.active'), this.i18n.t('common.inactive')];
+  }
   msg = signal('');
   page = signal(1);
   total = signal(0);
@@ -115,7 +119,7 @@ export class UsersComponent implements OnInit {
     this.showDetailModal.set(true);
     this.svc.get(u.id).subscribe({
       next: (d) => this.detailUser.set(d),
-      error: (e) => this.toast.error(e.error?.message || 'Error al obtener usuario'),
+      error: (e) => this.toast.error(e.error?.message || this.i18n.t('users.error.getOne')),
     });
   }
 
@@ -202,18 +206,18 @@ export class UsersComponent implements OnInit {
     const errors: any = {};
 
     const email = (f.email ?? '').trim();
-    if (!email) errors.email = 'El email es obligatorio';
-    else if (!this.emailRegex.test(email)) errors.email = 'Formato de email inválido (ej: nombre@dominio.com)';
+    if (!email) errors.email = this.i18n.t('users.validation.emailRequired');
+    else if (!this.emailRegex.test(email)) errors.email = this.i18n.t('users.validation.emailInvalid');
 
     if (requirePassword) {
-      if (!f.password) errors.password = 'La contraseña es obligatoria';
-      else if (!this.isStrongPassword(f.password)) errors.password = 'Mín 8: mayúscula, minúscula, número y especial';
+      if (!f.password) errors.password = this.i18n.t('users.validation.passwordRequired');
+      else if (!this.isStrongPassword(f.password)) errors.password = this.i18n.t('users.validation.passwordWeak');
     }
 
     if (!(f.firstName ?? '').trim() || (f.firstName ?? '').trim().length < this.MIN_NAME_LENGTH)
-      errors.firstName = `El nombre es obligatorio (mín ${this.MIN_NAME_LENGTH})`;
+      errors.firstName = this.i18n.t('users.validation.firstNameRequired', { min: this.MIN_NAME_LENGTH });
     if (!(f.lastName ?? '').trim() || (f.lastName ?? '').trim().length < this.MIN_NAME_LENGTH)
-      errors.lastName = `El apellido es obligatorio (mín ${this.MIN_NAME_LENGTH})`;
+      errors.lastName = this.i18n.t('users.validation.lastNameRequired', { min: this.MIN_NAME_LENGTH });
 
     this.formErrors.set(errors);
     return Object.keys(errors).length === 0;
@@ -226,7 +230,10 @@ export class UsersComponent implements OnInit {
     const params: any = { page: this.page(), limit: this.limit() };
     if (searchParts.length) params.search = searchParts.join(' ');
     if (this.fRole().trim()) params.role = this.fRole().trim();
-    if (this.fStatus().trim()) params.status = this.fStatus() === 'Activo' ? 'true' : 'false';
+    if (this.fStatus().trim()) {
+      const s = this.fStatus().trim();
+      params.status = (s === 'Activo' || s === this.i18n.t('common.active')) ? 'true' : 'false';
+    }
     this.svc.list(params).subscribe({
       next: (r) => {
         const data = (r as any)?.data ?? (Array.isArray(r) ? r : []);
@@ -237,7 +244,7 @@ export class UsersComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar usuarios';
+        const message = e.error?.message || e.message || this.i18n.t('users.error.load');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -273,7 +280,7 @@ export class UsersComponent implements OnInit {
 
   create() {
     if (!this.validateForm(true)) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('users.validation.fixErrors'));
       return;
     }
     const raw = this.form();
@@ -284,20 +291,20 @@ export class UsersComponent implements OnInit {
       lastName: this.sanitize(raw.lastName),
     };
     if (!this.emailRegex.test(payload.email) || !payload.firstName || !payload.lastName || !this.isStrongPassword(payload.password)) {
-      this.toast.error('Datos inválidos tras sanitización');
+      this.toast.error(this.i18n.t('users.validation.invalidAfterSanitize'));
       return;
     }
     this.loading.set(true);
     this.svc.create(payload).subscribe({
       next: () => {
-        this.toast.success('Usuario creado correctamente');
+        this.toast.success(this.i18n.t('users.success.created'));
         this.loading.set(false);
         this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al crear usuario';
+        const message = e.error?.message || this.i18n.t('users.error.create');
         this.toast.error(message);
         this.loading.set(false);
       }
@@ -308,7 +315,7 @@ export class UsersComponent implements OnInit {
     const target = this.editingUser();
     if (!target) return;
     if (!this.validateForm(false)) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('users.validation.fixErrors'));
       return;
     }
     const raw = this.form();
@@ -320,13 +327,13 @@ export class UsersComponent implements OnInit {
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
       next: () => {
-        this.toast.success('Usuario actualizado correctamente');
+        this.toast.success(this.i18n.t('users.success.updated'));
         this.loading.set(false);
         this.closeEditModal();
         this.load();
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al actualizar usuario');
+        this.toast.error(e.error?.message || this.i18n.t('users.error.update'));
         this.loading.set(false);
       }
     });
@@ -337,19 +344,19 @@ export class UsersComponent implements OnInit {
     if (!target) return;
     const roleIds = this.selectedRoleIds();
     if (!roleIds.length) {
-      this.toast.error('Selecciona al menos un rol');
+      this.toast.error(this.i18n.t('users.validation.selectRole'));
       return;
     }
     this.loading.set(true);
     this.svc.assignRoles(target.id, roleIds).subscribe({
       next: () => {
-        this.toast.success('Roles asignados correctamente');
+        this.toast.success(this.i18n.t('users.success.rolesAssigned'));
         this.loading.set(false);
         this.closeRolesModal();
         this.load();
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al asignar roles');
+        this.toast.error(e.error?.message || this.i18n.t('users.error.assignRoles'));
         this.loading.set(false);
       }
     });
@@ -361,14 +368,14 @@ export class UsersComponent implements OnInit {
     this.loading.set(true);
     this.svc.deactivate(target.id).subscribe({
       next: () => {
-        this.toast.success('Usuario desactivado correctamente');
+        this.toast.success(this.i18n.t('users.success.deactivated'));
         this.loading.set(false);
         this.closeDeleteModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al desactivar usuario');
+        this.toast.error(e.error?.message || this.i18n.t('users.error.deactivate'));
         this.loading.set(false);
       }
     });

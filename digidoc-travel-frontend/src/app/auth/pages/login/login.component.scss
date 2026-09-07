@@ -166,6 +166,13 @@
   max-width: 380px;
 }
 
+// --- Language selector (pre-login, top-right) ---
+.login__lang {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-4);
+}
+
 // --- Mobile Brand (hidden on desktop) ---
 .login__mobile-brand {
   display: none;

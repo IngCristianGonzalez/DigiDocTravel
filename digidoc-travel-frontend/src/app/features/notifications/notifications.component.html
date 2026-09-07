@@ -7,21 +7,21 @@
           <i class="fa-solid fa-bell"></i>
         </div>
         <div>
-          <h1 class="notifs__title">Notificaciones</h1>
-          <p class="notifs__subtitle">Centro de avisos de la plataforma y correo</p>
+          <h1 class="notifs__title">{{ i18n.t('notifs.title') }}</h1>
+          <p class="notifs__subtitle">{{ i18n.t('notifs.subtitle') }}</p>
         </div>
       </div>
       <div class="notifs__header-actions">
         <p-button
           icon="pi pi-check-double"
-          label="Marcar todas leídas"
+          [label]="i18n.t('notifs.markAll')"
           size="small"
           [disabled]="loading() || unreadCount() === 0"
           (onClick)="openMarkAll()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -36,21 +36,21 @@
       <div class="notifs__quick-stat notifs__quick-stat--alert">
         <div class="notifs__quick-stat-icon"><i class="fa-solid fa-envelope"></i></div>
         <div>
-          <p class="notifs__quick-stat-label">No leídas</p>
+          <p class="notifs__quick-stat-label">{{ i18n.t('notifs.unread') }}</p>
           <p class="notifs__quick-stat-value">{{ unreadCount() }}</p>
         </div>
       </div>
       <div class="notifs__quick-stat">
         <div class="notifs__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="notifs__quick-stat-label">Total historial</p>
+          <p class="notifs__quick-stat-label">{{ i18n.t('notifs.totalHistory') }}</p>
           <p class="notifs__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="notifs__quick-stat">
         <div class="notifs__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="notifs__quick-stat-label">Página</p>
+          <p class="notifs__quick-stat-label">{{ i18n.t('notifs.page') }}</p>
           <p class="notifs__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -58,17 +58,17 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando notificaciones..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('notifs.loading')"></app-loading>
   <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
 
   <!-- Tabla historial (filtros por columna ERP — sin búsqueda global) -->
   <div class="notifs__table-card">
     <div class="notifs__table-header">
-      <h3 class="notifs__table-title"><i class="fa-solid fa-table-list"></i> Historial</h3>
+      <h3 class="notifs__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('notifs.history') }}</h3>
       <span class="erp-table-meta">
-        <span class="notifs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="notifs__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -90,46 +90,46 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Título</span></th>
-            <th style="width: 120px"><span class="erp-col-head">Tipo</span></th>
-            <th style="width: 140px"><span class="erp-col-head">Fecha</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Email</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('notifs.colTitle') }}</span></th>
+            <th style="width: 120px"><span class="erp-col-head">{{ i18n.t('notifs.colType') }}</span></th>
+            <th style="width: 140px"><span class="erp-col-head">{{ i18n.t('notifs.colDate') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('notifs.colEmail') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="title" [showMenu]="false" matchMode="contains" placeholder="Filtrar título">
+              <p-columnFilter type="text" field="title" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('notifs.filterTitlePh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar título" [ngModel]="fTitle()" (ngModelChange)="fTitle.set($event); onColumnFilter()" aria-label="Filtrar por título" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('notifs.filterTitlePh')" [ngModel]="fTitle()" (ngModelChange)="fTitle.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('notifs.filterTitleAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="type" [showMenu]="false" matchMode="equals" placeholder="Tipo">
+              <p-columnFilter field="type" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('notifs.colType')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por tipo"></p-dropdown>
+                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('notifs.filterTypeAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="date" field="createdAt" [showMenu]="false" matchMode="equals" placeholder="Fecha">
+              <p-columnFilter type="date" field="createdAt" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('notifs.colDate')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fDate()" (ngModelChange)="fDate.set($event); onColumnFilter()" aria-label="Filtrar por fecha" />
+                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fDate()" (ngModelChange)="fDate.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('notifs.filterDateAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="emailSent" [showMenu]="false" matchMode="equals" placeholder="Email">
+              <p-columnFilter field="emailSent" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('notifs.colEmail')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="emailOptions" optionLabel="label" optionValue="value" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por email"></p-dropdown>
+                  <p-dropdown [options]="emailOptions" optionLabel="label" optionValue="value" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('notifs.filterEmailAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="read" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="read" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="readOptions" optionLabel="label" optionValue="value" [ngModel]="fRead()" (ngModelChange)="fRead.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="readOptions" optionLabel="label" optionValue="value" [ngModel]="fRead()" (ngModelChange)="fRead.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('notifs.filterStatusAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -156,17 +156,17 @@
               <td>{{ n.createdAt | date:'short' }}</td>
               <td>
                 @if (n.emailSent) {
-                  <span class="notifs__email-sent"><i class="fa-solid fa-circle-check"></i> Sí</span>
+                  <span class="notifs__email-sent"><i class="fa-solid fa-circle-check"></i> {{ i18n.t('notifs.yes') }}</span>
                 } @else {
                   <span class="notifs__muted">—</span>
                 }
               </td>
-              <td><p-tag [value]="n.read ? 'Leída' : 'No leída'" [severity]="n.read ? 'secondary' : 'info'"></p-tag></td>
+              <td><p-tag [value]="n.read ? i18n.t('notifs.read') : i18n.t('notifs.unreadOne')" [severity]="n.read ? 'secondary' : 'info'"></p-tag></td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(n)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(n)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
                   @if (!n.read) {
-                    <p-button icon="pi pi-check" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="markOne(n.id)" pTooltip="Marcar leída" tooltipPosition="top" ariaLabel="Marcar leída"></p-button>
+                    <p-button icon="pi pi-check" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="markOne(n.id)" [pTooltip]="i18n.t('notifs.markRead')" tooltipPosition="top" [ariaLabel]="i18n.t('notifs.markRead')"></p-button>
                   }
                 </div>
               </td>
@@ -180,11 +180,11 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">Sin notificaciones</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna.</p>
+                  <p class="empty-state__title">{{ i18n.t('notifs.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('notifs.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 }
               </div>
             </td>
@@ -207,14 +207,14 @@
   [dismissableMask]="false"
   [style]="{ width: '520px', maxWidth: '95vw' }"
   styleClass="notifs-dialog register-modal"
-  aria-label="Detalle de notificación"
+  [attr.aria-label]="i18n.t('notifs.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-bell"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Notificación</span>
+        <span class="register-modal__title">{{ i18n.t('notifs.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailNotif()?.createdAt | date:'medium' }}</span>
       </span>
     </div>
@@ -224,17 +224,17 @@
     <h3 class="notifs__detail-title">{{ n.title }}</h3>
     <p class="notifs__detail-message">{{ n.message }}</p>
     <dl class="detail-list">
-      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ n.type }}</dd></div>
-      <div class="detail-list__row"><dt>Email</dt><dd>{{ n.emailSent ? 'Enviado' : 'No enviado' }}</dd></div>
-      <div class="detail-list__row"><dt>Estado</dt><dd>{{ n.read ? 'Leída' : 'No leída' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('notifs.colType') }}</dt><dd>{{ n.type }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('notifs.colEmail') }}</dt><dd>{{ n.emailSent ? i18n.t('notifs.sent') : i18n.t('notifs.notSent') }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('common.status') }}</dt><dd>{{ n.read ? i18n.t('notifs.read') : i18n.t('notifs.unreadOne') }}</dd></div>
     </dl>
   }
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
       @if (detailNotif() && !detailNotif()!.read) {
-        <p-button label="Marcar leída" icon="pi pi-check" severity="success" type="button" (onClick)="markReadFromDetail()"></p-button>
+        <p-button [label]="i18n.t('notifs.markRead')" icon="pi pi-check" severity="success" type="button" (onClick)="markReadFromDetail()"></p-button>
       }
     </div>
   </ng-template>
@@ -252,25 +252,25 @@
   [dismissableMask]="false"
   [style]="{ width: '440px', maxWidth: '95vw' }"
   styleClass="notifs-dialog register-modal"
-  aria-label="Marcar todas como leídas"
+  [attr.aria-label]="i18n.t('notifs.markAllTitle')"
   (onHide)="closeMarkAllModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-check-double"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Marcar todas como leídas</span>
-        <span class="register-modal__subtitle">{{ unreadCount() }} sin leer</span>
+        <span class="register-modal__title">{{ i18n.t('notifs.markAllTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('notifs.unreadCount', { count: unreadCount() }) }}</span>
       </span>
     </div>
   </ng-template>
 
-  <p class="notifs__confirm-text">¿Confirmas marcar todas las notificaciones como leídas?</p>
+  <p class="notifs__confirm-text">{{ i18n.t('notifs.confirmAll') }}</p>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeMarkAllModal()" icon="pi pi-times"></p-button>
-      <p-button label="Confirmar" icon="pi pi-check" type="button" (onClick)="confirmMarkAll()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeMarkAllModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.confirm')" icon="pi pi-check" type="button" (onClick)="confirmMarkAll()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

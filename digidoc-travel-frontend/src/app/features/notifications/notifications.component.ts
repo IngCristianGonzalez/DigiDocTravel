@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NotificationsService } from './notifications.service';
 import { Notification } from '../../shared/interfaces/api.interface';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // El backend expone si el aviso también salió por correo
 export interface NotifItem extends Notification {
@@ -58,24 +59,31 @@ export class NotificationsComponent implements OnInit {
   filterType = signal('');
   filterStatus = signal('');
   readonly typeOptions = ['info', 'warning', 'success', 'error', 'visa', 'payment', 'document'];
-  readonly statusOptions = [
-    { label: 'No leídas', value: 'unread' },
-    { label: 'Leídas', value: 'read' },
-  ];
+  public i18n = inject(I18nService);
+  get statusOptions() {
+    return [
+      { label: this.i18n.t('notifs.unreadMany'), value: 'unread' },
+      { label: this.i18n.t('notifs.read'), value: 'read' },
+    ];
+  }
   // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
   fTitle = signal('');
   fType = signal('');
   fDate = signal('');
   fEmail = signal('');
   fRead = signal('');
-  readonly emailOptions = [
-    { label: 'Sí', value: 'true' },
-    { label: 'No', value: 'false' },
-  ];
-  readonly readOptions = [
-    { label: 'Leída', value: 'read' },
-    { label: 'No leída', value: 'unread' },
-  ];
+  get emailOptions() {
+    return [
+      { label: this.i18n.t('notifs.yes'), value: 'true' },
+      { label: this.i18n.t('notifs.no'), value: 'false' },
+    ];
+  }
+  get readOptions() {
+    return [
+      { label: this.i18n.t('notifs.read'), value: 'read' },
+      { label: this.i18n.t('notifs.unreadOne'), value: 'unread' },
+    ];
+  }
 
   // Modales — detalle y confirmación de marcar todas
   showDetailModal = signal(false);
@@ -175,7 +183,7 @@ export class NotificationsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e: any) => {
-        const message = e.error?.message || e.message || 'Error al cargar notificaciones';
+        const message = e.error?.message || e.message || this.i18n.t('notifs.errLoad');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -235,19 +243,19 @@ export class NotificationsComponent implements OnInit {
   markOne(id: string) {
     const sanitizedId = this.sanitize(id);
     if (!sanitizedId) {
-      this.toast.error('ID no válido');
+      this.toast.error(this.i18n.t('notifs.errBadId'));
       return;
     }
     this.loading.set(true);
     this.svc.markRead(sanitizedId).subscribe({
       next: () => {
-        this.toast.success('Notificación marcada como leída');
+        this.toast.success(this.i18n.t('notifs.okOne'));
         this.loading.set(false);
         this.load();
         this.loadUnread();
       },
       error: (e: any) => {
-        const message = e.error?.message || e.message || 'Error al marcar como leída';
+        const message = e.error?.message || e.message || this.i18n.t('notifs.errOne');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -259,14 +267,14 @@ export class NotificationsComponent implements OnInit {
     this.loading.set(true);
     this.svc.markAll().subscribe({
       next: () => {
-        this.toast.success('Todas marcadas como leídas');
+        this.toast.success(this.i18n.t('notifs.okAll'));
         this.loading.set(false);
         this.closeMarkAllModal();
         this.load();
         this.loadUnread();
       },
       error: (e: any) => {
-        const message = e.error?.message || e.message || 'Error al marcar todas como leídas';
+        const message = e.error?.message || e.message || this.i18n.t('notifs.errAll');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);

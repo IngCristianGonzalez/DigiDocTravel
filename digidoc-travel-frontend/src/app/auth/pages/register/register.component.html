@@ -15,55 +15,60 @@
 
       <div class="register__brand-text">
         <h1 class="register__brand-name">SL Global</h1>
-        <p class="register__brand-tagline">Educacion sin limites</p>
+        <p class="register__brand-tagline">{{ i18n.t('auth.brandTagline') }}</p>
       </div>
 
       <div class="register__brand-separator"></div>
 
       <div class="register__brand-value">
         <h2>DigiDoc Travel</h2>
-        <p>Unete a las instituciones que ya gestionan sus documentos de viaje de forma inteligente.</p>
+        <p>{{ i18n.t('auth.register.brandDesc') }}</p>
       </div>
 
       <div class="register__brand-stats">
         <div class="register__stat">
           <span class="register__stat-number">15+</span>
-          <span class="register__stat-label">Instituciones</span>
+          <span class="register__stat-label">{{ i18n.t('auth.register.statInstitutions') }}</span>
         </div>
         <div class="register__stat">
           <span class="register__stat-number">2,400+</span>
-          <span class="register__stat-label">Documentos</span>
+          <span class="register__stat-label">{{ i18n.t('auth.register.statDocuments') }}</span>
         </div>
         <div class="register__stat">
           <span class="register__stat-number">98.6%</span>
-          <span class="register__stat-label">Aprobacion</span>
+          <span class="register__stat-label">{{ i18n.t('auth.register.statApproval') }}</span>
         </div>
       </div>
 
-      <ul class="register__brand-features" aria-label="Beneficios">
+      <ul class="register__brand-features" [attr.aria-label]="i18n.t('auth.register.benefits')">
         <li>
           <span class="register__feature-dot" aria-hidden="true"></span>
-          Configuracion en menos de 24 horas
+          {{ i18n.t('auth.register.benefit1') }}
         </li>
         <li>
           <span class="register__feature-dot" aria-hidden="true"></span>
-          Soporte dedicado durante la implementacion
+          {{ i18n.t('auth.register.benefit2') }}
         </li>
         <li>
           <span class="register__feature-dot" aria-hidden="true"></span>
-          Sin costos de configuracion iniciales
+          {{ i18n.t('auth.register.benefit3') }}
         </li>
       </ul>
     </div>
 
     <footer class="register__brand-footer">
-      <p>&copy; 2026 SL Global. Todos los derechos reservados.</p>
+      <p>&copy; 2026 SL Global. {{ i18n.t('auth.rights') }}</p>
     </footer>
   </aside>
 
   <!-- Right panel - form -->
   <main class="register__main">
     <div class="register__form-wrapper">
+      <!-- Language selector (pre-login) -->
+      <div class="register__lang">
+        <app-lang-selector />
+      </div>
+
       <!-- Mobile brand -->
       <div class="register__mobile-brand">
         <img
@@ -82,15 +87,15 @@
       <!-- Back button -->
       <a routerLink="/" class="register__back">
         <i class="pi pi-arrow-left"></i>
-        Volver al inicio
+        {{ i18n.t('auth.backHome') }}
       </a>
 
       <!-- Form card -->
       <div class="register__card">
         <div class="register__card-header">
-          <h2 class="register__title">Crear cuenta</h2>
+          <h2 class="register__title">{{ i18n.t('auth.register.title') }}</h2>
           <p class="register__subtitle">
-            Completa tus datos para comenzar a usar la plataforma
+            {{ i18n.t('auth.register.subtitle') }}
           </p>
         </div>
 
@@ -99,8 +104,8 @@
             <div class="register__success-icon">
               <i class="pi pi-check-circle"></i>
             </div>
-            <h3>Cuenta creada exitosamente</h3>
-            <p>Serás redirigido al login en unos segundos...</p>
+            <h3>{{ i18n.t('auth.register.successTitle') }}</h3>
+            <p>{{ i18n.t('auth.register.successSubtitle') }}</p>
           </div>
         } @else {
           <form
@@ -130,17 +135,17 @@
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Registrarse con Google
+              {{ i18n.t('auth.register.google') }}
             </button>
 
             <div class="register__divider">
-              <span>o completa el formulario</span>
+              <span>{{ i18n.t('auth.register.orForm') }}</span>
             </div>
 
             <!-- Full name -->
             <div class="register__field">
               <label for="fullName" class="register__label">
-                Nombre completo
+                {{ i18n.t('auth.register.fullName') }}
               </label>
               <span class="register__input-container">
                 <i class="pi pi-user" aria-hidden="true"></i>
@@ -152,7 +157,7 @@
                   name="fullName"
                   required
                   autocomplete="name"
-                  placeholder="Tu nombre y apellido"
+                  [placeholder]="i18n.t('auth.register.fullNamePlaceholder')"
                   [disabled]="loading"
                   (blur)="fullNameTouched.set(true)"
                   [attr.aria-invalid]="fullNameTouched() && !isFullNameValid() || undefined"
@@ -161,7 +166,7 @@
               </span>
               @if (fullNameTouched() && !isFullNameValid()) {
                 <small id="fullName-error" class="register__field-error" role="alert">
-                  Ingrese su nombre completo (minimo 3 caracteres)
+                  {{ i18n.t('auth.register.fullNameInvalid') }}
                 </small>
               }
             </div>
@@ -169,7 +174,7 @@
             <!-- Email -->
             <div class="register__field">
               <label for="regEmail" class="register__label">
-                Correo electronico
+                {{ i18n.t('auth.email') }}
               </label>
               <span class="register__input-container">
                 <i class="pi pi-envelope" aria-hidden="true"></i>
@@ -182,7 +187,7 @@
                   required
                   email
                   autocomplete="email"
-                  placeholder="nombre@empresa.com"
+                  [placeholder]="i18n.t('auth.emailPlaceholder')"
                   [disabled]="loading"
                   (blur)="emailTouched.set(true)"
                   [attr.aria-invalid]="emailTouched() && !isEmailValid() || undefined"
@@ -191,7 +196,7 @@
               </span>
               @if (emailTouched() && !isEmailValid()) {
                 <small id="regEmail-error" class="register__field-error" role="alert">
-                  Ingrese un correo electronico valido
+                  {{ i18n.t('auth.emailInvalid') }}
                 </small>
               }
             </div>
@@ -199,7 +204,7 @@
             <!-- Institution -->
             <div class="register__field">
               <label for="institution" class="register__label">
-                Institucion
+                {{ i18n.t('auth.register.institution') }}
               </label>
               <span class="register__input-container">
                 <i class="pi pi-building" aria-hidden="true"></i>
@@ -211,7 +216,7 @@
                   name="institution"
                   required
                   autocomplete="organization"
-                  placeholder="Nombre de tu institucion"
+                  [placeholder]="i18n.t('auth.register.institutionPlaceholder')"
                   [disabled]="loading"
                   (blur)="institutionTouched.set(true)"
                   [attr.aria-invalid]="institutionTouched() && !isInstitutionValid() || undefined"
@@ -220,7 +225,7 @@
               </span>
               @if (institutionTouched() && !isInstitutionValid()) {
                 <small id="institution-error" class="register__field-error" role="alert">
-                  Ingrese el nombre de su institucion
+                  {{ i18n.t('auth.register.institutionInvalid') }}
                 </small>
               }
             </div>
@@ -228,7 +233,7 @@
             <!-- Password -->
             <div class="register__field">
               <label for="regPassword" class="register__label">
-                Contrasena
+                {{ i18n.t('auth.password') }}
               </label>
               <p-password
                 id="regPassword"
@@ -237,7 +242,7 @@
                 [feedback]="true"
                 [toggleMask]="true"
                 [disabled]="loading"
-                placeholder="Minimo 6 caracteres"
+                [placeholder]="i18n.t('auth.passwordHint')"
                 styleClass="register__password"
                 autocomplete="new-password"
                 (onBlur)="passwordTouched.set(true)"
@@ -246,7 +251,7 @@
               />
               @if (passwordTouched() && !isPasswordValid()) {
                 <small id="regPassword-error" class="register__field-error" role="alert">
-                  La contrasena debe tener al menos 6 caracteres
+                  {{ i18n.t('auth.passwordInvalid') }}
                 </small>
               }
             </div>
@@ -254,7 +259,7 @@
             <!-- Confirm password -->
             <div class="register__field">
               <label for="confirmPassword" class="register__label">
-                Confirmar contrasena
+                {{ i18n.t('auth.register.confirmPassword') }}
               </label>
               <p-password
                 id="confirmPassword"
@@ -263,7 +268,7 @@
                 [feedback]="false"
                 [toggleMask]="true"
                 [disabled]="loading"
-                placeholder="Repite tu contrasena"
+                [placeholder]="i18n.t('auth.register.confirmPlaceholder')"
                 styleClass="register__password"
                 autocomplete="new-password"
                 (onBlur)="confirmPasswordTouched.set(true)"
@@ -273,9 +278,9 @@
               @if (confirmPasswordTouched() && !isConfirmPasswordValid()) {
                 <small id="confirmPassword-error" class="register__field-error" role="alert">
                   @if (confirmPassword.length === 0) {
-                    Confirme su contrasena
+                    {{ i18n.t('auth.register.confirmRequired') }}
                   } @else {
-                    Las contrasenas no coinciden
+                    {{ i18n.t('auth.register.confirmMismatch') }}
                   }
                 </small>
               }
@@ -284,12 +289,12 @@
             <!-- Role -->
             <div class="register__field">
               <label for="role" class="register__label">
-                Rol en la plataforma
+                {{ i18n.t('auth.register.role') }}
               </label>
               <p-dropdown
                 id="role"
                 [options]="roleOptions"
-                placeholder="Selecciona tu rol"
+                [placeholder]="i18n.t('auth.register.rolePlaceholder')"
                 styleClass="register__select"
                 [disabled]="loading"
               />
@@ -302,7 +307,7 @@
                 name="acceptTerms"
                 [binary]="true"
                 inputId="acceptTerms"
-                label="Acepto los terminos y politica de privacidad"
+                [label]="i18n.t('auth.register.terms')"
                 styleClass="register__checkbox"
               />
             </div>
@@ -310,7 +315,7 @@
             <!-- Submit -->
             <p-button
               type="submit"
-              label="Crear cuenta"
+              [label]="i18n.t('auth.register.submit')"
               icon="pi pi-arrow-right"
               iconPos="right"
               [loading]="loading"
@@ -324,8 +329,8 @@
         <!-- Footer -->
         <div class="register__card-footer">
           <p>
-            Ya tienes una cuenta?
-            <a routerLink="/auth/login" class="register__footer-link">Iniciar sesion</a>
+            {{ i18n.t('auth.register.hasAccount') }}
+            <a routerLink="/auth/login" class="register__footer-link">{{ i18n.t('auth.register.loginLink') }}</a>
           </p>
         </div>
       </div>

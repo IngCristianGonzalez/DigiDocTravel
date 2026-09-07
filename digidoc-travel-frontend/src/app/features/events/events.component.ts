@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EventsService } from './events.service';
@@ -6,6 +6,7 @@ import { Event } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17 (mismo patrón que el resto de módulos)
 import { ButtonModule } from 'primeng/button';
@@ -56,7 +57,7 @@ export class EventsComponent implements OnInit {
   fDate = signal('');
   fLocation = signal('');
   fStatus = signal('');
-  readonly statusOptions = ['Próximo', 'Pasado'];
+  public i18n = inject(I18nService);
 
   formErrors = signal<{ title?: string; eventDate?: string; description?: string }>({});
 
@@ -71,6 +72,10 @@ export class EventsComponent implements OnInit {
   qrData = signal<{ qrCode?: string; uniqueLink?: string } | null>(null);
 
   readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Event));
+
+  get statusOptions(): string[] {
+    return [this.i18n.t('events.upcoming'), this.i18n.t('events.past')];
+  }
 
   constructor(private svc: EventsService, private toast: ToastService) {}
 
@@ -92,7 +97,7 @@ export class EventsComponent implements OnInit {
     this.showDetailModal.set(true);
     this.svc.get(e.id).subscribe({
       next: (r: any) => this.detailEvent.set(r?.data ?? r),
-      error: (err) => this.toast.error(err.error?.message || 'Error al obtener evento'),
+      error: (err) => this.toast.error(err.error?.message || this.i18n.t('events.errGet')),
     });
   }
 
@@ -190,20 +195,20 @@ export class EventsComponent implements OnInit {
     const errors: any = {};
 
     const title = f.title ? this.sanitize(f.title) : '';
-    if (!title) errors.title = 'El título es obligatorio';
-    else if (/<\s*script/i.test(f.title)) errors.title = 'Contenido no permitido en el título';
+    if (!title) errors.title = this.i18n.t('events.errTitleRequired');
+    else if (/<\s*script/i.test(f.title)) errors.title = this.i18n.t('events.errTitleContent');
 
     if (!f.eventDate || !String(f.eventDate).trim()) {
-      errors.eventDate = 'La fecha del evento es obligatoria';
+      errors.eventDate = this.i18n.t('events.errDateRequired');
     } else {
       const d = new Date(f.eventDate);
       if (isNaN(d.getTime())) {
-        errors.eventDate = 'Fecha inválida';
+        errors.eventDate = this.i18n.t('events.errDateInvalid');
       } else {
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-        if (d < oneYearAgo) errors.eventDate = 'La fecha no puede ser muy antigua (más de 1 año)';
-        if (f.description && /<\s*script/i.test(f.description)) errors.description = 'Contenido no permitido en la descripción';
+        if (d < oneYearAgo) errors.eventDate = this.i18n.t('events.errDateOld');
+        if (f.description && /<\s*script/i.test(f.description)) errors.description = this.i18n.t('events.errDescContent');
       }
     }
 
@@ -213,23 +218,23 @@ export class EventsComponent implements OnInit {
 
   private buildPayload(): any | null {
     if (!this.validateForm()) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('events.errFixForm'));
       return null;
     }
     const sanitized = this.sanitizeForm(this.form());
     if (!sanitized.title) {
-      this.toast.error('El título es obligatorio');
+      this.toast.error(this.i18n.t('events.errTitleRequired'));
       return null;
     }
     let isoDate: string;
     try {
       isoDate = new Date(sanitized.eventDate).toISOString();
     } catch {
-      this.toast.error('Fecha inválida');
+      this.toast.error(this.i18n.t('events.errDateInvalid'));
       return null;
     }
     if (isNaN(new Date(isoDate).getTime())) {
-      this.toast.error('Fecha inválida');
+      this.toast.error(this.i18n.t('events.errDateInvalid'));
       return null;
     }
     const payload: any = { title: sanitized.title, eventDate: isoDate };
@@ -259,7 +264,7 @@ export class EventsComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar eventos';
+        const message = e.error?.message || e.message || this.i18n.t('events.errLoad');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -300,15 +305,15 @@ export class EventsComponent implements OnInit {
     this.error.set(null);
     this.svc.create(payload).subscribe({
       next: () => {
-        this.msg.set('Evento creado');
-        this.toast.success('Evento creado correctamente');
+        this.msg.set(this.i18n.t('events.okCreated'));
+        this.toast.success(this.i18n.t('events.okCreatedFull'));
         this.loading.set(false);
         this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al crear evento';
+        const message = e.error?.message || e.message || this.i18n.t('events.errCreate');
         this.msg.set(message);
         this.error.set(message);
         this.toast.error(message);
@@ -325,13 +330,13 @@ export class EventsComponent implements OnInit {
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
       next: () => {
-        this.toast.success('Evento actualizado');
+        this.toast.success(this.i18n.t('events.okUpdated'));
         this.loading.set(false);
         this.closeEditModal();
         this.load();
       },
       error: (err) => {
-        this.toast.error(err.error?.message || 'Error al actualizar evento');
+        this.toast.error(err.error?.message || this.i18n.t('events.errUpdate'));
         this.loading.set(false);
       }
     });
@@ -344,7 +349,7 @@ export class EventsComponent implements OnInit {
         this.qrData.set({ qrCode: data?.qrCode, uniqueLink: data?.uniqueLink });
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al obtener QR');
+        this.toast.error(e.error?.message || this.i18n.t('events.errQr'));
       }
     });
   }
@@ -357,13 +362,13 @@ export class EventsComponent implements OnInit {
   copyLink() {
     const url = this.shareLink();
     if (!url) {
-      this.toast.error('No hay enlace para copiar');
+      this.toast.error(this.i18n.t('events.errNoLink'));
       return;
     }
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(
-        () => this.toast.success('Enlace copiado'),
-        () => this.toast.error('No se pudo copiar el enlace'),
+        () => this.toast.success(this.i18n.t('events.okCopied')),
+        () => this.toast.error(this.i18n.t('events.errCopy')),
       );
     } else {
       this.toast.info(url);

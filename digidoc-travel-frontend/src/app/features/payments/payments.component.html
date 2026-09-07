@@ -7,20 +7,20 @@
           <i class="fa-solid fa-credit-card"></i>
         </div>
         <div>
-          <h1 class="payments__title">Plan de Pagos</h1>
-          <p class="payments__subtitle">Planes, cuotas y registro de pagos</p>
+          <h1 class="payments__title">{{ i18n.t('payments.title') }}</h1>
+          <p class="payments__subtitle">{{ i18n.t('payments.subtitle') }}</p>
         </div>
       </div>
       <div class="payments__header-actions">
         <p-button
           icon="pi pi-plus"
-          label="Crear plan"
+          [label]="i18n.t('payments.createPlan')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -35,21 +35,21 @@
       <div class="payments__quick-stat">
         <div class="payments__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="payments__quick-stat-label">Planes</p>
+          <p class="payments__quick-stat-label">{{ i18n.t('payments.plans') }}</p>
           <p class="payments__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="payments__quick-stat">
         <div class="payments__quick-stat-icon"><i class="fa-solid fa-wallet"></i></div>
         <div>
-          <p class="payments__quick-stat-label">Vista actual</p>
-          <p class="payments__quick-stat-value">{{ viewMode() === 'pending' ? 'Pendientes' : 'Todos' }}</p>
+          <p class="payments__quick-stat-label">{{ i18n.t('payments.currentView') }}</p>
+          <p class="payments__quick-stat-value">{{ viewMode() === 'pending' ? i18n.t('payments.pending') : i18n.t('common.all') }}</p>
         </div>
       </div>
       <div class="payments__quick-stat">
         <div class="payments__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="payments__quick-stat-label">Página</p>
+          <p class="payments__quick-stat-label">{{ i18n.t('payments.page') }}</p>
           <p class="payments__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -57,7 +57,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando planes..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('payments.loadingPlans')"></app-loading>
   <app-error [message]="error()" (retry)="resetAndLoad()"></app-error>
 
   @if (msg()) {
@@ -68,17 +68,17 @@
 
   <div class="payments__notice">
     <i class="fa-solid fa-bell"></i>
-    <span>El backend notifica 7 días antes del vencimiento de cada cuota.</span>
+    <span>{{ i18n.t('payments.notice7d') }}</span>
   </div>
 
   <!-- Vista: Todos / Pendientes -->
   <div class="tabs-control-wrapper">
     <div class="tabs-container">
       <button class="tab-button" [class.tab-active]="viewMode() === 'all'" (click)="setViewMode('all')">
-        <span>Todos</span>
+        <span>{{ i18n.t('common.all') }}</span>
       </button>
       <button class="tab-button" [class.tab-active]="viewMode() === 'pending'" (click)="setViewMode('pending')">
-        <span>Pendientes</span>
+        <span>{{ i18n.t('payments.pending') }}</span>
       </button>
     </div>
   </div>
@@ -86,11 +86,11 @@
   <!-- Tabla planes -->
   <div class="payments__table-card">
     <div class="payments__table-header">
-      <h3 class="payments__table-title"><i class="fa-solid fa-table-list"></i> Planes de pago</h3>
+      <h3 class="payments__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('payments.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="payments__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="payments__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -112,38 +112,38 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Concepto</span></th>
-            <th style="width: 140px"><span class="erp-col-head">Total</span></th>
-            <th style="width: 110px"><span class="erp-col-head">Cuotas</span></th>
-            <th style="width: 120px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('payments.colConcept') }}</span></th>
+            <th style="width: 140px"><span class="erp-col-head">{{ i18n.t('payments.colTotal') }}</span></th>
+            <th style="width: 110px"><span class="erp-col-head">{{ i18n.t('payments.colQuotas') }}</span></th>
+            <th style="width: 120px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="concept" [showMenu]="false" matchMode="contains" placeholder="Filtrar concepto">
+              <p-columnFilter type="text" field="concept" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('payments.filterConceptPh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar concepto" [ngModel]="fConcept()" (ngModelChange)="fConcept.set($event); onColumnFilter()" aria-label="Filtrar por concepto" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('payments.filterConceptPh')" [ngModel]="fConcept()" (ngModelChange)="fConcept.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('payments.filterConceptAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="numeric" field="totalAmount" [showMenu]="false" matchMode="equals" placeholder="Monto">
+              <p-columnFilter type="numeric" field="totalAmount" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('payments.amountPh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="number" class="erp-filter-input" placeholder="Monto" [ngModel]="fTotal()" (ngModelChange)="fTotal.set($event); onColumnFilter()" aria-label="Filtrar por monto" />
+                  <input pInputText type="number" class="erp-filter-input" [placeholder]="i18n.t('payments.amountPh')" [ngModel]="fTotal()" (ngModelChange)="fTotal.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('payments.amountAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter type="numeric" field="installments" [showMenu]="false" matchMode="equals" placeholder="Cuotas">
+              <p-columnFilter type="numeric" field="installments" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('payments.quotasPh')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText type="number" class="erp-filter-input" placeholder="Cuotas" [ngModel]="fQuotas()" (ngModelChange)="fQuotas.set($event); onColumnFilter()" aria-label="Filtrar por cuotas" />
+                  <input pInputText type="number" class="erp-filter-input" [placeholder]="i18n.t('payments.quotasPh')" [ngModel]="fQuotas()" (ngModelChange)="fQuotas.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('payments.quotasAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('payments.statusAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -170,7 +170,7 @@
               <td><p-tag [value]="p.status" [severity]="statusSeverity(p.status)"></p-tag></td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-list" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openInstallments(p)" pTooltip="Ver cuotas" tooltipPosition="top" ariaLabel="Ver cuotas"></p-button>
+                  <p-button icon="pi pi-list" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openInstallments(p)" [pTooltip]="i18n.t('payments.viewInstallments')" tooltipPosition="top" [ariaLabel]="i18n.t('payments.viewInstallments')"></p-button>
                 </div>
               </td>
             </tr>
@@ -183,13 +183,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron planes</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o crea el primer plan.</p>
+                  <p class="empty-state__title">{{ i18n.t('payments.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('payments.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-plus" label="Crear plan" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-plus" [label]="i18n.t('payments.createPlan')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -213,15 +213,15 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="payments-dialog register-modal"
-  aria-label="Crear plan de pago"
+  [attr.aria-label]="i18n.t('payments.createTitle')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-plus"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Crear plan de pago</span>
-        <span class="register-modal__subtitle">Las cuotas se generan automáticamente</span>
+        <span class="register-modal__title">{{ i18n.t('payments.createTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('payments.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
@@ -236,9 +236,9 @@
           (ngModelChange)="updateForm('studentId', $event)"
           [class.p-invalid]="!!formErrors().studentId"
           autocomplete="off"
-          placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+          [placeholder]="i18n.t('payments.studentIdPh')"
         />
-        <label for="m-studentId">Student ID (UUID) *</label>
+        <label for="m-studentId">{{ i18n.t('payments.studentId') }}</label>
       </p-floatLabel>
       @if (formErrors().studentId) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
@@ -254,10 +254,10 @@
           (ngModelChange)="updateForm('concept', $event)"
           [class.p-invalid]="!!formErrors().concept"
           autocomplete="off"
-          placeholder="Ej: Matrícula"
+          [placeholder]="i18n.t('payments.conceptPh')"
           maxlength="150"
         />
-        <label for="m-concept">Concepto *</label>
+        <label for="m-concept">{{ i18n.t('payments.concept') }}</label>
       </p-floatLabel>
       @if (formErrors().concept) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().concept }}</small>
@@ -275,9 +275,9 @@
           [ngModel]="form().totalAmount"
           (ngModelChange)="updateForm('totalAmount', $event)"
           [class.p-invalid]="!!formErrors().totalAmount"
-          placeholder="Ej: 3000"
+          [placeholder]="i18n.t('payments.amountExPh')"
         />
-        <label for="m-totalAmount">Monto total *</label>
+        <label for="m-totalAmount">{{ i18n.t('payments.totalAmount') }}</label>
       </p-floatLabel>
       @if (formErrors().totalAmount) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().totalAmount }}</small>
@@ -295,9 +295,9 @@
           [ngModel]="form().installments"
           (ngModelChange)="updateForm('installments', $event)"
           [class.p-invalid]="!!formErrors().installments"
-          placeholder="Ej: 3"
+          [placeholder]="i18n.t('payments.quotasExPh')"
         />
-        <label for="m-installments">Cuotas *</label>
+        <label for="m-installments">{{ i18n.t('payments.installments') }}</label>
       </p-floatLabel>
       @if (formErrors().installments) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().installments }}</small>
@@ -305,7 +305,7 @@
     </div>
 
     <div class="field field--full" [class.field--error]="formErrors().startDate">
-      <label class="field__label-static" for="m-startDate">Fecha de inicio *</label>
+      <label class="field__label-static" for="m-startDate">{{ i18n.t('payments.startDate') }}</label>
       <input
         pInputText
         type="date"
@@ -322,8 +322,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Crear" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.create')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -340,14 +340,14 @@
   [dismissableMask]="false"
   [style]="{ width: '620px', maxWidth: '95vw' }"
   styleClass="payments-dialog register-modal"
-  aria-label="Cuotas del plan"
+  [attr.aria-label]="i18n.t('payments.installmentsTitle')"
   (onHide)="closeInstallmentsModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-list"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Cuotas del plan</span>
+        <span class="register-modal__title">{{ i18n.t('payments.installmentsTitle') }}</span>
         <span class="register-modal__subtitle">{{ installmentsPlan()?.concept }} · ${{ installmentsPlan()?.totalAmount }}</span>
       </span>
     </div>
@@ -355,7 +355,7 @@
 
   <div class="installments-list">
     <div class="installments-head">
-      <span>#</span><span>Monto</span><span>Vencimiento</span><span>Estado</span><span></span>
+      <span>#</span><span>{{ i18n.t('payments.colTotal') }}</span><span>{{ i18n.t('payments.hDue') }}</span><span>{{ i18n.t('common.status') }}</span><span></span>
     </div>
     @for (i of installments(); track i.id || $index) {
       <div class="installment-row">
@@ -365,20 +365,20 @@
         <span><p-tag [value]="i.status" [severity]="statusSeverity(i.status)"></p-tag></span>
         <span class="installment-action">
           @if (i.status === 'pending') {
-            <p-button label="Pagar" icon="pi pi-dollar" size="small" severity="success" (onClick)="openPay(i)"></p-button>
+            <p-button [label]="i18n.t('payments.pay')" icon="pi pi-dollar" size="small" severity="success" (onClick)="openPay(i)"></p-button>
           } @else {
-            <span class="payments__muted">Pagada</span>
+            <span class="payments__muted">{{ i18n.t('payments.paid') }}</span>
           }
         </span>
       </div>
     } @empty {
-      <div class="installments-empty"><i class="fa-regular fa-folder-open"></i> Este plan no tiene cuotas registradas</div>
+      <div class="installments-empty"><i class="fa-regular fa-folder-open"></i> {{ i18n.t('payments.noInstallments') }}</div>
     }
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeInstallmentsModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeInstallmentsModal()" icon="pi pi-times"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -395,15 +395,15 @@
   [dismissableMask]="false"
   [style]="{ width: '480px', maxWidth: '95vw' }"
   styleClass="payments-dialog register-modal"
-  aria-label="Registrar pago"
+  [attr.aria-label]="i18n.t('payments.payTitle')"
   (onHide)="closePayModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-dollar-sign"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Registrar pago</span>
-        <span class="register-modal__subtitle">Cuota #{{ payTarget()?.number }} · ${{ payTarget()?.amount }}</span>
+        <span class="register-modal__title">{{ i18n.t('payments.payTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('payments.paySubtitle', { number: payTarget()?.number ?? '', amount: payTarget()?.amount ?? '' }) }}</span>
       </span>
     </div>
   </ng-template>
@@ -420,9 +420,9 @@
           [ngModel]="payAmount()"
           (ngModelChange)="payAmount.set($event)"
           [class.p-invalid]="!!payError()"
-          placeholder="Ej: 1000"
+          [placeholder]="i18n.t('payments.paidAmountPh')"
         />
-        <label for="pay-amount">Monto pagado *</label>
+        <label for="pay-amount">{{ i18n.t('payments.paidAmount') }}</label>
       </p-floatLabel>
     </div>
 
@@ -436,12 +436,12 @@
           styleClass="w-full"
           appendTo="body"
         />
-        <label for="pay-method">Método</label>
+        <label for="pay-method">{{ i18n.t('payments.method') }}</label>
       </p-floatLabel>
     </div>
 
     <div class="field field--full">
-      <label class="field__label-static" for="pay-date">Fecha de pago *</label>
+      <label class="field__label-static" for="pay-date">{{ i18n.t('payments.payDate') }}</label>
       <input
         pInputText
         type="date"
@@ -458,8 +458,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closePayModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar pago" icon="pi pi-check" severity="success" type="button" (onClick)="confirmPay()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closePayModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('payments.registerPay')" icon="pi pi-check" severity="success" type="button" (onClick)="confirmPay()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

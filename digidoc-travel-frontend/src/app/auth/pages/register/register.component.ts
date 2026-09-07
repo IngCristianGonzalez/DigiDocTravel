@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
@@ -9,6 +9,8 @@ import { MessageModule } from 'primeng/message';
 import { DropdownModule } from 'primeng/dropdown';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { LangSelectorComponent } from '../../../shared/components/lang-selector.component';
 
 @Component({
   selector: 'app-register',
@@ -22,11 +24,14 @@ import { ToastService } from '../../../core/services/toast.service';
     ButtonModule,
     MessageModule,
     DropdownModule,
+    LangSelectorComponent,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  public i18n = inject(I18nService);
+
   fullName = '';
   email = '';
   password = '';
@@ -40,12 +45,14 @@ export class RegisterComponent {
   confirmPasswordTouched = signal(false);
   institutionTouched = signal(false);
 
-  roleOptions = [
-    { label: 'Coordinador', value: 'coordinator' },
-    { label: 'Tutor', value: 'tutor' },
-    { label: 'Administrador', value: 'admin' },
-    { label: 'Estudiante', value: 'student' },
-  ];
+  get roleOptions() {
+    return [
+      { label: this.i18n.t('auth.register.roleCoordinator'), value: 'coordinator' },
+      { label: this.i18n.t('auth.register.roleTutor'), value: 'tutor' },
+      { label: this.i18n.t('auth.register.roleAdmin'), value: 'admin' },
+      { label: this.i18n.t('auth.register.roleStudent'), value: 'student' },
+    ];
+  }
   selectedRole = signal<string | null>(null);
 
   submitError = signal<string | null>(null);
@@ -114,12 +121,12 @@ export class RegisterComponent {
       next: () => {
         this.loading = false;
         this.submitSuccess.set(true);
-        this.toast.success('Cuenta creada. Revisa tu correo e inicia sesión.');
+        this.toast.success(this.i18n.t('auth.validation.registerOk'));
         setTimeout(() => this.router.navigate(['/auth/login']), 2000);
       },
       error: (err) => {
         this.loading = false;
-        const msg = err.error?.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+        const msg = err.error?.message || this.i18n.t('auth.validation.registerError');
         this.submitError.set(msg);
         this.toast.error(msg);
       },

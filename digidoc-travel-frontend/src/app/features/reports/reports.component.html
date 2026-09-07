@@ -7,14 +7,14 @@
           <i class="fa-solid fa-chart-line"></i>
         </div>
         <div>
-          <h1 class="reports__title">Reportes</h1>
-          <p class="reports__subtitle">Generación y exportación por módulo</p>
+          <h1 class="reports__title">{{ i18n.t('reports.title') }}</h1>
+          <p class="reports__subtitle">{{ i18n.t('reports.subtitle') }}</p>
         </div>
       </div>
       <div class="reports__header-actions">
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -27,7 +27,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando reporte..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('reports.loading')"></app-loading>
   <app-error [message]="error()" (retry)="reload()"></app-error>
 
   <!-- Tabs por tipo -->
@@ -47,24 +47,24 @@
       <div class="reports__card-head">
         <div>
           <h3 class="reports__card-title">
-            Reporte de {{ currentType() }} · Total: {{ data()?.total }}
+            {{ i18n.t('reports.reportOf', {type: currentTypeLabel()}) }} · {{ i18n.t('reports.totalCount', {total: data()?.total}) }}
           </h3>
-          <p class="reports__card-meta">Generado: {{ data()?.generatedAt | date:'short' }} · Página {{ page() }}</p>
+          <p class="reports__card-meta">{{ i18n.t('reports.generated', {date: (data()?.generatedAt | date:'short'), page: page()}) }}</p>
           @if (data()?.totalAmount) {
-            <p class="reports__card-amount">Monto total: ${{ data()?.totalAmount }}</p>
+            <p class="reports__card-amount">{{ i18n.t('reports.totalAmount', {amount: data()?.totalAmount}) }}</p>
           }
         </div>
-        <p-tag [value]="currentType()" severity="info"></p-tag>
+        <p-tag [value]="currentTypeLabel()" severity="info"></p-tag>
       </div>
 
       <div class="reports__json-block">
-        <p class="reports__json-label">Vista previa (JSON sanitizado)</p>
+        <p class="reports__json-label">{{ i18n.t('reports.previewJson') }}</p>
         <pre class="reports__json">{{ sanitizedJson() }}</pre>
       </div>
 
       <div class="reports__export-row">
-        <p-button icon="pi pi-file-pdf" label="Exportar PDF" size="small" [loading]="loading()" [disabled]="loading()" (onClick)="export('pdf')"></p-button>
-        <p-button icon="pi pi-file-excel" label="Exportar Excel" size="small" severity="success" [loading]="loading()" [disabled]="loading()" (onClick)="export('excel')"></p-button>
+        <p-button icon="pi pi-file-pdf" [label]="i18n.t('reports.exportPdf')" size="small" [loading]="loading()" [disabled]="loading()" (onClick)="export('pdf')"></p-button>
+        <p-button icon="pi pi-file-excel" [label]="i18n.t('reports.exportExcel')" size="small" severity="success" [loading]="loading()" [disabled]="loading()" (onClick)="export('excel')"></p-button>
       </div>
 
       @if (exportMsg()) {
@@ -75,8 +75,8 @@
     <div class="empty-state">
       <div class="empty-state__icon"><i class="fa-solid fa-chart-column"></i></div>
       <div>
-        <p class="empty-state__title">Selecciona un tipo de reporte</p>
-        <p class="empty-state__desc">Estudiantes · Documentos · Visas · Pagos — con exportación a PDF y Excel.</p>
+        <p class="empty-state__title">{{ i18n.t('reports.selectType') }}</p>
+        <p class="empty-state__desc">{{ i18n.t('reports.selectTypeDesc') }}</p>
       </div>
     </div>
   }

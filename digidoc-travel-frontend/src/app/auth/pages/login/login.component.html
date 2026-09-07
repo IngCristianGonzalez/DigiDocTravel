@@ -15,44 +15,49 @@
 
       <div class="login__brand-text">
         <h1 class="login__brand-name">SL Global</h1>
-        <p class="login__brand-tagline">Educacion sin limites</p>
+        <p class="login__brand-tagline">{{ i18n.t('auth.brandTagline') }}</p>
       </div>
 
       <div class="login__brand-separator"></div>
 
       <div class="login__brand-value">
         <h2>DigiDoc Travel</h2>
-        <p>Plataforma de gestion documental para educacion internacional</p>
+        <p>{{ i18n.t('auth.brandDesc') }}</p>
       </div>
 
-      <ul class="login__brand-features" aria-label="Caracteristicas">
+      <ul class="login__brand-features" [attr.aria-label]="i18n.t('auth.loginFeatures')">
         <li>
           <span class="login__feature-dot" aria-hidden="true"></span>
-          Gestion documental centralizada
+          {{ i18n.t('auth.f1') }}
         </li>
         <li>
           <span class="login__feature-dot" aria-hidden="true"></span>
-          Flujo automatizado de aprobaciones
+          {{ i18n.t('auth.f2') }}
         </li>
         <li>
           <span class="login__feature-dot" aria-hidden="true"></span>
-          Cumplimiento normativo integrado
+          {{ i18n.t('auth.f3') }}
         </li>
         <li>
           <span class="login__feature-dot" aria-hidden="true"></span>
-          Reportes en tiempo real
+          {{ i18n.t('auth.f4') }}
         </li>
       </ul>
     </div>
 
     <footer class="login__brand-footer">
-      <p>&copy; 2026 SL Global. Todos los derechos reservados.</p>
+      <p>&copy; 2026 SL Global. {{ i18n.t('auth.rights') }}</p>
     </footer>
   </aside>
 
   <!-- Right panel - form -->
   <main class="login__main">
     <div class="login__form-wrapper">
+      <!-- Language selector (pre-login) -->
+      <div class="login__lang">
+        <app-lang-selector />
+      </div>
+
       <!-- Mobile brand -->
       <div class="login__mobile-brand">
         <img
@@ -71,15 +76,15 @@
       <!-- Back button -->
       <a routerLink="/" class="login__back">
         <i class="pi pi-arrow-left"></i>
-        Volver al inicio
+        {{ i18n.t('auth.backHome') }}
       </a>
 
       <!-- Form card -->
       <div class="login__card">
         <div class="login__card-header">
-          <h2 class="login__title">Iniciar sesion</h2>
+          <h2 class="login__title">{{ i18n.t('auth.loginTitle') }}</h2>
           <p class="login__subtitle">
-            Ingresa tus credenciales para acceder a la plataforma
+            {{ i18n.t('auth.loginSubtitle') }}
           </p>
         </div>
 
@@ -111,17 +116,17 @@
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
-            Iniciar sesion con Google
+            {{ i18n.t('auth.google') }}
           </button>
 
           <div class="login__divider">
-            <span>o continua con tu correo</span>
+            <span>{{ i18n.t('auth.orEmail') }}</span>
           </div>
 
           <!-- Email field -->
           <div class="login__field">
             <label for="email" class="login__label">
-              Correo electronico
+              {{ i18n.t('auth.email') }}
             </label>
             <span class="p-input-icon-left login__input-container">
               <i class="pi pi-envelope" aria-hidden="true"></i>
@@ -134,7 +139,7 @@
                 required
                 email
                 autocomplete="email"
-                placeholder="nombre@empresa.com"
+                [placeholder]="i18n.t('auth.emailPlaceholder')"
                 [class.ng-dirty]="emailTouched() && !isEmailValid()"
                 [disabled]="authService.loading()"
                 (blur)="emailTouched.set(true)"
@@ -144,7 +149,7 @@
             </span>
             @if (emailTouched() && !isEmailValid()) {
               <small id="email-error" class="login__field-error" role="alert">
-                Ingrese un correo electronico valido
+                {{ i18n.t('auth.emailInvalid') }}
               </small>
             }
           </div>
@@ -153,10 +158,10 @@
           <div class="login__field">
             <div class="login__label-row">
               <label for="password" class="login__label">
-                Contrasena
+                {{ i18n.t('auth.password') }}
               </label>
               <a routerLink="/auth/forgot-password" class="login__label-link">
-                Olvidaste tu contrasena?
+                {{ i18n.t('auth.forgot') }}
               </a>
             </div>
             <p-password
@@ -166,7 +171,7 @@
               [feedback]="false"
               [toggleMask]="true"
               [disabled]="authService.loading()"
-              placeholder="Minimo 6 caracteres"
+              [placeholder]="i18n.t('auth.passwordHint')"
               styleClass="login__password"
               inputStyleClass=""
               autocomplete="current-password"
@@ -175,11 +180,11 @@
               aria-describedby="password-hint"
             />
             <small id="password-hint" class="login__field-hint">
-              Minimo 6 caracteres
+              {{ i18n.t('auth.passwordHint') }}
             </small>
             @if (passwordTouched() && !isPasswordValid()) {
               <small class="login__field-error" role="alert">
-                La contrasena debe tener al menos 6 caracteres
+                {{ i18n.t('auth.passwordInvalid') }}
               </small>
             }
           </div>
@@ -191,7 +196,7 @@
               name="rememberMe"
               [binary]="true"
               inputId="rememberMe"
-              label="Recordarme en este dispositivo"
+              [label]="i18n.t('auth.remember')"
               styleClass="login__checkbox"
             />
           </div>
@@ -199,7 +204,7 @@
           <!-- Submit -->
           <p-button
             type="submit"
-            label="Iniciar sesion"
+            [label]="i18n.t('auth.submit')"
             icon="pi pi-arrow-right"
             iconPos="right"
             [loading]="authService.loading()"
@@ -212,8 +217,8 @@
         <!-- Footer -->
         <div class="login__card-footer">
           <p>
-            No tienes cuenta?
-            <a routerLink="/auth/register" class="login__footer-link">Registrate aqui</a>
+            {{ i18n.t('auth.noAccount') }}
+            <a routerLink="/auth/register" class="login__footer-link">{{ i18n.t('auth.registerHere') }}</a>
           </p>
         </div>
       </div>

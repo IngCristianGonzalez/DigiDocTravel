@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from './dashboard.service';
@@ -6,6 +6,7 @@ import { DashboardSummary } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -21,6 +22,7 @@ import { CardModule } from 'primeng/card';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit {
+  public i18n = inject(I18nService);
   summary = signal<DashboardSummary | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -43,7 +45,7 @@ export class DashboardComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const msg = e.error?.message || e.message || 'Error cargando dashboard';
+        const msg = e.error?.message || e.message || this.i18n.t('dashboard.loadError');
         const sanitizedMsg = this.sanitizeString(msg);
         this.error.set(sanitizedMsg);
         this.toast.error(sanitizedMsg);

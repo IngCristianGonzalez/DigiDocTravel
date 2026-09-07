@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VisasService } from './visas.service';
@@ -6,6 +6,7 @@ import { Visa } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 // PrimeNG - SL Global · PrimeNG 17 (mismo patrón que Students/Users/Documents)
 import { ButtonModule } from 'primeng/button';
@@ -41,6 +42,7 @@ import { DropdownModule } from 'primeng/dropdown';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisasComponent implements OnInit {
+  readonly i18n = inject(I18nService);
   loading = signal(false);
   error = signal<string | null>(null);
   visas = signal<Visa[]>([]);
@@ -100,7 +102,7 @@ export class VisasComponent implements OnInit {
     this.showDetailModal.set(true);
     this.svc.get(v.id).subscribe({
       next: (r: any) => this.detailVisa.set(r?.data ?? r),
-      error: (e) => this.toast.error(e.error?.message || 'Error al obtener visa'),
+      error: (e) => this.toast.error(e.error?.message || this.i18n.t('visas.errorGet')),
     });
   }
 
@@ -205,29 +207,29 @@ export class VisasComponent implements OnInit {
     const errors: any = {};
 
     const studentId = String(f.studentId ?? '').trim();
-    if (!studentId) errors.studentId = 'El Student ID es obligatorio';
-    else if (!this.uuidRegex.test(studentId)) errors.studentId = 'Debe ser un UUID válido';
-    if (!f.visaType || !String(f.visaType).trim()) errors.visaType = 'El tipo de visa es obligatorio';
-    if (!f.country || !String(f.country).trim()) errors.country = 'El país es obligatorio';
-    if (!f.issueDate || !String(f.issueDate).trim()) errors.issueDate = 'La fecha de expedición es obligatoria';
-    if (!f.expiryDate || !String(f.expiryDate).trim()) errors.expiryDate = 'La fecha de vencimiento es obligatoria';
+    if (!studentId) errors.studentId = this.i18n.t('visas.validation.studentRequired');
+    else if (!this.uuidRegex.test(studentId)) errors.studentId = this.i18n.t('visas.validation.studentInvalid');
+    if (!f.visaType || !String(f.visaType).trim()) errors.visaType = this.i18n.t('visas.validation.typeRequired');
+    if (!f.country || !String(f.country).trim()) errors.country = this.i18n.t('visas.validation.countryRequired');
+    if (!f.issueDate || !String(f.issueDate).trim()) errors.issueDate = this.i18n.t('visas.validation.issueRequired');
+    if (!f.expiryDate || !String(f.expiryDate).trim()) errors.expiryDate = this.i18n.t('visas.validation.expiryRequired');
 
     const xssPattern = /<\s*script/i;
-    if (f.visaNumber && xssPattern.test(f.visaNumber)) errors.visaNumber = 'Contenido no permitido en número de visa';
+    if (f.visaNumber && xssPattern.test(f.visaNumber)) errors.visaNumber = this.i18n.t('visas.validation.numberXss');
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (f.issueDate && !dateRegex.test(String(f.issueDate))) errors.issueDate = errors.issueDate || 'Formato inválido (YYYY-MM-DD)';
-    if (f.expiryDate && !dateRegex.test(String(f.expiryDate))) errors.expiryDate = errors.expiryDate || 'Formato inválido (YYYY-MM-DD)';
+    if (f.issueDate && !dateRegex.test(String(f.issueDate))) errors.issueDate = errors.issueDate || this.i18n.t('visas.validation.dateFormat');
+    if (f.expiryDate && !dateRegex.test(String(f.expiryDate))) errors.expiryDate = errors.expiryDate || this.i18n.t('visas.validation.dateFormat');
 
     if (!errors.issueDate && !errors.expiryDate && f.issueDate && f.expiryDate) {
       const issue = new Date(f.issueDate);
       const expiry = new Date(f.expiryDate);
-      if (isNaN(issue.getTime())) errors.issueDate = 'Fecha de expedición inválida';
-      if (isNaN(expiry.getTime())) errors.expiryDate = 'Fecha de vencimiento inválida';
+      if (isNaN(issue.getTime())) errors.issueDate = this.i18n.t('visas.validation.issueInvalid');
+      if (isNaN(expiry.getTime())) errors.expiryDate = this.i18n.t('visas.validation.expiryInvalid');
       if (!errors.issueDate && !errors.expiryDate && expiry <= issue)
-        errors.expiryDate = 'El vencimiento debe ser posterior a la expedición';
+        errors.expiryDate = this.i18n.t('visas.validation.expiryBeforeIssue');
     }
 
-    if (f.visaNumber && String(f.visaNumber).length > 50) errors.visaNumber = 'Número de visa demasiado largo';
+    if (f.visaNumber && String(f.visaNumber).length > 50) errors.visaNumber = this.i18n.t('visas.validation.numberTooLong');
 
     this.formErrors.set(errors);
     return Object.keys(errors).length === 0;
@@ -235,15 +237,15 @@ export class VisasComponent implements OnInit {
 
   private buildPayload(includeStudent: boolean): any | null {
     if (!this.validateForm()) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('visas.formFixErrors'));
       return null;
     }
     const s = this.sanitizeForm(this.form());
     const issue = new Date(s.issueDate);
     const expiry = new Date(s.expiryDate);
     if (expiry <= issue) {
-      this.formErrors.update(e => ({ ...e, expiryDate: 'El vencimiento debe ser posterior a la expedición' }));
-      this.toast.error('El vencimiento debe ser posterior a la expedición');
+      this.formErrors.update(e => ({ ...e, expiryDate: this.i18n.t('visas.validation.expiryBeforeIssue') }));
+      this.toast.error(this.i18n.t('visas.validation.expiryBeforeIssue'));
       return null;
     }
     const payload: any = {
@@ -281,7 +283,7 @@ export class VisasComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar visas';
+        const message = e.error?.message || e.message || this.i18n.t('visas.errorLoad');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -303,7 +305,7 @@ export class VisasComponent implements OnInit {
         this.loading.set(false);
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al cargar visas por vencer';
+        const message = e.error?.message || e.message || this.i18n.t('visas.errorExpiring');
         this.toast.error(message);
         this.loading.set(false);
       }
@@ -347,15 +349,15 @@ export class VisasComponent implements OnInit {
     this.error.set(null);
     this.svc.create(payload).subscribe({
       next: () => {
-        this.msg.set('Visa registrada');
-        this.toast.success('Visa registrada correctamente');
+        this.msg.set(this.i18n.t('visas.createdMsg'));
+        this.toast.success(this.i18n.t('visas.createdToast'));
         this.loading.set(false);
         this.closeCreateModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al registrar visa';
+        const message = e.error?.message || e.message || this.i18n.t('visas.errorCreate');
         this.msg.set(message);
         this.error.set(message);
         this.toast.error(message);
@@ -372,13 +374,13 @@ export class VisasComponent implements OnInit {
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
       next: () => {
-        this.toast.success('Visa actualizada correctamente');
+        this.toast.success(this.i18n.t('visas.updatedToast'));
         this.loading.set(false);
         this.closeEditModal();
         this.resetAndLoad();
       },
       error: (e) => {
-        this.toast.error(e.error?.message || 'Error al actualizar visa');
+        this.toast.error(e.error?.message || this.i18n.t('visas.errorUpdate'));
         this.loading.set(false);
       }
     });

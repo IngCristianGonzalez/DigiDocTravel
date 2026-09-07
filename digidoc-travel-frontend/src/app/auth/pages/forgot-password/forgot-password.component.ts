@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { LangSelectorComponent } from '../../../shared/components/lang-selector.component';
 
 type Mode = 'forgot' | 'reset';
 
@@ -17,11 +19,13 @@ type Mode = 'forgot' | 'reset';
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [FormsModule, RouterLink, InputTextModule, PasswordModule, ButtonModule, MessageModule],
+  imports: [FormsModule, RouterLink, InputTextModule, PasswordModule, ButtonModule, MessageModule, LangSelectorComponent],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent implements OnInit {
+  public i18n = inject(I18nService);
+
   mode: Mode = 'forgot';
   token = '';
   email = '';
@@ -69,9 +73,9 @@ export class ForgotPasswordComponent implements OnInit {
     this.authService.forgotPassword(this.sanitize(this.email)).subscribe({
       next: () => {
         this.sent.set(true);
-        this.toast.success('Si el correo existe, recibirás el enlace de recuperación.');
+        this.toast.success(this.i18n.t('auth.validation.forgotSent'));
       },
-      error: () => this.toast.error(this.authService.error() ?? 'No se pudo enviar el correo.'),
+      error: () => this.toast.error(this.authService.error() ?? this.i18n.t('auth.validation.forgotSendError')),
     });
   }
 
@@ -81,9 +85,9 @@ export class ForgotPasswordComponent implements OnInit {
     this.authService.resetPassword(this.token, this.password).subscribe({
       next: () => {
         this.done.set(true);
-        this.toast.success('Contraseña restablecida. Inicia sesión.');
+        this.toast.success(this.i18n.t('auth.validation.resetOk'));
       },
-      error: () => this.toast.error(this.authService.error() ?? 'Enlace inválido o vencido.'),
+      error: () => this.toast.error(this.authService.error() ?? this.i18n.t('auth.validation.resetError')),
     });
   }
 }

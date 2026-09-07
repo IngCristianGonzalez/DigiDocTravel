@@ -7,20 +7,20 @@
           <i class="fa-solid fa-folder-open"></i>
         </div>
         <div>
-          <h1 class="docs__title">Gestión Documental</h1>
-          <p class="docs__subtitle">Registro, carga, consulta, historial y descarga</p>
+          <h1 class="docs__title">{{ i18n.t('docs.title') }}</h1>
+          <p class="docs__subtitle">{{ i18n.t('docs.subtitle') }}</p>
         </div>
       </div>
       <div class="docs__header-actions">
         <p-button
           icon="pi pi-upload"
-          label="Registrar documento"
+          [label]="i18n.t('docs.registerDocument')"
           size="small"
           (onClick)="openCreateModal()">
         </p-button>
         <p-button
           icon="pi pi-refresh"
-          label="Recargar"
+          [label]="i18n.t('common.reload')"
           [loading]="loading()"
           [disabled]="loading()"
           severity="secondary"
@@ -35,21 +35,21 @@
       <div class="docs__quick-stat">
         <div class="docs__quick-stat-icon"><i class="fa-solid fa-database"></i></div>
         <div>
-          <p class="docs__quick-stat-label">Total registrados</p>
+          <p class="docs__quick-stat-label">{{ i18n.t('common.total') }}</p>
           <p class="docs__quick-stat-value">{{ total() }}</p>
         </div>
       </div>
       <div class="docs__quick-stat">
         <div class="docs__quick-stat-icon"><i class="fa-solid fa-file-lines"></i></div>
         <div>
-          <p class="docs__quick-stat-label">En esta página</p>
+          <p class="docs__quick-stat-label">{{ i18n.t('common.onThisPage') }}</p>
           <p class="docs__quick-stat-value">{{ docs().length }}</p>
         </div>
       </div>
       <div class="docs__quick-stat">
         <div class="docs__quick-stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
         <div>
-          <p class="docs__quick-stat-label">Página</p>
+          <p class="docs__quick-stat-label">{{ i18n.t('docs.statsPage') }}</p>
           <p class="docs__quick-stat-value">{{ page() }} / {{ totalPages() }}</p>
         </div>
       </div>
@@ -57,7 +57,7 @@
   </div>
 
   <!-- Loading / Error -->
-  <app-loading [show]="loading()" message="Cargando documentos..."></app-loading>
+  <app-loading [show]="loading()" [message]="i18n.t('docs.loading')"></app-loading>
   <app-error [message]="error()" (retry)="load()"></app-error>
 
   @if (msg()) {
@@ -69,11 +69,11 @@
   <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="docs__table-card">
     <div class="docs__table-header">
-      <h3 class="docs__table-title"><i class="fa-solid fa-table-list"></i> Documentos</h3>
+      <h3 class="docs__table-title"><i class="fa-solid fa-table-list"></i> {{ i18n.t('docs.tableTitle') }}</h3>
       <span class="erp-table-meta">
-        <span class="docs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        <span class="docs__table-count">{{ total() }} {{ i18n.t('common.records') }} · {{ i18n.t('common.page') }} {{ page() }} / {{ totalPages() }}</span>
         @if (hasActiveFilters()) {
-          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+          <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
         }
       </span>
     </div>
@@ -95,38 +95,38 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th><span class="erp-col-head">Nombre</span></th>
-            <th style="width: 120px"><span class="erp-col-head">Tipo</span></th>
-            <th style="width: 130px"><span class="erp-col-head">Categoría</span></th>
-            <th style="width: 120px"><span class="erp-col-head">Estado</span></th>
-            <th style="width: 208px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+            <th><span class="erp-col-head">{{ i18n.t('docs.colName') }}</span></th>
+            <th style="width: 120px"><span class="erp-col-head">{{ i18n.t('docs.colType') }}</span></th>
+            <th style="width: 130px"><span class="erp-col-head">{{ i18n.t('docs.colCategory') }}</span></th>
+            <th style="width: 120px"><span class="erp-col-head">{{ i18n.t('common.status') }}</span></th>
+            <th style="width: 208px; text-align: center"><span class="erp-col-head" style="justify-content: center">{{ i18n.t('common.actions') }}</span></th>
           </tr>
           <tr class="erp-filter-row">
             <th>
-              <p-columnFilter type="text" field="name" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+              <p-columnFilter type="text" field="name" [showMenu]="false" matchMode="contains" [placeholder]="i18n.t('docs.filterName')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                  <input pInputText class="erp-filter-input" [placeholder]="i18n.t('docs.filterName')" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" [attr.aria-label]="i18n.t('docs.filterNameAria')" />
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="type" [showMenu]="false" matchMode="equals" placeholder="Tipo">
+              <p-columnFilter field="type" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('docs.colType')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por tipo"></p-dropdown>
+                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('docs.filterTypeAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="category" [showMenu]="false" matchMode="equals" placeholder="Categoría">
+              <p-columnFilter field="category" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('docs.colCategory')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="categoryOptions" [ngModel]="fCategory()" (ngModelChange)="fCategory.set($event ?? ''); onColumnFilter()" placeholder="Todas" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por categoría"></p-dropdown>
+                  <p-dropdown [options]="categoryOptions" [ngModel]="fCategory()" (ngModelChange)="fCategory.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('docs.filterCategoryAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
             <th>
-              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" [placeholder]="i18n.t('common.status')">
                 <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" [placeholder]="i18n.t('common.all')" [showClear]="true" styleClass="w-full" appendTo="body" [ariaLabel]="i18n.t('docs.filterStatusAria')"></p-dropdown>
                 </ng-template>
               </p-columnFilter>
             </th>
@@ -156,11 +156,11 @@
               <td><p-tag [value]="d.status || 'pending'" [severity]="statusSeverity(d.status)"></p-tag></td>
               <td>
                 <div class="row-actions">
-                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(d)" pTooltip="Ver detalle" tooltipPosition="top" ariaLabel="Ver detalle"></p-button>
-                  <p-button icon="pi pi-download" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="download(d.id)" pTooltip="Descargar" tooltipPosition="top" ariaLabel="Descargar documento"></p-button>
-                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(d)" pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar documento"></p-button>
-                  <p-button icon="pi pi-history" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="openHistory(d)" pTooltip="Historial" tooltipPosition="top" ariaLabel="Ver historial"></p-button>
-                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(d)" pTooltip="Eliminar" tooltipPosition="top" ariaLabel="Eliminar documento"></p-button>
+                  <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info" size="small" (onClick)="openDetail(d)" [pTooltip]="i18n.t('common.view')" tooltipPosition="top" [ariaLabel]="i18n.t('common.view')"></p-button>
+                  <p-button icon="pi pi-download" [text]="true" [rounded]="true" severity="success" size="small" (onClick)="download(d.id)" [pTooltip]="i18n.t('docs.actionDownload')" tooltipPosition="top" [ariaLabel]="i18n.t('docs.actionDownload')"></p-button>
+                  <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="warning" size="small" (onClick)="openEdit(d)" [pTooltip]="i18n.t('common.edit')" tooltipPosition="top" [ariaLabel]="i18n.t('common.edit')"></p-button>
+                  <p-button icon="pi pi-history" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="openHistory(d)" [pTooltip]="i18n.t('docs.actionHistory')" tooltipPosition="top" [ariaLabel]="i18n.t('docs.actionHistory')"></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(d)" [pTooltip]="i18n.t('common.delete')" tooltipPosition="top" [ariaLabel]="i18n.t('common.delete')"></p-button>
                 </div>
               </td>
             </tr>
@@ -173,13 +173,13 @@
               <div class="empty-state">
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
-                  <p class="empty-state__title">No se encontraron documentos</p>
-                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer documento.</p>
+                  <p class="empty-state__title">{{ i18n.t('docs.emptyTitle') }}</p>
+                  <p class="empty-state__desc">{{ i18n.t('docs.emptyDesc') }}</p>
                 </div>
                 @if (hasActiveFilters()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                  <p-button icon="pi pi-filter-slash" [label]="i18n.t('common.clearFilters')" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
-                  <p-button icon="pi pi-upload" label="Registrar documento" size="small" (onClick)="openCreateModal()"></p-button>
+                  <p-button icon="pi pi-upload" [label]="i18n.t('docs.registerDocument')" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>
             </td>
@@ -202,9 +202,9 @@
         [class.p-invalid]="!!formErrors().studentId"
         [disabled]="editing"
         autocomplete="off"
-        placeholder="Ej: 123e4567-e89b-12d3-a456-426614174000"
+        [placeholder]="i18n.t('docs.phStudentId')"
       />
-      <label for="m-studentId">Student ID (UUID) *</label>
+      <label for="m-studentId">{{ i18n.t('docs.fieldStudentId') }} *</label>
     </p-floatLabel>
     @if (formErrors().studentId) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().studentId }}</small>
@@ -222,7 +222,7 @@
         styleClass="w-full"
         appendTo="body"
       />
-      <label for="m-type">Tipo *</label>
+      <label for="m-type">{{ i18n.t('docs.fieldType') }} *</label>
     </p-floatLabel>
     @if (formErrors().type) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().type }}</small>
@@ -238,10 +238,10 @@
         (ngModelChange)="updateForm('name', $event)"
         [class.p-invalid]="!!formErrors().name"
         autocomplete="off"
-        placeholder="Ej: Pasaporte 2026"
+        [placeholder]="i18n.t('docs.phName')"
         maxlength="150"
       />
-      <label for="m-name">Nombre *</label>
+      <label for="m-name">{{ i18n.t('docs.fieldName') }} *</label>
     </p-floatLabel>
     @if (formErrors().name) {
       <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().name }}</small>
@@ -256,11 +256,11 @@
         [ngModel]="form().category"
         (ngModelChange)="updateForm('category', $event)"
         [showClear]="true"
-        placeholder="Sin categoría"
+        [placeholder]="i18n.t('docs.phNoCategory')"
         styleClass="w-full"
         appendTo="body"
       />
-      <label for="m-category">Categoría <span class="field__optional">(opcional)</span></label>
+      <label for="m-category">{{ i18n.t('docs.fieldCategory') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
     </p-floatLabel>
   </div>
 
@@ -272,10 +272,10 @@
         [ngModel]="form().description"
         (ngModelChange)="updateForm('description', $event)"
         autocomplete="off"
-        placeholder="Descripción breve"
+        [placeholder]="i18n.t('docs.phDescription')"
         maxlength="500"
       />
-      <label for="m-description">Descripción <span class="field__optional">(opcional)</span></label>
+      <label for="m-description">{{ i18n.t('docs.fieldDescription') }} <span class="field__optional">{{ i18n.t('common.optional') }}</span></label>
     </p-floatLabel>
   </div>
 </ng-template>
@@ -293,15 +293,15 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="docs-dialog register-modal"
-  aria-label="Registrar documento"
+  [attr.aria-label]="i18n.t('docs.registerDocument')"
   (onHide)="closeCreateModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-upload"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Registrar documento</span>
-        <span class="register-modal__subtitle">Carga el archivo y completa los datos</span>
+        <span class="register-modal__title">{{ i18n.t('docs.registerDocument') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('docs.createSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
@@ -310,7 +310,7 @@
     <ng-container *ngTemplateOutlet="docFormFields; context: { editing: false }"></ng-container>
 
     <div class="field field--full" [class.field--error]="fileError()">
-      <label class="field__label-static" for="m-file">Archivo (PDF, JPG, PNG — máx 10MB)</label>
+      <label class="field__label-static" for="m-file">{{ i18n.t('docs.fileLabel') }}</label>
       <input
         type="file"
         id="m-file"
@@ -323,15 +323,15 @@
       } @else if (form().fileUrl) {
         <span class="field__hint field__hint--success"><i class="fa-solid fa-circle-check"></i> {{ form().fileType }} · {{ form().fileSize }} bytes</span>
       } @else {
-        <span class="field__hint">Se valida tipo, tamaño y contenido (magic bytes)</span>
+        <span class="field__hint">{{ i18n.t('docs.fileHint') }}</span>
       }
     </div>
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
-      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.register')" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -349,14 +349,14 @@
   [style]="{ width: '640px', maxWidth: '95vw' }"
   [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
   styleClass="docs-dialog register-modal"
-  aria-label="Editar documento"
+  [attr.aria-label]="i18n.t('docs.editTitle')"
   (onHide)="closeEditModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Editar documento</span>
+        <span class="register-modal__title">{{ i18n.t('docs.editTitle') }}</span>
         <span class="register-modal__subtitle">{{ editingDoc()?.name }}</span>
       </span>
     </div>
@@ -368,8 +368,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
-      <p-button label="Guardar" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeEditModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.save')" icon="pi pi-check" type="button" (onClick)="saveEdit()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -386,14 +386,14 @@
   [dismissableMask]="false"
   [style]="{ width: '520px', maxWidth: '95vw' }"
   styleClass="docs-dialog register-modal"
-  aria-label="Detalle de documento"
+  [attr.aria-label]="i18n.t('docs.detailTitle')"
   (onHide)="closeDetailModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Detalle de documento</span>
+        <span class="register-modal__title">{{ i18n.t('docs.detailTitle') }}</span>
         <span class="register-modal__subtitle">{{ detailDoc()?.name }}</span>
       </span>
     </div>
@@ -401,20 +401,20 @@
 
   @if (detailDoc(); as d) {
     <dl class="detail-list">
-      <div class="detail-list__row"><dt>Nombre</dt><dd>{{ d.name }}</dd></div>
-      <div class="detail-list__row"><dt>Tipo</dt><dd>{{ d.type }}</dd></div>
-      <div class="detail-list__row"><dt>Categoría</dt><dd>{{ d.category || '—' }}</dd></div>
-      <div class="detail-list__row"><dt>Estado</dt><dd>{{ d.status || 'pending' }}</dd></div>
-      <div class="detail-list__row"><dt>Descripción</dt><dd>{{ d.description || '—' }}</dd></div>
-      <div class="detail-list__row"><dt>Archivo</dt><dd class="detail-list__break">{{ d.fileUrl || 'Sin archivo' }}@if (d.fileSize) { · {{ d.fileSize }} bytes }</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('docs.fieldName') }}</dt><dd>{{ d.name }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('docs.fieldType') }}</dt><dd>{{ d.type }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('docs.fieldCategory') }}</dt><dd>{{ d.category || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('common.status') }}</dt><dd>{{ d.status || 'pending' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('docs.fieldDescription') }}</dt><dd>{{ d.description || '—' }}</dd></div>
+      <div class="detail-list__row"><dt>{{ i18n.t('docs.detailFile') }}</dt><dd class="detail-list__break">{{ d.fileUrl || i18n.t('docs.noFile') }}@if (d.fileSize) { · {{ d.fileSize }} bytes }</dd></div>
     </dl>
   }
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
-      <p-button label="Descargar" icon="pi pi-download" severity="success" type="button" (onClick)="detailDoc() && download(detailDoc()!.id)"></p-button>
-      <p-button label="Editar" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('docs.actionDownload')" icon="pi pi-download" severity="success" type="button" (onClick)="detailDoc() && download(detailDoc()!.id)"></p-button>
+      <p-button [label]="i18n.t('common.edit')" icon="pi pi-pencil" type="button" (onClick)="goFromDetailToEdit()"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -431,14 +431,14 @@
   [dismissableMask]="false"
   [style]="{ width: '560px', maxWidth: '95vw' }"
   styleClass="docs-dialog register-modal"
-  aria-label="Historial de documento"
+  [attr.aria-label]="i18n.t('docs.historyTitle')"
   (onHide)="closeHistoryModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Historial de cambios</span>
+        <span class="register-modal__title">{{ i18n.t('docs.historyTitle') }}</span>
         <span class="register-modal__subtitle">{{ historyDoc()?.name }}</span>
       </span>
     </div>
@@ -452,13 +452,13 @@
         <span class="history-item__changes">{{ h.changes | json }}</span>
       </div>
     } @empty {
-      <div class="history-empty"><i class="fa-regular fa-folder-open"></i> Sin movimientos registrados</div>
+      <div class="history-empty"><i class="fa-regular fa-folder-open"></i> {{ i18n.t('docs.historyEmpty') }}</div>
     }
   </div>
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeHistoryModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.close')" severity="secondary" [outlined]="true" type="button" (onClick)="closeHistoryModal()" icon="pi pi-times"></p-button>
     </div>
   </ng-template>
 </p-dialog>
@@ -475,22 +475,22 @@
   [dismissableMask]="false"
   [style]="{ width: '480px', maxWidth: '95vw' }"
   styleClass="docs-dialog register-modal"
-  aria-label="Eliminar documento"
+  [attr.aria-label]="i18n.t('docs.deleteTitle')"
   (onHide)="closeDeleteModal()">
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
       <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
       <span class="register-modal__titles">
-        <span class="register-modal__title">Eliminar documento</span>
-        <span class="register-modal__subtitle">Esta acción no se puede deshacer</span>
+        <span class="register-modal__title">{{ i18n.t('docs.deleteTitle') }}</span>
+        <span class="register-modal__subtitle">{{ i18n.t('docs.deleteSubtitle') }}</span>
       </span>
     </div>
   </ng-template>
 
   <div class="delete-warning">
     <i class="fa-solid fa-triangle-exclamation"></i>
-    <span>Se eliminará el registro y su archivo asociado de forma permanente.</span>
+    <span>{{ i18n.t('docs.deleteWarning') }}</span>
   </div>
 
   @if (deleteTarget(); as t) {
@@ -499,8 +499,8 @@
 
   <ng-template pTemplate="footer">
     <div class="modal-footer">
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
-      <p-button label="Eliminar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+      <p-button [label]="i18n.t('common.cancel')" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button [label]="i18n.t('common.delete')" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
     </div>
   </ng-template>
 </p-dialog>

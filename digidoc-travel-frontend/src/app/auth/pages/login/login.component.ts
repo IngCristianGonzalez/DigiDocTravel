@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,6 +8,8 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { I18nService } from '../../../core/i18n/i18n.service';
+import { LangSelectorComponent } from '../../../shared/components/lang-selector.component';
 
 @Component({
   selector: 'app-login',
@@ -20,11 +22,14 @@ import { ToastService } from '../../../core/services/toast.service';
     CheckboxModule,
     ButtonModule,
     MessageModule,
+    LangSelectorComponent,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
+  public i18n = inject(I18nService);
+
   email = '';
   password = '';
   rememberMe = false;
@@ -65,7 +70,7 @@ export class LoginComponent {
 
     // OWASP A07 - validar cliente antes de enviar
     if (email.includes('..') || password.includes('<script')) {
-      this.toast.error('Entrada no válida detectada');
+      this.toast.error(this.i18n.t('auth.validation.invalidInput'));
       return;
     }
 
@@ -73,16 +78,16 @@ export class LoginComponent {
       .login({ email, password })
       .subscribe({
         next: () => {
-          this.toast.success('Inicio de sesión exitoso');
+          this.toast.success(this.i18n.t('auth.validation.loginOk'));
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           const status = err.status;
-          const msg = err.error?.message || 'Error al iniciar sesión';
+          const msg = err.error?.message || this.i18n.t('auth.validation.loginError');
           if (status === 429) {
-            this.toast.warning('Demasiados intentos. Espera 15 minutos (OWASP Rate Limit)');
+            this.toast.warning(this.i18n.t('auth.validation.rateLimit'));
           } else if (status === 401) {
-            this.toast.error('Credenciales inválidas');
+            this.toast.error(this.i18n.t('auth.validation.badCredentials'));
           }
           console.warn(`[Login ${status}] ${msg}`);
         }

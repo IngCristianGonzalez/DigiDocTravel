@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
@@ -7,6 +7,7 @@ import { Student } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
 import { ErrorComponent } from '../../shared/components/error.component';
 import { ToastService } from '../../core/services/toast.service';
+import { I18nService } from '../../core/i18n/i18n.service';
 import { COUNTRIES, Country } from './countries.data';
 
 // PrimeNG - SL Global (lara-light-amber) · PrimeNG 17
@@ -43,6 +44,7 @@ import { DropdownModule } from 'primeng/dropdown';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentsComponent implements OnInit {
+  public i18n = inject(I18nService);
   loading = signal(false);
   error = signal<string | null>(null);
   students = signal<Student[]>([]);
@@ -296,52 +298,52 @@ export class StudentsComponent implements OnInit {
 
     const firstName = (f.firstName ?? '').trim();
     if (!firstName) {
-      errors.firstName = 'El nombre es obligatorio';
+      errors.firstName = this.i18n.t('students.validation.firstNameRequired');
     } else if (firstName.length < this.MIN_NAME_LENGTH) {
-      errors.firstName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
+      errors.firstName = this.i18n.t('students.validation.minChars', { min: this.MIN_NAME_LENGTH });
     } else if (this.forbiddenCharsRegex.test(firstName) || !this.nameRegex.test(firstName)) {
-      errors.firstName = 'No se permiten caracteres especiales (@ * { } etc.)';
+      errors.firstName = this.i18n.t('students.validation.noSpecialChars');
     }
 
     const lastName = (f.lastName ?? '').trim();
     if (!lastName) {
-      errors.lastName = 'El apellido es obligatorio';
+      errors.lastName = this.i18n.t('students.validation.lastNameRequired');
     } else if (lastName.length < this.MIN_NAME_LENGTH) {
-      errors.lastName = `Mínimo ${this.MIN_NAME_LENGTH} caracteres`;
+      errors.lastName = this.i18n.t('students.validation.minChars', { min: this.MIN_NAME_LENGTH });
     } else if (this.forbiddenCharsRegex.test(lastName) || !this.nameRegex.test(lastName)) {
-      errors.lastName = 'No se permiten caracteres especiales (@ * { } etc.)';
+      errors.lastName = this.i18n.t('students.validation.noSpecialChars');
     }
 
     const identification = (f.identification ?? '').trim();
     if (!identification) {
-      errors.identification = 'La identificación es obligatoria';
+      errors.identification = this.i18n.t('students.validation.idRequired');
     } else if (identification.length < this.MIN_ID_LENGTH) {
-      errors.identification = `Mínimo ${this.MIN_ID_LENGTH} caracteres`;
+      errors.identification = this.i18n.t('students.validation.minChars', { min: this.MIN_ID_LENGTH });
     } else if (!this.identificationRegex.test(identification)) {
-      errors.identification = 'Solo letras, números, puntos y guiones';
+      errors.identification = this.i18n.t('students.validation.idInvalid');
     }
 
     const email = (f.email ?? '').trim();
     if (!email) {
-      errors.email = 'El email es obligatorio';
+      errors.email = this.i18n.t('students.validation.emailRequired');
     } else if (!this.emailRegex.test(email)) {
-      errors.email = 'Formato de email inválido (ej: nombre@dominio.com)';
+      errors.email = this.i18n.t('students.validation.emailInvalid');
     } else if (this.forbiddenCharsRegex.test(email) && /[@*{}]/.test(email.replace(/[@.]/g, ''))) {
       // email ya valida arroba/punto, pero bloquea * { }
-      if (/[*{}]/.test(email)) errors.email = 'Email contiene caracteres no permitidos';
+      if (/[*{}]/.test(email)) errors.email = this.i18n.t('students.validation.emailForbidden');
     }
 
     const country = this.selectedCountry()?.name ?? (f.countryOrigin ?? '').trim();
     if (!country) {
-      errors.countryOrigin = 'Selecciona un país';
+      errors.countryOrigin = this.i18n.t('students.validation.countryRequired');
     } else if (!this.countries().some(c => c.name === country)) {
-      errors.countryOrigin = 'País no válido';
+      errors.countryOrigin = this.i18n.t('students.validation.countryInvalid');
     }
 
     const phoneDigits = this.phoneNumber().trim();
     if (phoneDigits) {
       if (!/^\d{7,15}$/.test(phoneDigits)) {
-        errors.phone = 'Teléfono: 7 a 15 dígitos';
+        errors.phone = this.i18n.t('students.validation.phoneInvalid');
       }
     }
 
@@ -381,7 +383,7 @@ export class StudentsComponent implements OnInit {
       },
       error: (e) => {
         // e.error puede venir envuelto {success:false, message}
-        const message = e.error?.message || e.error?.data?.message || e.message || 'Error al cargar estudiantes';
+        const message = e.error?.message || e.error?.data?.message || e.message || this.i18n.t('students.error.load');
         this.error.set(message);
         this.toast.error(message);
         this.loading.set(false);
@@ -433,7 +435,7 @@ export class StudentsComponent implements OnInit {
   create() {
     if (!this.validateForm()) {
       // marca que hay errores en todos los campos visibles
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('students.validation.fixErrors'));
       return;
     }
 
@@ -456,8 +458,8 @@ export class StudentsComponent implements OnInit {
     if (university) payload['university'] = this.sanitize(university);
 
     if (!this.emailRegex.test(payload['email'] as string)) {
-      this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
-      this.toast.error('Email inválido');
+      this.formErrors.update(e => ({ ...e, email: this.i18n.t('students.validation.emailInvalidShort') }));
+      this.toast.error(this.i18n.t('students.validation.emailInvalidShort'));
       return;
     }
 
@@ -465,8 +467,8 @@ export class StudentsComponent implements OnInit {
     this.error.set(null);
     this.svc.create(payload).subscribe({
       next: () => {
-        this.msg.set('Estudiante registrado');
-        this.toast.success('Estudiante registrado correctamente');
+        this.msg.set(this.i18n.t('students.success.registeredShort'));
+        this.toast.success(this.i18n.t('students.success.registered'));
         this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
         this.phoneNumber.set('');
         this.formErrors.set({});
@@ -476,7 +478,7 @@ export class StudentsComponent implements OnInit {
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || e.message || 'Error al registrar estudiante';
+        const message = e.error?.message || e.message || this.i18n.t('students.error.create');
         this.msg.set(message);
         this.error.set(message);
         this.toast.error(message);
@@ -494,7 +496,7 @@ export class StudentsComponent implements OnInit {
         this.selected.set(d as any);
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al obtener estudiante';
+        const message = e.error?.message || this.i18n.t('students.error.getOne');
         this.toast.error(message);
       }
     });
@@ -504,7 +506,7 @@ export class StudentsComponent implements OnInit {
     const target = this.editingStudent();
     if (!target) return;
     if (!this.validateForm()) {
-      this.toast.error('Corrige los errores del formulario');
+      this.toast.error(this.i18n.t('students.validation.fixErrors'));
       return;
     }
     const raw = this.form();
@@ -525,13 +527,13 @@ export class StudentsComponent implements OnInit {
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
       next: () => {
-        this.toast.success('Estudiante actualizado correctamente');
+        this.toast.success(this.i18n.t('students.success.updated'));
         this.loading.set(false);
         this.closeEditModal();
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al actualizar estudiante';
+        const message = e.error?.message || this.i18n.t('students.error.update');
         this.toast.error(message);
         this.loading.set(false);
       }
@@ -544,14 +546,14 @@ export class StudentsComponent implements OnInit {
     this.loading.set(true);
     this.svc.remove(target.id).subscribe({
       next: () => {
-        this.toast.success('Estudiante desactivado correctamente');
+        this.toast.success(this.i18n.t('students.success.deactivated'));
         this.loading.set(false);
         this.closeDeleteModal();
         this.page.set(1);
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al desactivar estudiante';
+        const message = e.error?.message || this.i18n.t('students.error.deactivate');
         this.toast.error(message);
         this.loading.set(false);
       }
@@ -563,17 +565,17 @@ export class StudentsComponent implements OnInit {
     if (!id) return;
     const sanitizedAdvisorId = this.sanitize(this.advisorId());
     if (!sanitizedAdvisorId) {
-      this.toast.error('Advisor ID es obligatorio');
+      this.toast.error(this.i18n.t('students.validation.advisorRequired'));
       return;
     }
     this.svc.assignAdvisor(id, sanitizedAdvisorId).subscribe({
       next: () => {
-        this.msg.set('Asesor asociado');
-        this.toast.success('Asesor asociado correctamente');
+        this.msg.set(this.i18n.t('students.success.advisorShort'));
+        this.toast.success(this.i18n.t('students.success.advisor'));
         this.load();
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al asociar asesor';
+        const message = e.error?.message || this.i18n.t('students.error.assignAdvisor');
         this.toast.error(message);
       }
     });
@@ -587,29 +589,29 @@ export class StudentsComponent implements OnInit {
     this.obsError.set(null);
 
     if (!raw || !raw.trim()) {
-      this.obsError.set('La observación no puede estar vacía');
+      this.obsError.set(this.i18n.t('students.validation.obsRequired'));
       return;
     }
     if (/<\s*script/i.test(raw)) {
-      this.obsError.set('Contenido no permitido: <script> detectado');
-      this.toast.error('Observación contiene contenido no permitido');
+      this.obsError.set(this.i18n.t('students.validation.obsForbidden'));
+      this.toast.error(this.i18n.t('students.validation.obsForbiddenToast'));
       return;
     }
 
     const sanitized = this.sanitize(raw);
     if (!sanitized) {
-      this.obsError.set('La observación no puede estar vacía');
+      this.obsError.set(this.i18n.t('students.validation.obsRequired'));
       return;
     }
 
     this.svc.addObservation(id, sanitized).subscribe({
       next: () => {
         this.obsText.set('');
-        this.toast.success('Observación agregada');
+        this.toast.success(this.i18n.t('students.success.obsAdded'));
         this.loadObservationsFor(id);
       },
       error: (e) => {
-        const message = e.error?.message || 'Error al agregar observación';
+        const message = e.error?.message || this.i18n.t('students.error.addObs');
         this.toast.error(message);
       }
     });
