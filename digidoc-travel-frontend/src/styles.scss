@@ -404,6 +404,19 @@ input {
   }
 }
 
+// --- Tooltip (tablas y acciones): padding equilibrado, sin texto pegado ---
+.p-tooltip .p-tooltip-text {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+  max-width: 22rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
 // --- Focus Ring Utility ---
 .p-focusable:focus-visible {
   outline: 2px solid var(--sl-orange-500) !important;
