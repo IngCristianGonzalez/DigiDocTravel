@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { EventsComponent } from './events.component';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 describe('EventsComponent', () => {
   let fixture: ComponentFixture<EventsComponent>;
@@ -12,6 +13,8 @@ describe('EventsComponent', () => {
       imports: [EventsComponent],
       providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
+    // Tests en español: jsdom reporta navigator en inglés y el servicio autodetectaría en-AU
+    TestBed.inject(I18nService).setLang('es');
     fixture = TestBed.createComponent(EventsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

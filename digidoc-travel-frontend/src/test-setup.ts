@@ -1,5 +1,9 @@
 import '@angular/compiler';
 
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+
+setupTestBed();
+
 // Always ensure localStorage mock is available (jsdom opaque origin + vitest without --localstorage-file)
 const createMock = () => {
   const store: Record<string, string> = {};

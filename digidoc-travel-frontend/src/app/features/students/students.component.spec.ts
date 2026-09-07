@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { StudentsComponent } from './students.component';
+import { I18nService } from '../../core/i18n/i18n.service';
 
 describe('StudentsComponent - OWASP', () => {
   let fixture: ComponentFixture<StudentsComponent>;
@@ -12,6 +13,8 @@ describe('StudentsComponent - OWASP', () => {
       imports: [StudentsComponent],
       providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
+    // Tests en español: jsdom reporta navigator en inglés y el servicio autodetectaría en-AU
+    TestBed.inject(I18nService).setLang('es');
     fixture = TestBed.createComponent(StudentsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
