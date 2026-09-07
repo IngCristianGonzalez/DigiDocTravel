@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Document } from './document.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
@@ -10,7 +17,7 @@ export class DocumentHistory {
   @Column({ type: 'uuid' })
   documentId: string;
 
-  @ManyToOne(() => Document, d => d.history, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Document, (d) => d.history, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'document_id' })
   document: Document;
 

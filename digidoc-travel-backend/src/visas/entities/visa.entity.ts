@@ -1,12 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, ValueTransformer } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  ValueTransformer,
+} from 'typeorm';
 import { Student } from '../../students/entities/student.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 import { encrypt, decrypt } from '../../security/helpers/crypto.helper.js';
 
 // OWASP A02 - Encrypt visaNumber at rest
 const EncryptedTransformer: ValueTransformer = {
-  to: (value: string | null) => value ? encrypt(value) : value,
-  from: (value: string | null) => value ? decrypt(value) : value,
+  to: (value: string | null) => (value ? encrypt(value) : value),
+  from: (value: string | null) => (value ? decrypt(value) : value),
 };
 
 @Entity('visas')

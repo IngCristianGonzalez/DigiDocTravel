@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { User } from './entities/user.entity.js';
@@ -33,7 +38,9 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(dto.password, 12);
     let roles: Role[] = [];
     if (dto.roleIds && dto.roleIds.length > 0) {
-      roles = await this.roleRepository.find({ where: { id: In(dto.roleIds) } });
+      roles = await this.roleRepository.find({
+        where: { id: In(dto.roleIds) },
+      });
     }
     const user = this.userRepository.create({
       email: dto.email,
@@ -49,13 +56,20 @@ export class UsersService {
   async findAll(query: QueryUserDto) {
     const page = query.page || 1;
     const limit = query.limit || 10;
-    const qb = this.userRepository.createQueryBuilder('user')
+    const qb = this.userRepository
+      .createQueryBuilder('user')
       .leftJoinAndSelect('user.roles', 'role')
       .leftJoinAndSelect('role.permissions', 'permission');
 
-    if (query.email) qb.andWhere('user.email ILIKE :email', { email: `%${query.email}%` });
-    if (query.search) qb.andWhere('(user.email ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search)', { search: `%${query.search}%` });
-    if (query.status !== undefined) qb.andWhere('user.status = :status', { status: query.status === 'true' });
+    if (query.email)
+      qb.andWhere('user.email ILIKE :email', { email: `%${query.email}%` });
+    if (query.search)
+      qb.andWhere(
+        '(user.email ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search)',
+        { search: `%${query.search}%` },
+      );
+    if (query.status !== undefined)
+      qb.andWhere('user.status = :status', { status: query.status === 'true' });
     if (query.role) qb.andWhere('role.name = :role', { role: query.role });
 
     if (query.sortBy) {
@@ -90,13 +104,19 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user.status) throw new BadRequestException('User already deactivated');
     // prevent deactivating last admin
-    const adminRole = await this.roleRepository.findOne({ where: { name: 'admin' } });
-    if (adminRole && user.roles.some(r => r.name === 'admin')) {
-      const adminCount = await this.userRepository.createQueryBuilder('user')
-        .innerJoin('user.roles', 'role', 'role.name = :roleName', { roleName: 'admin' })
+    const adminRole = await this.roleRepository.findOne({
+      where: { name: 'admin' },
+    });
+    if (adminRole && user.roles.some((r) => r.name === 'admin')) {
+      const adminCount = await this.userRepository
+        .createQueryBuilder('user')
+        .innerJoin('user.roles', 'role', 'role.name = :roleName', {
+          roleName: 'admin',
+        })
         .where('user.status = :status', { status: true })
         .getCount();
-      if (adminCount <= 1) throw new BadRequestException('Cannot deactivate last admin');
+      if (adminCount <= 1)
+        throw new BadRequestException('Cannot deactivate last admin');
     }
     user.status = false;
     return this.userRepository.save(user);
@@ -104,8 +124,11 @@ export class UsersService {
 
   async assignRoles(id: string, roleIds: string[]): Promise<User> {
     const user = await this.findOne(id);
-    const roles = await this.roleRepository.find({ where: { id: In(roleIds) } });
-    if (roles.length !== roleIds.length) throw new NotFoundException('Some roles not found');
+    const roles = await this.roleRepository.find({
+      where: { id: In(roleIds) },
+    });
+    if (roles.length !== roleIds.length)
+      throw new NotFoundException('Some roles not found');
     user.roles = roles;
     return this.userRepository.save(user);
   }

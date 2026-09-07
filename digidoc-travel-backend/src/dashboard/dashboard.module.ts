@@ -10,7 +10,16 @@ import { DashboardService } from './dashboard.service.js';
 import { DashboardController } from './dashboard.controller.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, Document, Visa, Installment, Event, User])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Student,
+      Document,
+      Visa,
+      Installment,
+      Event,
+      User,
+    ]),
+  ],
   controllers: [DashboardController],
   providers: [DashboardService],
   exports: [DashboardService],

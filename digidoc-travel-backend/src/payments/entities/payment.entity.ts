@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Installment } from './installment.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
@@ -10,7 +17,7 @@ export class Payment {
   @Column({ type: 'uuid' })
   installmentId: string;
 
-  @ManyToOne(() => Installment, i => i.payments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Installment, (i) => i.payments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'installment_id' })
   installment: Installment;
 

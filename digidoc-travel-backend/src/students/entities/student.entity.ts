@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity.js';
 import { StudentObservation } from './student-observation.entity.js';
 
@@ -49,7 +58,7 @@ export class Student {
   @JoinColumn({ name: 'advisor_id' })
   advisor: User;
 
-  @OneToMany(() => StudentObservation, obs => obs.student, { cascade: true })
+  @OneToMany(() => StudentObservation, (obs) => obs.student, { cascade: true })
   observations: StudentObservation[];
 
   @CreateDateColumn()

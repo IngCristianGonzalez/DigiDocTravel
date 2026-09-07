@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Student } from '../../students/entities/student.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 import { DocumentHistory } from './document-history.entity.js';
@@ -46,7 +55,7 @@ export class Document {
   @JoinColumn({ name: 'uploaded_by' })
   uploader: User;
 
-  @OneToMany(() => DocumentHistory, h => h.document, { cascade: true })
+  @OneToMany(() => DocumentHistory, (h) => h.document, { cascade: true })
   history: DocumentHistory[];
 
   @CreateDateColumn()

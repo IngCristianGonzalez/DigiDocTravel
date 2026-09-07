@@ -3,7 +3,11 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service.js';
 import { User } from './entities/user.entity.js';
 import { Role } from '../roles/entities/role.entity.js';
-import { ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 
 const mockUserRepo = () => ({
   findOne: jest.fn(),
@@ -19,10 +23,24 @@ const mockRoleRepo = () => ({
   findBy: jest.fn(),
 });
 
+interface MockUserRepo {
+  findOne: jest.Mock;
+  create: jest.Mock;
+  save: jest.Mock;
+  createQueryBuilder: jest.Mock;
+  update: jest.Mock;
+}
+
+interface MockRoleRepo {
+  findOne: jest.Mock;
+  find: jest.Mock;
+  findBy: jest.Mock;
+}
+
 describe('UsersService', () => {
   let service: UsersService;
-  let userRepo: any;
-  let roleRepo: any;
+  let userRepo: MockUserRepo;
+  let roleRepo: MockRoleRepo;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -33,22 +51,33 @@ describe('UsersService', () => {
       ],
     }).compile();
     service = module.get<UsersService>(UsersService);
-    userRepo = module.get(getRepositoryToken(User));
-    roleRepo = module.get(getRepositoryToken(Role));
+    userRepo = module.get<MockUserRepo>(getRepositoryToken(User));
+    roleRepo = module.get<MockRoleRepo>(getRepositoryToken(Role));
   });
 
   describe('Registrar usuarios', () => {
     it('debe crear usuario con email único', async () => {
       userRepo.findOne.mockResolvedValue(null);
-      userRepo.create.mockReturnValue({ email: 'test@test.com', password: 'hashed' });
+      userRepo.create.mockReturnValue({
+        email: 'test@test.com',
+        password: 'hashed',
+      });
       userRepo.save.mockResolvedValue({ id: '1', email: 'test@test.com' });
       roleRepo.find.mockResolvedValue([]);
-      const result = await service.create({ email: 'test@test.com', password: 'Password123' } as any);
+      const result = await service.create({
+        email: 'test@test.com',
+        password: 'Password123',
+      });
       expect(result.email).toBe('test@test.com');
     });
     it('debe lanzar 409 si email duplicado', async () => {
       userRepo.findOne.mockResolvedValue({ id: '1', email: 'test@test.com' });
-      await expect(service.create({ email: 'test@test.com', password: 'Password123' } as any)).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({
+          email: 'test@test.com',
+          password: 'Password123',
+        } as any),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -65,11 +94,17 @@ describe('UsersService', () => {
       const adminUser = { id: '1', status: true, roles: [{ name: 'admin' }] };
       userRepo.findOne.mockResolvedValue(adminUser);
       roleRepo.findOne.mockResolvedValue({ name: 'admin' });
-      const qb = { innerJoin: jest.fn().mockReturnThis(), where: jest.fn().mockReturnThis(), getCount: jest.fn().mockResolvedValue(1) };
+      const qb = {
+        innerJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getCount: jest.fn().mockResolvedValue(1),
+      };
       userRepo.createQueryBuilder.mockReturnValue(qb);
       // mock chain for adminCount
       qb.innerJoin = jest.fn().mockReturnValue(qb);
-      await expect(service.deactivate('1')).rejects.toThrow(BadRequestException);
+      await expect(service.deactivate('1')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -85,7 +120,9 @@ describe('UsersService', () => {
     it('debe lanzar 404 si rol no existe', async () => {
       userRepo.findOne.mockResolvedValue({ id: '1', roles: [] });
       roleRepo.find.mockResolvedValue([]);
-      await expect(service.assignRoles('1', ['invalid'])).rejects.toThrow(NotFoundException);
+      await expect(service.assignRoles('1', ['invalid'])).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -100,7 +137,7 @@ describe('UsersService', () => {
         getManyAndCount: jest.fn().mockResolvedValue([[{ id: '1' }], 1]),
       };
       userRepo.createQueryBuilder.mockReturnValue(qb);
-      const res = await service.findAll({ page: 1, limit: 10 } as any);
+      const res = await service.findAll({ page: 1, limit: 10 });
       expect(res.total).toBe(1);
       expect(res.data).toHaveLength(1);
     });

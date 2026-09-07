@@ -7,7 +7,10 @@ import { StudentsController } from './students.controller.js';
 import { AuditModule } from '../audit/audit.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Student, StudentObservation]), AuditModule],
+  imports: [
+    TypeOrmModule.forFeature([Student, StudentObservation]),
+    AuditModule,
+  ],
   controllers: [StudentsController],
   providers: [StudentsService],
   exports: [StudentsService],

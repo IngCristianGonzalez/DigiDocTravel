@@ -9,9 +9,16 @@ import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: any;
-  let jwtService: any;
-  let cache: any;
+  let usersService: {
+    findByEmail: jest.Mock;
+    findById: jest.Mock;
+    validatePassword: jest.Mock;
+    updateLastLogin: jest.Mock;
+    create: jest.Mock;
+    updatePassword: jest.Mock;
+  };
+  let jwtService: { signAsync: jest.Mock; verify: jest.Mock };
+  let cache: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
 
   beforeEach(async () => {
     usersService = {
@@ -22,7 +29,10 @@ describe('AuthService', () => {
       create: jest.fn(),
       updatePassword: jest.fn(),
     };
-    jwtService = { signAsync: jest.fn().mockResolvedValue('token'), verify: jest.fn() };
+    jwtService = {
+      signAsync: jest.fn().mockResolvedValue('token'),
+      verify: jest.fn(),
+    };
     cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +40,10 @@ describe('AuthService', () => {
         AuthService,
         { provide: UsersService, useValue: usersService },
         { provide: JwtService, useValue: jwtService },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('secret') } },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue('secret') },
+        },
         { provide: AuditService, useValue: { log: jest.fn() } },
         { provide: CACHE_MANAGER, useValue: cache },
       ],
@@ -39,24 +52,47 @@ describe('AuthService', () => {
   });
 
   it('Login correcto', async () => {
-    usersService.findByEmail.mockResolvedValue({ id: '1', email: 'a@a.com', status: true, roles: [{ name: 'admin' }], password: 'hash' });
+    usersService.findByEmail.mockResolvedValue({
+      id: '1',
+      email: 'a@a.com',
+      status: true,
+      roles: [{ name: 'admin' }],
+      password: 'hash',
+    });
     usersService.validatePassword.mockResolvedValue(true);
     jwtService.signAsync.mockResolvedValue('access');
-    const res = await service.login({ email: 'a@a.com', password: 'Password123' } as any, '127.0.0.1', 'device');
+    const res = await service.login(
+      { email: 'a@a.com', password: 'Password123' },
+      '127.0.0.1',
+      'device',
+    );
     expect(res.accessToken).toBeDefined();
   });
 
   it('Login con contraseña incorrecta debe fallar', async () => {
-    usersService.findByEmail.mockResolvedValue({ id: '1', status: true, roles: [], password: 'hash' });
+    usersService.findByEmail.mockResolvedValue({
+      id: '1',
+      status: true,
+      roles: [],
+      password: 'hash',
+    });
     usersService.validatePassword.mockResolvedValue(false);
-    await expect(service.login({ email: 'a@a.com', password: 'wrong' } as any, '', '')).rejects.toThrow(UnauthorizedException);
+    await expect(
+      service.login({ email: 'a@a.com', password: 'wrong' } as any, '', ''),
+    ).rejects.toThrow(UnauthorizedException);
   });
 
   it('Registro', async () => {
-    usersService.create = jest.fn().mockResolvedValue({ id: '1', email: 'new@test.com' });
+    usersService.create = jest
+      .fn()
+      .mockResolvedValue({ id: '1', email: 'new@test.com' });
     // need to override service create logic: service.register calls usersService.create
     // but we mocked create above via usersService, so just test
-    const res = await service.register({ email: 'new@test.com', password: 'Password123', fullName: 'Juan Perez' } as any);
+    const res = await service.register({
+      email: 'new@test.com',
+      password: 'Password123',
+      fullName: 'Juan Perez',
+    });
     expect(res.email).toBe('new@test.com');
   });
 

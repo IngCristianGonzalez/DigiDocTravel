@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { StudentsService } from './students.service.js';
 import { CreateStudentDto } from './dto/create-student.dto.js';
 import { UpdateStudentDto } from './dto/update-student.dto.js';
@@ -8,23 +20,45 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { AuditService } from '../audit/audit.service.js';
+import type { Request } from 'express';
+import type { StudentsQuery } from './students.service.js';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email: string;
+    roles: string[];
+  };
+}
 
 @Controller('students')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService, private readonly auditService: AuditService) {}
+  constructor(
+    private readonly studentsService: StudentsService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Post()
   @Roles('admin', 'supervisor', 'consultor')
-  async create(@Body() dto: CreateStudentDto, @Req() req: any) {
+  async create(
+    @Body() dto: CreateStudentDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const student = await this.studentsService.create(dto);
-    await this.auditService.log({ userId: req.user.id, action: 'CREATE', module: 'students', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'CREATE',
+      module: 'students',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return student;
   }
 
   @Get()
   @Roles('admin', 'supervisor', 'consultor', 'asesor')
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: StudentsQuery) {
     return this.studentsService.findAll(query);
   }
 
@@ -36,32 +70,69 @@ export class StudentsController {
 
   @Patch(':id')
   @Roles('admin', 'supervisor', 'consultor')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateStudentDto, @Req() req: any) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateStudentDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const student = await this.studentsService.update(id, dto);
-    await this.auditService.log({ userId: req.user.id, action: 'UPDATE', module: 'students', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'UPDATE',
+      module: 'students',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return student;
   }
 
   @Delete(':id')
   @Roles('admin', 'supervisor')
-  async remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
     await this.studentsService.remove(id);
-    await this.auditService.log({ userId: req.user.id, action: 'DELETE', module: 'students', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'DELETE',
+      module: 'students',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return { message: 'Student deactivated' };
   }
 
   @Post(':id/advisor')
   @Roles('admin', 'supervisor')
-  async assignAdvisor(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignAdvisorDto, @Req() req: any) {
+  async assignAdvisor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AssignAdvisorDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const student = await this.studentsService.assignAdvisor(id, dto.advisorId);
-    await this.auditService.log({ userId: req.user.id, action: 'ASSIGN_ADVISOR', module: 'students', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'ASSIGN_ADVISOR',
+      module: 'students',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return student;
   }
 
   @Post(':id/observations')
   @Roles('admin', 'supervisor', 'consultor')
-  async addObs(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateObservationDto, @Req() req: any) {
-    return this.studentsService.addObservation(id, req.user.id, dto.observation);
+  async addObs(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateObservationDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.studentsService.addObservation(
+      id,
+      req.user.id,
+      dto.observation,
+    );
   }
 
   @Get(':id/observations')

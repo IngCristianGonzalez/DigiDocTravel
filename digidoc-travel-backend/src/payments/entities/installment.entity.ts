@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { PaymentPlan } from './payment-plan.entity.js';
 import { Payment } from './payment.entity.js';
 
@@ -10,7 +18,9 @@ export class Installment {
   @Column({ type: 'uuid' })
   planId: string;
 
-  @ManyToOne(() => PaymentPlan, p => p.installmentsList, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PaymentPlan, (p) => p.installmentsList, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'plan_id' })
   plan: PaymentPlan;
 
@@ -29,7 +39,7 @@ export class Installment {
   @Column({ type: 'timestamp', nullable: true })
   paidAt: Date;
 
-  @OneToMany(() => Payment, pay => pay.installment, { cascade: true })
+  @OneToMany(() => Payment, (pay) => pay.installment, { cascade: true })
   payments: Payment[];
 
   @CreateDateColumn()

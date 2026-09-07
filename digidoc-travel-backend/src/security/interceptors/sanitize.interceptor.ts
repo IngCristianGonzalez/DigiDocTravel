@@ -1,9 +1,14 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import * as xss from 'xss';
 
 // OWASP A03 - Injection: XSS sanitization for all incoming string fields
-function sanitizeValue(value: any): any {
+function sanitizeValue(value: unknown): unknown {
   if (typeof value === 'string') {
     // xss lib sanitizes <script> etc, also strip SQL patterns
     let clean = xss.filterXSS(value);
@@ -13,17 +18,24 @@ function sanitizeValue(value: any): any {
   }
   if (Array.isArray(value)) return value.map(sanitizeValue);
   if (value && typeof value === 'object') {
-    const out: any = {};
-    for (const k of Object.keys(value)) out[k] = sanitizeValue(value[k]);
+    const source = value as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(source)) out[k] = sanitizeValue(source[k]);
     return out;
   }
   return value;
 }
 
+interface SanitizableRequest {
+  body?: unknown;
+  query?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+}
+
 @Injectable()
 export class SanitizeInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<SanitizableRequest>();
     if (request.body) request.body = sanitizeValue(request.body);
     // Express 5: request.query is getter-only, mutate in place
     if (request.query) {

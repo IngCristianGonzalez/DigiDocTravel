@@ -7,7 +7,8 @@ import { University } from './entities/university.entity.js';
 @Injectable()
 export class CatalogService {
   constructor(
-    @InjectRepository(Country) private readonly countryRepo: Repository<Country>,
+    @InjectRepository(Country)
+    private readonly countryRepo: Repository<Country>,
   ) {}
 
   findAll(): Promise<Country[]> {
@@ -23,6 +24,8 @@ export class CatalogService {
       relations: { universities: true },
     });
     if (!country) throw new NotFoundException('Country not found');
-    return [...(country.universities ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+    return [...(country.universities ?? [])].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }
 }

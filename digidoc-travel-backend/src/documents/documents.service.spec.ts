@@ -3,9 +3,19 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { DocumentsService } from './documents.service.js';
 import { Document } from './entities/document.entity.js';
 import { DocumentHistory } from './entities/document-history.entity.js';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import type { UploadedFile } from './documents.service.js';
 
-const mockRepo = () => ({
+interface MockRepository {
+  create: jest.Mock;
+  save: jest.Mock;
+  findOne: jest.Mock;
+  find: jest.Mock;
+  remove: jest.Mock;
+  createQueryBuilder: jest.Mock;
+}
+
+const mockRepo = (): MockRepository => ({
   create: jest.fn(),
   save: jest.fn(),
   findOne: jest.fn(),
@@ -16,8 +26,8 @@ const mockRepo = () => ({
 
 describe('DocumentsService', () => {
   let service: DocumentsService;
-  let docRepo: any;
-  let histRepo: any;
+  let docRepo: MockRepository;
+  let histRepo: MockRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,8 +38,8 @@ describe('DocumentsService', () => {
       ],
     }).compile();
     service = module.get<DocumentsService>(DocumentsService);
-    docRepo = module.get(getRepositoryToken(Document));
-    histRepo = module.get(getRepositoryToken(DocumentHistory));
+    docRepo = module.get<MockRepository>(getRepositoryToken(Document));
+    histRepo = module.get<MockRepository>(getRepositoryToken(DocumentHistory));
     histRepo.create.mockReturnValue({});
     histRepo.save.mockResolvedValue({});
   });
@@ -37,28 +47,55 @@ describe('DocumentsService', () => {
   it('Registrar documento', async () => {
     docRepo.create.mockReturnValue({ id: '1', name: 'Pasaporte' });
     docRepo.save.mockResolvedValue({ id: '1', name: 'Pasaporte' });
-    const res = await service.create({ studentId: 's1', type: 'passport', name: 'Pasaporte', category: 'identity' } as any, 'user1');
+    const res = await service.create(
+      {
+        studentId: 's1',
+        type: 'passport',
+        name: 'Pasaporte',
+        category: 'identity',
+      },
+      'user1',
+    );
     expect(res.name).toBe('Pasaporte');
   });
 
   it('Validar tamaño >10MB debe fallar', async () => {
-    await expect(service.create({ studentId: 's1', type: 'pdf', name: 'test', fileSize: 11*1024*1024 } as any, 'u1')).rejects.toThrow(BadRequestException);
+    await expect(
+      service.create(
+        {
+          studentId: 's1',
+          type: 'pdf',
+          name: 'test',
+          fileSize: 11 * 1024 * 1024,
+        } as any,
+        'u1',
+      ),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('Upload validar formato', async () => {
-    const file = { originalname: 'test.exe', size: 1000 } as any;
+    const file = {
+      originalname: 'test.exe',
+      size: 1000,
+    } as unknown as UploadedFile;
     await expect(service.upload(file)).rejects.toThrow(BadRequestException);
   });
 
   it('Upload PDF válido', async () => {
-    const file = { originalname: 'test.pdf', size: 5000 } as any;
+    const file = {
+      originalname: 'test.pdf',
+      size: 5000,
+    } as unknown as UploadedFile;
     const res = await service.upload(file);
     expect(res.fileType).toBe('pdf');
     expect(res.fileUrl).toContain('s3.mock');
   });
 
   it('Descargar documento URL temporal', async () => {
-    docRepo.findOne.mockResolvedValue({ id: '1', fileUrl: 'https://s3.mock/file.pdf' });
+    docRepo.findOne.mockResolvedValue({
+      id: '1',
+      fileUrl: 'https://s3.mock/file.pdf',
+    });
     const res = await service.getDownloadUrl('1');
     expect(res.url).toContain('expires');
     expect(res.expiresIn).toBe('1h');

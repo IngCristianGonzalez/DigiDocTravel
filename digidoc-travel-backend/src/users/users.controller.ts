@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
@@ -8,17 +20,35 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { AuditService } from '../audit/audit.service.js';
+import type { Request } from 'express';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email: string;
+    roles: string[];
+  };
+}
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService, private readonly auditService: AuditService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Post()
   @Roles('admin')
-  async create(@Body() dto: CreateUserDto, @Req() req: any) {
+  async create(@Body() dto: CreateUserDto, @Req() req: AuthenticatedRequest) {
     const user = await this.usersService.create(dto);
-    await this.auditService.log({ userId: req.user.id, action: 'CREATE', module: 'users', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'CREATE',
+      module: 'users',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return user;
   }
 
@@ -36,25 +66,54 @@ export class UsersController {
 
   @Patch(':id')
   @Roles('admin')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserDto, @Req() req: any) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const user = await this.usersService.update(id, dto);
-    await this.auditService.log({ userId: req.user.id, action: 'UPDATE', module: 'users', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'UPDATE',
+      module: 'users',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return user;
   }
 
   @Delete(':id')
   @Roles('admin')
-  async deactivate(@Param('id', ParseUUIDPipe) id: string, @Req() req: any) {
+  async deactivate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const user = await this.usersService.deactivate(id);
-    await this.auditService.log({ userId: req.user.id, action: 'DEACTIVATE', module: 'users', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'DEACTIVATE',
+      module: 'users',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return user;
   }
 
   @Post(':id/roles')
   @Roles('admin')
-  async assignRoles(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignRolesDto, @Req() req: any) {
+  async assignRoles(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AssignRolesDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     const user = await this.usersService.assignRoles(id, dto.roleIds);
-    await this.auditService.log({ userId: req.user.id, action: 'ASSIGN_ROLES', module: 'users', ip: req.ip, device: req.headers['user-agent'] });
+    await this.auditService.log({
+      userId: req.user.id,
+      action: 'ASSIGN_ROLES',
+      module: 'users',
+      ip: req.ip,
+      device: req.headers['user-agent'],
+    });
     return user;
   }
 }

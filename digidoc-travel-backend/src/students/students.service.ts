@@ -1,37 +1,73 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Student } from './entities/student.entity.js';
 import { StudentObservation } from './entities/student-observation.entity.js';
 import { CreateStudentDto } from './dto/create-student.dto.js';
 import { UpdateStudentDto } from './dto/update-student.dto.js';
+import type { PaginatedResponse } from '../common/dto/pagination.dto.js';
+
+export interface StudentsQuery {
+  page?: string | number;
+  limit?: string | number;
+  search?: string;
+  countryOrigin?: string;
+  status?: string | boolean;
+  advisorId?: string;
+}
 
 @Injectable()
 export class StudentsService {
   constructor(
-    @InjectRepository(Student) private readonly studentRepo: Repository<Student>,
-    @InjectRepository(StudentObservation) private readonly obsRepo: Repository<StudentObservation>,
+    @InjectRepository(Student)
+    private readonly studentRepo: Repository<Student>,
+    @InjectRepository(StudentObservation)
+    private readonly obsRepo: Repository<StudentObservation>,
   ) {}
 
   async create(dto: CreateStudentDto): Promise<Student> {
-    const existingEmail = await this.studentRepo.findOne({ where: { email: dto.email } });
-    if (existingEmail) throw new ConflictException('Student email already exists');
-    const existingId = await this.studentRepo.findOne({ where: { identification: dto.identification } });
-    if (existingId) throw new ConflictException('Student identification already exists');
-    const student = this.studentRepo.create(dto as any) as unknown as Student;
-    return this.studentRepo.save(student as any) as Promise<Student>;
+    const existingEmail = await this.studentRepo.findOne({
+      where: { email: dto.email },
+    });
+    if (existingEmail)
+      throw new ConflictException('Student email already exists');
+    const existingId = await this.studentRepo.findOne({
+      where: { identification: dto.identification },
+    });
+    if (existingId)
+      throw new ConflictException('Student identification already exists');
+    const student = this.studentRepo.create(dto);
+    return this.studentRepo.save(student);
   }
 
-  async findAll(query: any) {
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 10;
-    const qb = this.studentRepo.createQueryBuilder('student')
+  async findAll(query: StudentsQuery): Promise<PaginatedResponse<Student>> {
+    const page = parseInt(String(query.page)) || 1;
+    const limit = parseInt(String(query.limit)) || 10;
+    const qb = this.studentRepo
+      .createQueryBuilder('student')
       .leftJoinAndSelect('student.advisor', 'advisor');
 
-    if (query.search) qb.andWhere('(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.email ILIKE :search OR student.identification ILIKE :search)', { search: `%${query.search}%` });
-    if (query.countryOrigin) qb.andWhere('student.countryOrigin = :country', { country: query.countryOrigin });
-    if (query.status !== undefined) qb.andWhere('student.status = :status', { status: query.status === 'true' || query.status === true });
-    if (query.advisorId) qb.andWhere('student.advisorId = :advisorId', { advisorId: query.advisorId });
+    if (query.search)
+      qb.andWhere(
+        '(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.email ILIKE :search OR student.identification ILIKE :search)',
+        { search: `%${query.search}%` },
+      );
+    if (query.countryOrigin)
+      qb.andWhere('student.countryOrigin = :country', {
+        country: query.countryOrigin,
+      });
+    if (query.status !== undefined)
+      qb.andWhere('student.status = :status', {
+        status: query.status === 'true' || query.status === true,
+      });
+    if (query.advisorId)
+      qb.andWhere('student.advisorId = :advisorId', {
+        advisorId: query.advisorId,
+      });
 
     qb.orderBy('student.createdAt', 'DESC');
     qb.skip((page - 1) * limit).take(limit);
@@ -40,7 +76,10 @@ export class StudentsService {
   }
 
   async findOne(id: string): Promise<Student> {
-    const student = await this.studentRepo.findOne({ where: { id }, relations: { advisor: true, observations: true } as any });
+    const student = await this.studentRepo.findOne({
+      where: { id },
+      relations: { advisor: true, observations: true },
+    });
     if (!student) throw new NotFoundException('Student not found');
     return student;
   }
@@ -48,12 +87,17 @@ export class StudentsService {
   async update(id: string, dto: UpdateStudentDto): Promise<Student> {
     const student = await this.findOne(id);
     if (dto.email && dto.email !== student.email) {
-      const existing = await this.studentRepo.findOne({ where: { email: dto.email } });
+      const existing = await this.studentRepo.findOne({
+        where: { email: dto.email },
+      });
       if (existing) throw new ConflictException('Email already exists');
     }
     if (dto.identification && dto.identification !== student.identification) {
-      const existing = await this.studentRepo.findOne({ where: { identification: dto.identification } });
-      if (existing) throw new ConflictException('Identification already exists');
+      const existing = await this.studentRepo.findOne({
+        where: { identification: dto.identification },
+      });
+      if (existing)
+        throw new ConflictException('Identification already exists');
     }
     Object.assign(student, dto);
     return this.studentRepo.save(student);
@@ -71,14 +115,26 @@ export class StudentsService {
     return this.studentRepo.save(student);
   }
 
-  async addObservation(studentId: string, userId: string, observation: string): Promise<StudentObservation> {
+  async addObservation(
+    studentId: string,
+    userId: string,
+    observation: string,
+  ): Promise<StudentObservation> {
     await this.findOne(studentId);
-    const obs = this.obsRepo.create({ studentId, userId, observation } as any) as unknown as StudentObservation;
-    return this.obsRepo.save(obs as any) as Promise<StudentObservation>;
+    const obs = this.obsRepo.create({
+      studentId,
+      userId,
+      observation,
+    });
+    return this.obsRepo.save(obs);
   }
 
   async getObservations(studentId: string): Promise<StudentObservation[]> {
     await this.findOne(studentId);
-    return this.obsRepo.find({ where: { studentId }, order: { createdAt: 'DESC' }, relations: { author: true } as any });
+    return this.obsRepo.find({
+      where: { studentId },
+      order: { createdAt: 'DESC' },
+      relations: { author: true },
+    });
   }
 }

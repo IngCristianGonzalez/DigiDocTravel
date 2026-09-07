@@ -1,10 +1,37 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { PaymentsService } from './payments.service.js';
 import { CreatePlanDto } from './dto/create-plan.dto.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
+
+interface JwtUser {
+  id: string;
+  email: string;
+  roles: string[];
+}
+
+interface AuthenticatedRequest {
+  user: JwtUser;
+}
+
+interface PaymentsQuery {
+  page?: string | number;
+  limit?: string | number;
+  studentId?: string;
+  status?: string;
+}
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -13,12 +40,15 @@ export class PaymentsController {
 
   @Post('payment-plans')
   @Roles('admin', 'consultor')
-  async createPlan(@Body() dto: CreatePlanDto, @Req() req: any) {
+  async createPlan(
+    @Body() dto: CreatePlanDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.paymentsService.createPlan(dto, req.user.id);
   }
 
   @Get('payment-plans')
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: PaymentsQuery) {
     return this.paymentsService.findAll(query);
   }
 
@@ -39,7 +69,11 @@ export class PaymentsController {
 
   @Post('installments/:id/pay')
   @Roles('admin', 'consultor')
-  async pay(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreatePaymentDto, @Req() req: any) {
+  async pay(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreatePaymentDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.paymentsService.registerPayment(id, dto, req.user.id);
   }
 }

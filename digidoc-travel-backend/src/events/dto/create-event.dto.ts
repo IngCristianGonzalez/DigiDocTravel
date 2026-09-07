@@ -1,4 +1,10 @@
-import { IsString, IsDateString, IsOptional, IsArray, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateEventDto {
   @IsString()

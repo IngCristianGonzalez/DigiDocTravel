@@ -11,11 +11,19 @@ import { Inject } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import { randomUUID } from 'crypto';
 import { UsersService } from '../users/users.service.js';
+import { User } from '../users/entities/user.entity.js';
 import { AuditService } from '../audit/audit.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { logSecurityEvent } from '../security/logger/winston.logger.js';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  roles: string[];
+  jti: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -34,14 +42,18 @@ export class AuthService {
     const isBlocked = await this.cacheManager.get(blockKey);
     if (isBlocked) {
       logSecurityEvent('LOGIN_BLOCKED', { email: dto.email, ip, device });
-      throw new UnauthorizedException('Too many failed attempts. Try again in 15 minutes');
+      throw new UnauthorizedException(
+        'Too many failed attempts. Try again in 15 minutes',
+      );
     }
     const attempts = (await this.cacheManager.get<number>(attemptKey)) || 0;
     if (attempts >= 5) {
       await this.cacheManager.set(blockKey, true, 900000); // 15 min
       await this.cacheManager.del(attemptKey);
       logSecurityEvent('LOGIN_LOCKOUT', { email: dto.email, ip, attempts });
-      throw new UnauthorizedException('Account locked due to too many failed attempts');
+      throw new UnauthorizedException(
+        'Account locked due to too many failed attempts',
+      );
     }
 
     const user = await this.usersService.findByEmail(dto.email);
@@ -61,8 +73,18 @@ export class AuthService {
     );
     if (!isPasswordValid) {
       await this.cacheManager.set(attemptKey, attempts + 1, 900000);
-      logSecurityEvent('LOGIN_FAILED_BAD_PASSWORD', { email: dto.email, ip, attempts: attempts + 1 });
-      await this.auditService.log({ userId: user.id, action: 'LOGIN_FAILED', module: 'auth', ip, device });
+      logSecurityEvent('LOGIN_FAILED_BAD_PASSWORD', {
+        email: dto.email,
+        ip,
+        attempts: attempts + 1,
+      });
+      await this.auditService.log({
+        userId: user.id,
+        action: 'LOGIN_FAILED',
+        module: 'auth',
+        ip,
+        device,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -110,7 +132,7 @@ export class AuthService {
 
   async refreshToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<JwtPayload>(token, {
         secret:
           this.configService.get<string>('JWT_REFRESH_SECRET') ||
           'digidoc-refresh-secret',
@@ -198,14 +220,19 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const firstName = dto.firstName || dto.fullName?.split(' ')[0] || 'User';
-    const lastName = dto.lastName || dto.fullName?.split(' ').slice(1).join(' ') || '';
+    const lastName =
+      dto.lastName || dto.fullName?.split(' ').slice(1).join(' ') || '';
     const user = await this.usersService.create({
       email: dto.email,
       password: dto.password,
       firstName,
       lastName,
-    } as any);
-    return { id: user.id, email: user.email, message: 'User registered successfully' };
+    });
+    return {
+      id: user.id,
+      email: user.email,
+      message: 'User registered successfully',
+    };
   }
 
   async getProfile(userId: string) {
@@ -217,8 +244,8 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      firstName: (user as any).firstName,
-      lastName: (user as any).lastName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       roles: user.roles.map((r) => ({
         id: r.id,
         name: r.name,
@@ -232,13 +259,13 @@ export class AuthService {
     };
   }
 
-  private async generateTokens(user: any) {
+  private async generateTokens(user: User) {
     // OWASP A02 - Strong JWT: issuer, audience, short-lived, jti for rotation
     const jti = randomUUID();
     const payload = {
       sub: user.id,
       email: user.email,
-      roles: user.roles.map((r: any) => r.name),
+      roles: user.roles.map((r) => r.name),
       jti,
     };
 

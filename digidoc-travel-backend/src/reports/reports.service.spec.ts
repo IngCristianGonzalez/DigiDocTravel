@@ -23,10 +23,22 @@ describe('ReportsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReportsService,
-        { provide: getRepositoryToken(Student), useFactory: () => mockRepo([{ id: '1' }]) },
-        { provide: getRepositoryToken(Document), useFactory: () => mockRepo([{ id: '1' }]) },
-        { provide: getRepositoryToken(Visa), useFactory: () => mockRepo([{ id: '1' }]) },
-        { provide: getRepositoryToken(Installment), useFactory: () => mockRepo([{ id: '1', amount: '1000' }]) },
+        {
+          provide: getRepositoryToken(Student),
+          useFactory: () => mockRepo([{ id: '1' }]),
+        },
+        {
+          provide: getRepositoryToken(Document),
+          useFactory: () => mockRepo([{ id: '1' }]),
+        },
+        {
+          provide: getRepositoryToken(Visa),
+          useFactory: () => mockRepo([{ id: '1' }]),
+        },
+        {
+          provide: getRepositoryToken(Installment),
+          useFactory: () => mockRepo([{ id: '1', amount: '1000' }]),
+        },
       ],
     }).compile();
     service = module.get<ReportsService>(ReportsService);

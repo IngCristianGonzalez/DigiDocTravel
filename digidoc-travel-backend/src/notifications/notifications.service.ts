@@ -4,32 +4,60 @@ import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity.js';
 import { CreateNotificationDto } from './dto/create-notification.dto.js';
 
+export interface NotificationsQuery {
+  page?: string | number;
+  limit?: string | number;
+  type?: string;
+  read?: string | boolean;
+}
+
+export interface PaginatedNotifications {
+  data: Notification[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class NotificationsService {
-  constructor(@InjectRepository(Notification) private readonly notifRepo: Repository<Notification>) {}
+  constructor(
+    @InjectRepository(Notification)
+    private readonly notifRepo: Repository<Notification>,
+  ) {}
 
   async create(dto: CreateNotificationDto): Promise<Notification> {
     const notif = this.notifRepo.create(dto as any);
-    const saved = await this.notifRepo.save(notif as any) as unknown as Notification;
+    const saved = (await this.notifRepo.save(
+      notif as any,
+    )) as unknown as Notification;
     // mock email sending
     // await kafka emit notification.email
-    return saved as Notification;
+    return saved;
   }
 
-  async findAll(userId: string, query: any) {
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 10;
-    const qb = this.notifRepo.createQueryBuilder('n').where('n.userId = :uid', { uid: userId });
+  async findAll(
+    userId: string,
+    query: NotificationsQuery,
+  ): Promise<PaginatedNotifications> {
+    const page = query.page ? parseInt(String(query.page), 10) || 1 : 1;
+    const limit = query.limit ? parseInt(String(query.limit), 10) || 10 : 10;
+    const qb = this.notifRepo
+      .createQueryBuilder('n')
+      .where('n.userId = :uid', { uid: userId });
     if (query.type) qb.andWhere('n.type = :type', { type: query.type });
-    if (query.read !== undefined) qb.andWhere('n.read = :read', { read: query.read === 'true' });
+    if (query.read !== undefined)
+      qb.andWhere('n.read = :read', { read: query.read === 'true' });
     qb.orderBy('n.createdAt', 'DESC');
-    qb.skip((page-1)*limit).take(limit);
+    qb.skip((page - 1) * limit).take(limit);
     const [data, total] = await qb.getManyAndCount();
-    return { data, total, page, limit, totalPages: Math.ceil(total/limit) };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async countUnread(userId: string): Promise<{ count: number }> {
-    const count = await this.notifRepo.count({ where: { userId, read: false } });
+    const count = await this.notifRepo.count({
+      where: { userId, read: false },
+    });
     return { count };
   }
 
@@ -41,7 +69,12 @@ export class NotificationsService {
   }
 
   async markAllAsRead(userId: string): Promise<{ updated: number }> {
-    const result = await this.notifRepo.createQueryBuilder().update(Notification).set({ read: true }).where('userId = :uid AND read = :read', { uid: userId, read: false }).execute();
+    const result = await this.notifRepo
+      .createQueryBuilder()
+      .update(Notification)
+      .set({ read: true })
+      .where('userId = :uid AND read = :read', { uid: userId, read: false })
+      .execute();
     return { updated: result.affected || 0 };
   }
 }

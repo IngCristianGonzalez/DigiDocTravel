@@ -1,5 +1,9 @@
 import { encrypt, decrypt, sanitizeUser } from './helpers/crypto.helper';
-import { isAllowedUrl, validateFileType, hasValidMagicBytes } from './helpers/ssrf.helper';
+import {
+  isAllowedUrl,
+  validateFileType,
+  hasValidMagicBytes,
+} from './helpers/ssrf.helper';
 import * as xss from 'xss';
 
 describe('OWASP Top 10 - Security Tests', () => {
@@ -13,8 +17,13 @@ describe('OWASP Top 10 - Security Tests', () => {
       expect(decrypted).toBe(original);
     });
     it('should not expose password in sanitizeUser', () => {
-      const user = { id: '1', email: 'a@a.com', password: 'hash', firstName: 'Test' };
-      const clean = sanitizeUser(user);
+      const user = {
+        id: '1',
+        email: 'a@a.com',
+        password: 'hash',
+        firstName: 'Test',
+      };
+      const clean: Record<string, unknown> = sanitizeUser(user);
       expect(clean.password).toBeUndefined();
       expect(clean.email).toBe('a@a.com');
     });
@@ -51,7 +60,9 @@ describe('OWASP Top 10 - Security Tests', () => {
 
   describe('A10 SSRF', () => {
     it('should block metadata IP 169.254.169.254', () => {
-      expect(isAllowedUrl('http://169.254.169.254/latest/meta-data/')).toBe(false);
+      expect(isAllowedUrl('http://169.254.169.254/latest/meta-data/')).toBe(
+        false,
+      );
     });
     it('should block private IPs 10.x', () => {
       expect(isAllowedUrl('http://10.0.0.1/admin')).toBe(false);
@@ -77,7 +88,7 @@ describe('OWASP Top 10 - Security Tests', () => {
       expect(hasValidMagicBytes(notPdf, 'application/pdf')).toBe(false);
     });
     it('should validate PNG magic bytes', () => {
-      const pngHeader = Buffer.from([0x89, 0x50, 0x4E, 0x47]);
+      const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
       expect(hasValidMagicBytes(pngHeader, 'image/png')).toBe(true);
     });
   });
@@ -86,9 +97,9 @@ describe('OWASP Top 10 - Security Tests', () => {
     it('should check roles array includes required', () => {
       const user = { roles: ['admin', 'consultor'] };
       const required = ['admin'];
-      const hasRole = required.some(r => user.roles.includes(r));
+      const hasRole = required.some((r) => user.roles.includes(r));
       expect(hasRole).toBe(true);
-      expect(['asesor'].some(r => user.roles.includes(r))).toBe(false);
+      expect(['asesor'].some((r) => user.roles.includes(r))).toBe(false);
     });
   });
 
@@ -105,7 +116,13 @@ describe('OWASP Top 10 - Security Tests', () => {
 
   describe('A09 Logging - Audit', () => {
     it('should create audit log structure', () => {
-      const log = { userId: '1', action: 'LOGIN_FAILED', module: 'auth', ip: '127.0.0.1', device: 'test' };
+      const log = {
+        userId: '1',
+        action: 'LOGIN_FAILED',
+        module: 'auth',
+        ip: '127.0.0.1',
+        device: 'test',
+      };
       expect(log.action).toBe('LOGIN_FAILED');
       expect(log.module).toBe('auth');
     });

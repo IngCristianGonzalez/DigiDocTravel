@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Student } from '../../students/entities/student.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 import { Installment } from './installment.entity.js';
@@ -37,7 +45,7 @@ export class PaymentPlan {
   @JoinColumn({ name: 'created_by' })
   creator: User;
 
-  @OneToMany(() => Installment, i => i.plan, { cascade: true })
+  @OneToMany(() => Installment, (i) => i.plan, { cascade: true })
   installmentsList: Installment[];
 
   @CreateDateColumn()

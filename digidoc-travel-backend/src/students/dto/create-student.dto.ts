@@ -1,4 +1,14 @@
-import { IsEmail, IsString, IsOptional, IsInt, IsNotEmpty, Min, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsOptional,
+  IsInt,
+  IsNotEmpty,
+  Min,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 export class CreateStudentDto {
   @IsString()
@@ -11,7 +21,9 @@ export class CreateStudentDto {
   @IsNotEmpty({ message: 'La identificación es obligatoria' })
   @MinLength(4, { message: 'La identificación debe tener mínimo 4 caracteres' })
   @MaxLength(50)
-  @Matches(/^[A-Za-z0-9.\-]+$/, { message: 'La identificación solo admite letras, números, puntos y guiones' })
+  @Matches(/^[A-Za-z0-9.-]+$/, {
+    message: 'La identificación solo admite letras, números, puntos y guiones',
+  })
   identification: string;
 
   @IsEmail()

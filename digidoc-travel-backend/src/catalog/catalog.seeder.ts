@@ -11,8 +11,10 @@ export class CatalogSeeder implements OnModuleInit {
   private readonly logger = new Logger(CatalogSeeder.name);
 
   constructor(
-    @InjectRepository(Country) private readonly countryRepo: Repository<Country>,
-    @InjectRepository(University) private readonly universityRepo: Repository<University>,
+    @InjectRepository(Country)
+    private readonly countryRepo: Repository<Country>,
+    @InjectRepository(University)
+    private readonly universityRepo: Repository<University>,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -30,7 +32,9 @@ export class CatalogSeeder implements OnModuleInit {
       );
       if (seed.universities.length > 0) {
         await this.universityRepo.save(
-          seed.universities.map((name) => this.universityRepo.create({ name, country })),
+          seed.universities.map((name) =>
+            this.universityRepo.create({ name, country }),
+          ),
         );
       }
     }

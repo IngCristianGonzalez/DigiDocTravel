@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Event } from './event.entity.js';
 import { Student } from '../../students/entities/student.entity.js';
 
@@ -10,7 +16,7 @@ export class EventParticipant {
   @Column({ type: 'uuid' })
   eventId: string;
 
-  @ManyToOne(() => Event, e => e.participants, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Event, (e) => e.participants, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'event_id' })
   event: Event;
 

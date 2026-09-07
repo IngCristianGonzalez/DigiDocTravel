@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsInt, Min, IsDateString, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsInt,
+  Min,
+  IsDateString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreatePlanDto {
   @IsUUID()

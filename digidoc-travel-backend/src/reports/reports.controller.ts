@@ -12,26 +12,46 @@ export class ReportsController {
 
   @Get('students')
   @Roles('admin', 'supervisor')
-  async students(@Query() query: any) { return this.reportsService.studentsReport(query); }
+  async students(@Query() query: any) {
+    return this.reportsService.studentsReport(query);
+  }
 
   @Get('documents')
   @Roles('admin', 'supervisor')
-  async documents(@Query() query: any) { return this.reportsService.documentsReport(query); }
+  async documents(@Query() query: any) {
+    return this.reportsService.documentsReport(query);
+  }
 
   @Get('visas')
   @Roles('admin', 'supervisor')
-  async visas(@Query() query: any) { return this.reportsService.visasReport(query); }
+  async visas(@Query() query: any) {
+    return this.reportsService.visasReport(query);
+  }
 
   @Get('payments')
   @Roles('admin', 'supervisor')
-  async payments(@Query() query: any) { return this.reportsService.paymentsReport(query); }
+  async payments(@Query() query: any) {
+    return this.reportsService.paymentsReport(query);
+  }
 
   @Get('export/:type')
   @Roles('admin', 'supervisor')
-  async exportReport(@Param('type') type: string, @Query('format') format: string, @Query() query: any, @Res() res: Response) {
-    const result = await this.reportsService.exportReport(type, (format as any) || 'pdf', query);
+  async exportReport(
+    @Param('type') type: string,
+    @Query('format') format: string,
+    @Query() query: any,
+    @Res() res: Response,
+  ) {
+    const result = await this.reportsService.exportReport(
+      type,
+      (format as any) || 'pdf',
+      query,
+    );
     res.setHeader('Content-Type', result.contentType);
-    res.setHeader('Content-Disposition', `attachment; filename=${result.filename}`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${result.filename}`,
+    );
     return res.json(result);
   }
 }

@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity.js';
 import { EventParticipant } from './event-participant.entity.js';
 
@@ -35,7 +44,7 @@ export class Event {
   @JoinColumn({ name: 'created_by' })
   creator: User;
 
-  @OneToMany(() => EventParticipant, p => p.event, { cascade: true })
+  @OneToMany(() => EventParticipant, (p) => p.event, { cascade: true })
   participants: EventParticipant[];
 
   @CreateDateColumn()

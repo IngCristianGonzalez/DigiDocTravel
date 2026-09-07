@@ -21,7 +21,9 @@ const mockRepo = () => ({
     orderBy: jest.fn().mockReturnThis(),
     getCount: jest.fn().mockResolvedValue(2),
     getRawOne: jest.fn().mockResolvedValue({ sum: '5000' }),
-    getRawMany: jest.fn().mockResolvedValue([{ country: 'Colombia', count: '5' }]),
+    getRawMany: jest
+      .fn()
+      .mockResolvedValue([{ country: 'Colombia', count: '5' }]),
     getMany: jest.fn().mockResolvedValue([]),
   }),
 });

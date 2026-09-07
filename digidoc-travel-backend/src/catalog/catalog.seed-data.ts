@@ -14,7 +14,10 @@ export interface CountrySeed {
 
 export const COUNTRY_SEED: CountrySeed[] = [
   {
-    code: 'CO', name: 'Colombia', dialCode: '+57', flag: '🇨🇴',
+    code: 'CO',
+    name: 'Colombia',
+    dialCode: '+57',
+    flag: '🇨🇴',
     universities: [
       'Universidad Nacional de Colombia',
       'Universidad de los Andes',
@@ -29,7 +32,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'MX', name: 'México', dialCode: '+52', flag: '🇲🇽',
+    code: 'MX',
+    name: 'México',
+    dialCode: '+52',
+    flag: '🇲🇽',
     universities: [
       'Universidad Nacional Autónoma de México (UNAM)',
       'Tecnológico de Monterrey',
@@ -42,7 +48,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'AR', name: 'Argentina', dialCode: '+54', flag: '🇦🇷',
+    code: 'AR',
+    name: 'Argentina',
+    dialCode: '+54',
+    flag: '🇦🇷',
     universities: [
       'Universidad de Buenos Aires (UBA)',
       'Universidad Nacional de Córdoba',
@@ -53,7 +62,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'CL', name: 'Chile', dialCode: '+56', flag: '🇨🇱',
+    code: 'CL',
+    name: 'Chile',
+    dialCode: '+56',
+    flag: '🇨🇱',
     universities: [
       'Pontificia Universidad Católica de Chile',
       'Universidad de Chile',
@@ -64,7 +76,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'PE', name: 'Perú', dialCode: '+51', flag: '🇵🇪',
+    code: 'PE',
+    name: 'Perú',
+    dialCode: '+51',
+    flag: '🇵🇪',
     universities: [
       'Pontificia Universidad Católica del Perú (PUCP)',
       'Universidad Nacional Mayor de San Marcos',
@@ -75,7 +90,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'EC', name: 'Ecuador', dialCode: '+593', flag: '🇪🇨',
+    code: 'EC',
+    name: 'Ecuador',
+    dialCode: '+593',
+    flag: '🇪🇨',
     universities: [
       'Escuela Politécnica Nacional',
       'Universidad San Francisco de Quito (USFQ)',
@@ -86,7 +104,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'BR', name: 'Brasil', dialCode: '+55', flag: '🇧🇷',
+    code: 'BR',
+    name: 'Brasil',
+    dialCode: '+55',
+    flag: '🇧🇷',
     universities: [
       'Universidade de São Paulo (USP)',
       'Universidade Estadual de Campinas (UNICAMP)',
@@ -97,7 +118,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'ES', name: 'España', dialCode: '+34', flag: '🇪🇸',
+    code: 'ES',
+    name: 'España',
+    dialCode: '+34',
+    flag: '🇪🇸',
     universities: [
       'Universidad Complutense de Madrid',
       'Universitat de Barcelona',
@@ -112,7 +136,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'US', name: 'Estados Unidos', dialCode: '+1', flag: '🇺🇸',
+    code: 'US',
+    name: 'Estados Unidos',
+    dialCode: '+1',
+    flag: '🇺🇸',
     universities: [
       'Harvard University',
       'Massachusetts Institute of Technology (MIT)',
@@ -125,7 +152,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'CA', name: 'Canadá', dialCode: '+1', flag: '🇨🇦',
+    code: 'CA',
+    name: 'Canadá',
+    dialCode: '+1',
+    flag: '🇨🇦',
     universities: [
       'University of Toronto',
       'McGill University',
@@ -136,18 +166,24 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'GB', name: 'Reino Unido', dialCode: '+44', flag: '🇬🇧',
+    code: 'GB',
+    name: 'Reino Unido',
+    dialCode: '+44',
+    flag: '🇬🇧',
     universities: [
       'University of Oxford',
       'University of Cambridge',
       'Imperial College London',
       'University College London (UCL)',
       'University of Edinburgh',
-      'King\'s College London',
+      "King's College London",
     ],
   },
   {
-    code: 'FR', name: 'Francia', dialCode: '+33', flag: '🇫🇷',
+    code: 'FR',
+    name: 'Francia',
+    dialCode: '+33',
+    flag: '🇫🇷',
     universities: [
       'Sorbonne Université',
       'École Polytechnique',
@@ -158,7 +194,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'DE', name: 'Alemania', dialCode: '+49', flag: '🇩🇪',
+    code: 'DE',
+    name: 'Alemania',
+    dialCode: '+49',
+    flag: '🇩🇪',
     universities: [
       'Technische Universität München (TUM)',
       'Heidelberg University',
@@ -169,7 +208,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'IT', name: 'Italia', dialCode: '+39', flag: '🇮🇹',
+    code: 'IT',
+    name: 'Italia',
+    dialCode: '+39',
+    flag: '🇮🇹',
     universities: [
       'Università di Bologna',
       'Sapienza Università di Roma',
@@ -180,7 +222,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'AU', name: 'Australia', dialCode: '+61', flag: '🇦🇺',
+    code: 'AU',
+    name: 'Australia',
+    dialCode: '+61',
+    flag: '🇦🇺',
     universities: [
       'University of Melbourne',
       'University of Sydney',
@@ -191,7 +236,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'VE', name: 'Venezuela', dialCode: '+58', flag: '🇻🇪',
+    code: 'VE',
+    name: 'Venezuela',
+    dialCode: '+58',
+    flag: '🇻🇪',
     universities: [
       'Universidad Central de Venezuela (UCV)',
       'Universidad Simón Bolívar (USB)',
@@ -202,7 +250,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'BO', name: 'Bolivia', dialCode: '+591', flag: '🇧🇴',
+    code: 'BO',
+    name: 'Bolivia',
+    dialCode: '+591',
+    flag: '🇧🇴',
     universities: [
       'Universidad Mayor de San Andrés (UMSA)',
       'Universidad Católica Boliviana (UCB)',
@@ -212,7 +263,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'PY', name: 'Paraguay', dialCode: '+595', flag: '🇵🇾',
+    code: 'PY',
+    name: 'Paraguay',
+    dialCode: '+595',
+    flag: '🇵🇾',
     universities: [
       'Universidad Nacional de Asunción (UNA)',
       'Universidad Católica Nuestra Señora de la Asunción',
@@ -221,7 +275,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'UY', name: 'Uruguay', dialCode: '+598', flag: '🇺🇾',
+    code: 'UY',
+    name: 'Uruguay',
+    dialCode: '+598',
+    flag: '🇺🇾',
     universities: [
       'Universidad de la República (UdelaR)',
       'Universidad ORT Uruguay',
@@ -230,7 +287,10 @@ export const COUNTRY_SEED: CountrySeed[] = [
     ],
   },
   {
-    code: 'PA', name: 'Panamá', dialCode: '+507', flag: '🇵🇦',
+    code: 'PA',
+    name: 'Panamá',
+    dialCode: '+507',
+    flag: '🇵🇦',
     universities: [
       'Universidad de Panamá',
       'Universidad Tecnológica de Panamá (UTP)',

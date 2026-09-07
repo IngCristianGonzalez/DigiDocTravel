@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Student } from './student.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
@@ -10,7 +17,7 @@ export class StudentObservation {
   @Column({ type: 'uuid' })
   studentId: string;
 
-  @ManyToOne(() => Student, s => s.observations, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Student, (s) => s.observations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'student_id' })
   student: Student;
 

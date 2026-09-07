@@ -45,10 +45,12 @@ import { Notification } from './notifications/entities/notification.entity.js';
       validationOptions: { abortEarly: false },
     }),
     // OWASP A07 - Rate limiting: 100 req/min global
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

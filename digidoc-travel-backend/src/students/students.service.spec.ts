@@ -13,35 +13,53 @@ const mockRepo = () => ({
   createQueryBuilder: jest.fn(),
 });
 
+interface MockRepo {
+  findOne: jest.Mock;
+  create: jest.Mock;
+  save: jest.Mock;
+  find: jest.Mock;
+  createQueryBuilder: jest.Mock;
+}
+
 describe('StudentsService', () => {
   let service: StudentsService;
-  let studentRepo: any;
-  let obsRepo: any;
+  let studentRepo: MockRepo;
+  let obsRepo: MockRepo;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StudentsService,
         { provide: getRepositoryToken(Student), useFactory: mockRepo },
-        { provide: getRepositoryToken(StudentObservation), useFactory: mockRepo },
+        {
+          provide: getRepositoryToken(StudentObservation),
+          useFactory: mockRepo,
+        },
       ],
     }).compile();
     service = module.get<StudentsService>(StudentsService);
-    studentRepo = module.get(getRepositoryToken(Student));
-    obsRepo = module.get(getRepositoryToken(StudentObservation));
+    studentRepo = module.get<MockRepo>(getRepositoryToken(Student));
+    obsRepo = module.get<MockRepo>(getRepositoryToken(StudentObservation));
   });
 
   it('Registrar estudiantes', async () => {
     studentRepo.findOne.mockResolvedValue(null);
     studentRepo.create.mockReturnValue({ email: 's@test.com' });
     studentRepo.save.mockResolvedValue({ id: '1', email: 's@test.com' });
-    const res = await service.create({ firstName: 'Juan', lastName: 'Perez', email: 's@test.com', countryOrigin: 'Colombia' } as any);
+    const res = await service.create({
+      firstName: 'Juan',
+      lastName: 'Perez',
+      email: 's@test.com',
+      countryOrigin: 'Colombia',
+    } as any);
     expect(res.email).toBe('s@test.com');
   });
 
   it('debe fallar si email duplicado', async () => {
     studentRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ email: 'dup@test.com' } as any)).rejects.toThrow(ConflictException);
+    await expect(
+      service.create({ email: 'dup@test.com' } as any),
+    ).rejects.toThrow(ConflictException);
   });
 
   it('debe fallar si identificación duplicada', async () => {
@@ -49,7 +67,10 @@ describe('StudentsService', () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce({ id: '1', identification: '123456' });
     await expect(
-      service.create({ email: 'nuevo@test.com', identification: '123456' } as any),
+      service.create({
+        email: 'nuevo@test.com',
+        identification: '123456',
+      } as any),
     ).rejects.toThrow(ConflictException);
   });
 
@@ -76,7 +97,11 @@ describe('StudentsService', () => {
     studentRepo.findOne.mockResolvedValue({ id: '1' });
     obsRepo.create.mockReturnValue({ id: 'o1', observation: 'test' });
     obsRepo.save.mockResolvedValue({ id: 'o1', observation: 'test' });
-    const res = await service.addObservation('1', 'user1', 'Observación importante');
+    const res = await service.addObservation(
+      '1',
+      'user1',
+      'Observación importante',
+    );
     expect(res.observation).toBe('test');
   });
 

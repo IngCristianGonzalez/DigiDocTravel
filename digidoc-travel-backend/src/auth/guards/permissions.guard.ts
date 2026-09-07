@@ -7,6 +7,15 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator.js';
 import { UsersService } from '../../users/users.service.js';
+import type { Request } from 'express';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email: string;
+    roles: string[];
+  };
+}
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -25,7 +34,7 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const userEntity = await this.usersService.findById(user.id);
 
     if (!userEntity || !userEntity.roles) {

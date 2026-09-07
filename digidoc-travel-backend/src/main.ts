@@ -3,6 +3,7 @@ import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import helmet from 'helmet';
+import type { Express } from 'express';
 import { AppModule } from './app.module.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
@@ -14,29 +15,43 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // OWASP A05 - Security Misconfiguration: Helmet headers, HSTS, CSP, hide X-Powered-By
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+        },
       },
-    },
-    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-    noSniff: true,
-    frameguard: { action: 'deny' },
-    xssFilter: true,
-  }));
-  (app as any).getHttpAdapter().getInstance().disable('x-powered-by');
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      noSniff: true,
+      frameguard: { action: 'deny' },
+      xssFilter: true,
+    }),
+  );
+  const expressApp = app.getHttpAdapter().getInstance() as unknown as Express;
+  expressApp.disable('x-powered-by');
 
   app.setGlobalPrefix('api');
 
   // OWASP A05 - Strict CORS whitelist
-  const allowedOrigins = (configService.get<string>('CORS_ORIGIN', 'http://localhost:4200')).split(',').map(o=>o.trim());
+  const allowedOrigins = configService
+    .get<string>('CORS_ORIGIN', 'http://localhost:4200')
+    .split(',')
+    .map((o) => o.trim());
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) callback(null, true);
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes('*')
+      )
+        callback(null, true);
       else callback(new Error('Not allowed by CORS'));
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

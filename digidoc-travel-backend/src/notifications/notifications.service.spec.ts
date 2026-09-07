@@ -3,6 +3,15 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotificationsService } from './notifications.service.js';
 import { Notification } from './entities/notification.entity.js';
 
+interface MockRepository {
+  create: jest.Mock;
+  save: jest.Mock;
+  findOne: jest.Mock;
+  find: jest.Mock;
+  count: jest.Mock;
+  createQueryBuilder: jest.Mock;
+}
+
 const mockRepo = () => ({
   create: jest.fn(),
   save: jest.fn(),
@@ -14,27 +23,40 @@ const mockRepo = () => ({
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
-  let repo: any;
+  let repo: MockRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [NotificationsService, { provide: getRepositoryToken(Notification), useFactory: mockRepo }],
+      providers: [
+        NotificationsService,
+        { provide: getRepositoryToken(Notification), useFactory: mockRepo },
+      ],
     }).compile();
     service = module.get<NotificationsService>(NotificationsService);
-    repo = module.get(getRepositoryToken(Notification));
+    repo = module.get<MockRepository>(getRepositoryToken(Notification));
   });
 
   it('Crear notificación in-app', async () => {
     repo.create.mockReturnValue({ id: '1', title: 'Test' });
     repo.save.mockResolvedValue({ id: '1', title: 'Test' });
-    const res = await service.create({ userId: 'u1', type: 'visa', title: 'Visa por vencer', message: 'Tu visa vence en 30 días' } as any);
+    const res = await service.create({
+      userId: 'u1',
+      type: 'visa',
+      title: 'Visa por vencer',
+      message: 'Tu visa vence en 30 días',
+    });
     expect(res.title).toBe('Test');
   });
 
   it('Email flag', async () => {
     repo.create.mockReturnValue({ emailSent: false });
     repo.save.mockResolvedValue({ id: '1', emailSent: false });
-    const res = await service.create({ userId: 'u1', type: 'payment', title: 'Pago pendiente', message: 'Cuota vence pronto' } as any);
+    const res = await service.create({
+      userId: 'u1',
+      type: 'payment',
+      title: 'Pago pendiente',
+      message: 'Cuota vence pronto',
+    });
     expect(res).toBeDefined();
   });
 
@@ -46,7 +68,14 @@ describe('NotificationsService', () => {
   });
 
   it('Historial con paginación', async () => {
-    const qb = { where: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis(), orderBy: jest.fn().mockReturnThis(), skip: jest.fn().mockReturnThis(), take: jest.fn().mockReturnThis(), getManyAndCount: jest.fn().mockResolvedValue([[{ id: '1' }], 1]) };
+    const qb = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[{ id: '1' }], 1]),
+    };
     repo.createQueryBuilder.mockReturnValue(qb);
     const res = await service.findAll('u1', { page: 1, limit: 10 });
     expect(res.total).toBe(1);
