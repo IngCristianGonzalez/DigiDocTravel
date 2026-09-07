@@ -66,44 +66,21 @@
     </div>
   }
 
-  <!-- Toolbar Buscar + filtro tipo -->
-  <div class="docs__toolbar">
-    <div class="docs__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Buscar por nombre o tipo..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar documentos"
-      />
-    </div>
-    <div class="docs__toolbar-actions">
-      <p-dropdown
-        [options]="typeOptions"
-        [ngModel]="filterType()"
-        (ngModelChange)="filterType.set($event); resetAndLoad()"
-        placeholder="Todos los tipos"
-        [showClear]="true"
-        ariaLabel="Filtrar por tipo"
-      />
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search() || filterType()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); filterType.set(''); resetAndLoad()"></p-button>
-      }
-    </div>
-  </div>
-
-  <!-- Tabla -->
+  <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="docs__table-card">
     <div class="docs__table-header">
       <h3 class="docs__table-title"><i class="fa-solid fa-table-list"></i> Documentos</h3>
-      <span class="docs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="docs__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : docs()"
         [lazy]="true"
         [paginator]="true"
@@ -111,18 +88,49 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '70rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Nombre</th>
-            <th style="width: 120px">Tipo</th>
-            <th style="width: 130px">Categoría</th>
-            <th style="width: 120px">Estado</th>
-            <th style="width: 208px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Nombre</span></th>
+            <th style="width: 120px"><span class="erp-col-head">Tipo</span></th>
+            <th style="width: 130px"><span class="erp-col-head">Categoría</span></th>
+            <th style="width: 120px"><span class="erp-col-head">Estado</span></th>
+            <th style="width: 208px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter type="text" field="name" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="type" [showMenu]="false" matchMode="equals" placeholder="Tipo">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por tipo"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="category" [showMenu]="false" matchMode="equals" placeholder="Categoría">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="categoryOptions" [ngModel]="fCategory()" (ngModelChange)="fCategory.set($event ?? ''); onColumnFilter()" placeholder="Todas" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por categoría"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -166,10 +174,10 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron documentos</p>
-                  <p class="empty-state__desc">Prueba con otro filtro o registra el primer documento.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer documento.</p>
                 </div>
-                @if (search() || filterType()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); filterType.set(''); resetAndLoad()"></p-button>
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
                   <p-button icon="pi pi-upload" label="Registrar documento" size="small" (onClick)="openCreateModal()"></p-button>
                 }

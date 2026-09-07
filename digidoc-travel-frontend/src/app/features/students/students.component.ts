@@ -47,6 +47,12 @@ export class StudentsComponent implements OnInit {
   error = signal<string | null>(null);
   students = signal<Student[]>([]);
   search = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fName = signal('');
+  fIdent = signal('');
+  fEmail = signal('');
+  fCountry = signal('');
+  fAdvisor = signal('');
   // form base (modal)
   form = signal<any>({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: 'Colombia', phone: '', university: '' });
   msg = signal('');
@@ -79,6 +85,7 @@ export class StudentsComponent implements OnInit {
   // computed helpers
   dialCode = computed(() => this.selectedCountry()?.dialCode ?? '');
   universitiesForCountry = computed(() => this.selectedCountry()?.universities ?? []);
+  countryNames = computed(() => this.countries().map(c => c.name));
 
   readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Student));
 
@@ -353,7 +360,14 @@ export class StudentsComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.error.set(null);
-    this.svc.list({ search: this.search(), page: this.page(), limit: this.limit() }).subscribe({
+    const searchParts = [this.fName().trim(), this.fIdent().trim(), this.fEmail().trim(), this.fAdvisor().trim(), this.search().trim()].filter(Boolean);
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (searchParts.length) params.search = searchParts.join(' ');
+    if (this.fCountry().trim()) {
+      params.countryOrigin = this.fCountry().trim();
+      params.country = this.fCountry().trim();
+    }
+    this.svc.list(params).subscribe({
       next: (r) => {
         // r ya viene desenvuelto por StudentsService.list (soporta {success,data} y PaginatedResponse directo)
         const data = (r as any)?.data ?? (Array.isArray(r) ? r : []);
@@ -376,6 +390,28 @@ export class StudentsComponent implements OnInit {
   }
 
   resetAndLoad() {
+    this.page.set(1);
+    this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fName() || this.fIdent() || this.fEmail() || this.fCountry() || this.fAdvisor() || this.search());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fName.set('');
+    this.fIdent.set('');
+    this.fEmail.set('');
+    this.fCountry.set('');
+    this.fAdvisor.set('');
+    this.search.set('');
     this.page.set(1);
     this.load();
   }

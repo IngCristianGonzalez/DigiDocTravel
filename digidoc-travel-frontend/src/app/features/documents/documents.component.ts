@@ -46,6 +46,12 @@ export class DocumentsComponent implements OnInit {
   docs = signal<Document[]>([]);
   search = signal('');
   filterType = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fName = signal('');
+  fType = signal('');
+  fCategory = signal('');
+  fStatus = signal('');
+  readonly statusOptions = ['pending', 'approved', 'rejected'];
   form = signal<any>({ studentId: '', type: 'passport', name: '', description: '', category: '', fileUrl: '', fileType: '', fileSize: null });
   msg = signal('');
   history = signal<any[]>([]);
@@ -242,7 +248,13 @@ export class DocumentsComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.error.set(null);
-    this.svc.list({ search: this.search() || undefined, type: this.filterType() || undefined, page: this.page(), limit: this.limit() }).subscribe({
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (this.fName().trim()) params.search = this.fName().trim();
+    const effectiveType = this.fType().trim() || (this.filterType().trim() || '');
+    if (effectiveType) params.type = effectiveType;
+    if (this.fCategory().trim()) params.category = this.fCategory().trim();
+    if (this.fStatus().trim()) params.status = this.fStatus().trim();
+    this.svc.list(params).subscribe({
       next: (r: any) => {
         const data = r?.data ?? (Array.isArray(r) ? r : []);
         const total = r?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -261,6 +273,28 @@ export class DocumentsComponent implements OnInit {
   }
 
   resetAndLoad() {
+    this.page.set(1);
+    this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fName() || this.fType() || this.fCategory() || this.fStatus() || this.search() || this.filterType());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fName.set('');
+    this.fType.set('');
+    this.fCategory.set('');
+    this.fStatus.set('');
+    this.search.set('');
+    this.filterType.set('');
     this.page.set(1);
     this.load();
   }

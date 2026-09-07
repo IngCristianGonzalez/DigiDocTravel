@@ -16,6 +16,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-events',
@@ -33,6 +34,7 @@ import { DialogModule } from 'primeng/dialog';
     TagModule,
     TooltipModule,
     DialogModule,
+    DropdownModule,
   ],
   templateUrl: './events.component.html',
   styleUrls: ['./events.component.scss'],
@@ -49,6 +51,12 @@ export class EventsComponent implements OnInit {
   totalPages = signal(1);
   limit = signal(10);
   search = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fTitle = signal('');
+  fDate = signal('');
+  fLocation = signal('');
+  fStatus = signal('');
+  readonly statusOptions = ['Próximo', 'Pasado'];
 
   formErrors = signal<{ title?: string; eventDate?: string; description?: string }>({});
 
@@ -233,7 +241,15 @@ export class EventsComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.error.set(null);
-    this.svc.list({ search: this.search() || undefined, page: this.page(), limit: this.limit() }).subscribe({
+    const searchParts = [this.fTitle().trim(), this.fLocation().trim(), this.search().trim()].filter(Boolean);
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (searchParts.length) params.search = searchParts.join(' ');
+    if (this.fDate()) {
+      params.eventDate = this.fDate();
+      params.date = this.fDate();
+    }
+    if (this.fStatus().trim()) params.status = this.fStatus().trim();
+    this.svc.list(params).subscribe({
       next: (r: any) => {
         const data = r?.data ?? (Array.isArray(r) ? r : []);
         const total = r?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -252,6 +268,27 @@ export class EventsComponent implements OnInit {
   }
 
   resetAndLoad() {
+    this.page.set(1);
+    this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fTitle() || this.fDate() || this.fLocation() || this.fStatus() || this.search());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fTitle.set('');
+    this.fDate.set('');
+    this.fLocation.set('');
+    this.fStatus.set('');
+    this.search.set('');
     this.page.set(1);
     this.load();
   }

@@ -17,6 +17,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { PasswordModule } from 'primeng/password';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-users',
@@ -36,6 +37,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     DialogModule,
     PasswordModule,
     MultiSelectModule,
+    DropdownModule,
   ],
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.scss'],
@@ -46,6 +48,12 @@ export class UsersComponent implements OnInit {
   error = signal<string | null>(null);
   users = signal<AppUser[]>([]);
   search = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fName = signal('');
+  fEmail = signal('');
+  fRole = signal('');
+  fStatus = signal('');
+  readonly statusOptions = ['Activo', 'Inactivo'];
   msg = signal('');
   page = signal(1);
   total = signal(0);
@@ -214,7 +222,12 @@ export class UsersComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.error.set(null);
-    this.svc.list({ search: this.search() || undefined, page: this.page(), limit: this.limit() }).subscribe({
+    const searchParts = [this.fName().trim(), this.fEmail().trim(), this.search().trim()].filter(Boolean);
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (searchParts.length) params.search = searchParts.join(' ');
+    if (this.fRole().trim()) params.role = this.fRole().trim();
+    if (this.fStatus().trim()) params.status = this.fStatus() === 'Activo' ? 'true' : 'false';
+    this.svc.list(params).subscribe({
       next: (r) => {
         const data = (r as any)?.data ?? (Array.isArray(r) ? r : []);
         const total = (r as any)?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -233,6 +246,27 @@ export class UsersComponent implements OnInit {
   }
 
   resetAndLoad() {
+    this.page.set(1);
+    this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fName() || this.fEmail() || this.fRole() || this.fStatus() || this.search());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fName.set('');
+    this.fEmail.set('');
+    this.fRole.set('');
+    this.fStatus.set('');
+    this.search.set('');
     this.page.set(1);
     this.load();
   }

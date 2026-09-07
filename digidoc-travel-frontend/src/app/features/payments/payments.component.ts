@@ -53,6 +53,12 @@ export class PaymentsComponent implements OnInit {
   totalPages = signal(1);
   limit = signal(10);
   search = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fConcept = signal('');
+  fTotal = signal('');
+  fQuotas = signal('');
+  fStatus = signal('');
+  readonly statusOptions = ['pending', 'paid', 'overdue'];
 
   viewMode = signal<'all' | 'pending'>('all');
 
@@ -188,7 +194,13 @@ export class PaymentsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.viewMode.set('all');
-    this.svc.list({ search: this.search() || undefined, page: this.page(), limit: this.limit() }).subscribe({
+    const searchParts = [this.fConcept().trim(), this.search().trim()].filter(Boolean);
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (searchParts.length) params.search = searchParts.join(' ');
+    if (this.fTotal().trim()) params.totalAmount = this.fTotal().trim();
+    if (this.fQuotas().trim()) params.installments = this.fQuotas().trim();
+    if (this.fStatus().trim()) params.status = this.fStatus().trim();
+    this.svc.list(params).subscribe({
       next: (r: any) => {
         const data = r?.data ?? (Array.isArray(r) ? r : []);
         const total = r?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -232,6 +244,27 @@ export class PaymentsComponent implements OnInit {
     this.page.set(1);
     if (this.viewMode() === 'pending') this.loadPending();
     else this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fConcept() || this.fTotal() || this.fQuotas() || this.fStatus() || this.search());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fConcept.set('');
+    this.fTotal.set('');
+    this.fQuotas.set('');
+    this.fStatus.set('');
+    this.search.set('');
+    this.page.set(1);
+    this.load();
   }
 
   create() {

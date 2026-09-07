@@ -70,36 +70,21 @@
     </div>
   }
 
-  <!-- Toolbar Buscar -->
-  <div class="students__toolbar">
-    <div class="students__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Buscar por nombre, identificación, email o país..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar estudiantes"
-      />
-    </div>
-    <div class="students__toolbar-actions">
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
-      }
-    </div>
-  </div>
-
-  <!-- Tabla -->
+  <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="students__table-card">
     <div class="students__table-header">
       <h3 class="students__table-title"><i class="fa-solid fa-table-list"></i> Estudiantes</h3>
-      <span class="students__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="students__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : students()"
         [lazy]="true"
         [paginator]="true"
@@ -107,19 +92,57 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '68rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Nombre</th>
-            <th style="width: 145px">Identificación</th>
-            <th>Email</th>
-            <th style="width: 140px">País</th>
-            <th style="width: 180px">Asesor</th>
-            <th style="width: 176px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Nombre</span></th>
+            <th style="width: 145px"><span class="erp-col-head">Identificación</span></th>
+            <th><span class="erp-col-head">Email</span></th>
+            <th style="width: 140px"><span class="erp-col-head">País</span></th>
+            <th style="width: 180px"><span class="erp-col-head">Asesor</span></th>
+            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="identification" [showMenu]="false" matchMode="contains" placeholder="Filtrar ID">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar ID" [ngModel]="fIdent()" (ngModelChange)="fIdent.set($event); onColumnFilter()" aria-label="Filtrar por identificación" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" placeholder="Filtrar email">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar email" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" aria-label="Filtrar por email" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="countryOrigin" [showMenu]="false" matchMode="equals" placeholder="País">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="countryNames()" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por país"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="advisor" [showMenu]="false" matchMode="contains" placeholder="Filtrar asesor">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar asesor" [ngModel]="fAdvisor()" (ngModelChange)="fAdvisor.set($event); onColumnFilter()" aria-label="Filtrar por asesor" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -176,10 +199,10 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron estudiantes</p>
-                  <p class="empty-state__desc">Prueba con otro término de búsqueda o registra el primer estudiante.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer estudiante.</p>
                 </div>
-                @if (search()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar búsqueda" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
                   <p-button icon="pi pi-user-plus" label="Registrar estudiante" size="small" (onClick)="openCreateModal()"></p-button>
                 }

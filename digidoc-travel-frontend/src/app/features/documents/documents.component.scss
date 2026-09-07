@@ -156,46 +156,12 @@
   }
 }
 
-.docs__toolbar {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
-  box-shadow: var(--shadow-xs);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+// (Sin toolbar global: el filtrado vive en la fila de filtros por columna ERP)
 
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: center;
-  }
-}
-
-.docs__search {
-  flex: 1;
-  position: relative;
+.erp-table-meta {
   display: flex;
   align-items: center;
-
-  i {
-    position: absolute;
-    left: var(--space-sm);
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-    pointer-events: none;
-  }
-
-  :host ::ng-deep input[pInputText] {
-    width: 100%;
-    padding-left: var(--space-xl) !important;
-  }
-}
-
-.docs__toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+  gap: var(--erp-cell-pad);
   flex-wrap: wrap;
 }
 
@@ -213,12 +179,14 @@
 }
 
 .docs__table-header {
-  padding: var(--space-md);
+  padding: var(--erp-cell-pad);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--erp-cell-pad);
   border-bottom: 1px solid var(--color-bg-surface);
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .docs__table-title {
@@ -594,13 +562,14 @@
     letter-spacing: 0.04em !important;
     border-color: var(--color-border) !important;
     white-space: nowrap;
+    padding: var(--erp-cell-pad) !important;
   }
 
   .p-datatable .p-datatable-tbody > tr > td {
     font-size: 0.8125rem !important;
     color: var(--color-text-primary) !important;
     border-color: var(--color-bg-surface) !important;
-    padding: 0.75rem !important;
+    padding: var(--erp-cell-pad) !important;
   }
 
   .p-datatable .p-datatable-tbody > tr:hover {

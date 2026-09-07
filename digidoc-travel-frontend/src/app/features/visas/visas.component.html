@@ -71,35 +71,6 @@
     <span>El backend genera alerta y notifica al equipo cuando una visa vence en 90 días.</span>
   </div>
 
-  <!-- Toolbar: búsqueda + tipo + vista -->
-  <div class="visas__toolbar">
-    <div class="visas__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Filtrar por país, tipo o número..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar visas"
-      />
-    </div>
-    <div class="visas__toolbar-actions">
-      <p-dropdown
-        [options]="typeOptions"
-        [ngModel]="visaTypeFilter()"
-        (ngModelChange)="visaTypeFilter.set($event)"
-        placeholder="Todos los tipos"
-        [showClear]="true"
-        ariaLabel="Filtrar por tipo"
-      />
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search() || visaTypeFilter()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); visaTypeFilter.set('')"></p-button>
-      }
-    </div>
-  </div>
-
   <!-- Vista: Todas / Por vencer -->
   <div class="tabs-control-wrapper">
     <div class="tabs-container">
@@ -116,11 +87,17 @@
   <div class="visas__table-card">
     <div class="visas__table-header">
       <h3 class="visas__table-title"><i class="fa-solid fa-table-list"></i> Visas</h3>
-      <span class="visas__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="visas__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : visas()"
         [lazy]="true"
         [paginator]="!expiringMode()"
@@ -128,20 +105,65 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '66rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Tipo</th>
-            <th style="width: 130px">Número</th>
-            <th style="width: 130px">País</th>
-            <th style="width: 130px">Vencimiento</th>
-            <th style="width: 110px">Días rest.</th>
-            <th style="width: 110px">Estado</th>
-            <th style="width: 112px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Tipo</span></th>
+            <th style="width: 130px"><span class="erp-col-head">Número</span></th>
+            <th style="width: 130px"><span class="erp-col-head">País</span></th>
+            <th style="width: 130px"><span class="erp-col-head">Vencimiento</span></th>
+            <th style="width: 110px"><span class="erp-col-head">Días rest.</span></th>
+            <th style="width: 110px"><span class="erp-col-head">Estado</span></th>
+            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter field="visaType" [showMenu]="false" matchMode="equals" placeholder="Tipo">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="typeOptions" [ngModel]="fType()" (ngModelChange)="fType.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por tipo"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="visaNumber" [showMenu]="false" matchMode="contains" placeholder="Filtrar número">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar número" [ngModel]="fNumber()" (ngModelChange)="fNumber.set($event); onColumnFilter()" aria-label="Filtrar por número" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="country" [showMenu]="false" matchMode="contains" placeholder="Filtrar país">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar país" [ngModel]="fCountry()" (ngModelChange)="fCountry.set($event); onColumnFilter()" aria-label="Filtrar por país" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="date" field="expiryDate" [showMenu]="false" matchMode="equals" placeholder="Vencimiento">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fExpiry()" (ngModelChange)="fExpiry.set($event); onColumnFilter()" aria-label="Filtrar por vencimiento" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="numeric" field="daysLeft" [showMenu]="false" matchMode="equals" placeholder="Días">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText type="number" class="erp-filter-input" placeholder="Días" [ngModel]="fDays()" (ngModelChange)="fDays.set($event); onColumnFilter()" aria-label="Filtrar por días restantes" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -183,9 +205,11 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron visas</p>
-                  <p class="empty-state__desc">Prueba con otro filtro o registra la primera visa.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra la primera visa.</p>
                 </div>
-                @if (!search() && !visaTypeFilter() && viewMode() === 'all') {
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                } @else {
                   <p-button icon="pi pi-plus" label="Registrar visa" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>

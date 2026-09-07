@@ -53,6 +53,13 @@ export class VisasComponent implements OnInit {
 
   search = signal('');
   visaTypeFilter = signal('');
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fType = signal('');
+  fNumber = signal('');
+  fCountry = signal('');
+  fExpiry = signal('');
+  fDays = signal('');
+  fStatus = signal('');
   viewMode = signal<'all' | 'expiring'>('all');
   expiringMode = computed(() => this.viewMode() === 'expiring');
 
@@ -66,6 +73,7 @@ export class VisasComponent implements OnInit {
   editingVisa = signal<Visa | null>(null);
 
   readonly typeOptions = ['student', 'tourist', 'work', 'transit'];
+  readonly statusOptions = ['valid', 'expiring', 'expired'];
   readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Visa));
 
   private readonly uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -253,7 +261,17 @@ export class VisasComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.viewMode.set('all');
-    this.svc.list({ search: this.search() || undefined, page: this.page(), limit: this.limit() }).subscribe({
+    const searchParts = [this.fNumber().trim(), this.fCountry().trim(), this.search().trim()].filter(Boolean);
+    const params: any = { page: this.page(), limit: this.limit() };
+    if (searchParts.length) params.search = searchParts.join(' ');
+    if (this.fType().trim()) {
+      params.visaType = this.fType().trim();
+      params.type = this.fType().trim();
+    }
+    if (this.fExpiry().trim()) params.expiryDate = this.fExpiry().trim();
+    if (this.fDays().trim()) params.daysLeft = this.fDays().trim();
+    if (this.fStatus().trim()) params.status = this.fStatus().trim();
+    this.svc.list(params).subscribe({
       next: (r: any) => {
         const data = r?.data ?? (Array.isArray(r) ? r : []);
         const total = r?.total ?? (Array.isArray(data) ? data.length : 0);
@@ -296,6 +314,30 @@ export class VisasComponent implements OnInit {
     this.page.set(1);
     if (this.expiringMode()) this.loadExpiring();
     else this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fType() || this.fNumber() || this.fCountry() || this.fExpiry() || this.fDays() || this.fStatus() || this.search() || this.visaTypeFilter());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fType.set('');
+    this.fNumber.set('');
+    this.fCountry.set('');
+    this.fExpiry.set('');
+    this.fDays.set('');
+    this.fStatus.set('');
+    this.search.set('');
+    this.visaTypeFilter.set('');
+    this.page.set(1);
+    this.load();
   }
 
   create() {

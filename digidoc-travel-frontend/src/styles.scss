@@ -409,3 +409,179 @@ input {
   outline: 2px solid var(--sl-orange-500) !important;
   outline-offset: 2px !important;
 }
+
+// ============================================================
+// ERP Table Standard — DigiDocTravel
+// Convención: padding equilibrado (mismo pad interno/externo),
+// filtros por columna PrimeNG, sin búsqueda global.
+// ============================================================
+
+:root {
+  --erp-cell-pad: 0.75rem;
+  --erp-filter-h: 2rem;
+}
+
+.w-full {
+  width: 100% !important;
+}
+
+.erp-table {
+  .p-datatable-thead > tr > th {
+    padding: var(--erp-cell-pad) !important;
+    vertical-align: middle;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: var(--erp-cell-pad) !important;
+    vertical-align: middle;
+  }
+
+  // Fila de filtros: mismo padding que el resto (márgenes equilibrados)
+  .erp-filter-row > th {
+    padding: var(--erp-cell-pad) !important;
+    background: var(--sl-white) !important;
+    border-color: var(--color-border) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    vertical-align: middle !important;
+  }
+
+  .erp-col-head {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  // Contenedor del filtro: flex alineado, sin botones de menú
+  .p-column-filter {
+    display: flex !important;
+    align-items: center !important;
+    width: 100%;
+    gap: 0 !important;
+  }
+
+  .p-column-filter .p-column-filter-element {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    width: 100%;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .p-column-filter .p-inputtext,
+  .p-column-filter .p-dropdown,
+  .p-column-filter .p-calendar,
+  .p-column-filter .p-inputnumber,
+  .erp-filter-input {
+    width: 100% !important;
+    min-width: 0;
+    box-sizing: border-box !important;
+  }
+
+  .p-column-filter .p-inputtext,
+  .erp-filter-input {
+    height: var(--erp-filter-h) !important;
+    min-height: var(--erp-filter-h) !important;
+    line-height: 1.25 !important;
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    vertical-align: middle !important;
+  }
+
+  input[type='date'].erp-filter-input,
+  input[type='number'].erp-filter-input {
+    line-height: 1.25 !important;
+    padding-top: 0.3125rem !important;
+    padding-bottom: 0.3125rem !important;
+  }
+
+  // Select alineado a la misma altura que los inputs
+  .p-column-filter .p-dropdown {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: var(--erp-filter-h) !important;
+    min-height: var(--erp-filter-h) !important;
+    font-size: 0.8125rem !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+
+    .p-dropdown-label {
+      flex: 1 1 auto !important;
+      min-width: 0;
+      display: flex !important;
+      align-items: center !important;
+      height: 100% !important;
+      line-height: 1.25 !important;
+      padding: 0.375rem 0.5rem !important;
+      font-size: 0.8125rem !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      &.p-placeholder {
+        color: var(--sl-gray-400) !important;
+      }
+    }
+
+    .p-dropdown-trigger {
+      flex: 0 0 auto !important;
+      width: 1.75rem !important;
+      align-self: stretch !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .p-dropdown-clear-icon {
+      right: 1.9rem !important;
+      margin-top: -0.5rem !important;
+      font-size: 0.75rem !important;
+    }
+  }
+
+  .p-column-filter .p-calendar {
+    display: flex !important;
+    align-items: center !important;
+    width: 100%;
+
+    .p-inputtext {
+      height: var(--erp-filter-h) !important;
+    }
+  }
+
+  .p-column-filter .p-inputnumber {
+    display: flex !important;
+    align-items: center !important;
+
+    .p-inputtext {
+      height: var(--erp-filter-h) !important;
+      flex: 1 1 auto !important;
+    }
+  }
+
+  .p-column-filter-menu-button {
+    display: none !important;
+  }
+
+  // Botón limpiar dentro del filtro
+  .p-column-filter-clear-button {
+    display: none !important;
+  }
+}
+
+// Panel flotante de los selects de filtro: misma tipografía compacta
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  font-size: 0.8125rem !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.erp-table-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}

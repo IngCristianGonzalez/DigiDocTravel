@@ -54,13 +54,27 @@ export class NotificationsComponent implements OnInit {
   limit = signal(10);
   search = signal('');
 
-  // Filtros historial
+  // Filtros historial (legacy — se mantienen por compatibilidad)
   filterType = signal('');
   filterStatus = signal('');
   readonly typeOptions = ['info', 'warning', 'success', 'error', 'visa', 'payment', 'document'];
   readonly statusOptions = [
     { label: 'No leídas', value: 'unread' },
     { label: 'Leídas', value: 'read' },
+  ];
+  // Filtros por columna (ERP PrimeNG) — reemplazan la búsqueda global
+  fTitle = signal('');
+  fType = signal('');
+  fDate = signal('');
+  fEmail = signal('');
+  fRead = signal('');
+  readonly emailOptions = [
+    { label: 'Sí', value: 'true' },
+    { label: 'No', value: 'false' },
+  ];
+  readonly readOptions = [
+    { label: 'Leída', value: 'read' },
+    { label: 'No leída', value: 'unread' },
   ];
 
   // Modales — detalle y confirmación de marcar todas
@@ -131,9 +145,18 @@ export class NotificationsComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.error.set(null);
-    const params: any = { search: this.search() || undefined, page: this.page(), limit: this.limit() };
-    if (this.filterType()) params.type = this.sanitize(this.filterType());
-    if (this.filterStatus()) params.status = this.sanitize(this.filterStatus());
+    const params: any = { page: this.page(), limit: this.limit() };
+    const searchParts = [this.fTitle().trim(), this.search().trim()].filter(Boolean);
+    if (searchParts.length) params.search = searchParts.join(' ');
+    const typeVal = this.fType() || this.filterType();
+    if (typeVal) params.type = this.sanitize(typeVal);
+    if (this.fDate()) {
+      params.createdAt = this.fDate();
+      params.date = this.fDate();
+    }
+    if (this.fEmail()) params.emailSent = this.fEmail();
+    const readVal = this.fRead() || this.filterStatus();
+    if (readVal) params.status = this.sanitize(readVal);
 
     this.svc.list(params).subscribe({
       next: (r: any) => {
@@ -175,7 +198,36 @@ export class NotificationsComponent implements OnInit {
   clearFilters() {
     this.filterType.set('');
     this.filterStatus.set('');
+    this.fTitle.set('');
+    this.fType.set('');
+    this.fDate.set('');
+    this.fEmail.set('');
+    this.fRead.set('');
     this.search.set('');
+    this.page.set(1);
+    this.load();
+  }
+
+  // ---- Filtros por columna (ERP) ----
+  onColumnFilter() {
+    this.page.set(1);
+    this.load();
+  }
+
+  hasActiveFilters(): boolean {
+    return !!(this.fTitle() || this.fType() || this.fDate() || this.fEmail() || this.fRead() || this.search() || this.filterType() || this.filterStatus());
+  }
+
+  clearColumnFilters(dt?: any) {
+    dt?.clear();
+    this.fTitle.set('');
+    this.fType.set('');
+    this.fDate.set('');
+    this.fEmail.set('');
+    this.fRead.set('');
+    this.search.set('');
+    this.filterType.set('');
+    this.filterStatus.set('');
     this.page.set(1);
     this.load();
   }

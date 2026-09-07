@@ -71,36 +71,21 @@
     <span>El backend envía recordatorios 24h antes por email/notificación.</span>
   </div>
 
-  <!-- Toolbar -->
-  <div class="events__toolbar">
-    <div class="events__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Buscar por título o ubicación..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar eventos"
-      />
-    </div>
-    <div class="events__toolbar-actions">
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
-      }
-    </div>
-  </div>
-
-  <!-- Tabla -->
+  <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="events__table-card">
     <div class="events__table-header">
       <h3 class="events__table-title"><i class="fa-solid fa-table-list"></i> Eventos</h3>
-      <span class="events__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="events__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : events()"
         [lazy]="true"
         [paginator]="true"
@@ -108,18 +93,49 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '62rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Título</th>
-            <th style="width: 150px">Fecha</th>
-            <th style="width: 160px">Ubicación</th>
-            <th style="width: 110px">Estado</th>
-            <th style="width: 144px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Título</span></th>
+            <th style="width: 150px"><span class="erp-col-head">Fecha</span></th>
+            <th style="width: 160px"><span class="erp-col-head">Ubicación</span></th>
+            <th style="width: 110px"><span class="erp-col-head">Estado</span></th>
+            <th style="width: 144px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter type="text" field="title" [showMenu]="false" matchMode="contains" placeholder="Filtrar título">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar título" [ngModel]="fTitle()" (ngModelChange)="fTitle.set($event); onColumnFilter()" aria-label="Filtrar por título" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="date" field="eventDate" [showMenu]="false" matchMode="equals" placeholder="Fecha">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText type="date" class="erp-filter-input" [ngModel]="fDate()" (ngModelChange)="fDate.set($event); onColumnFilter()" aria-label="Filtrar por fecha" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="location" [showMenu]="false" matchMode="contains" placeholder="Filtrar ubicación">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar ubicación" [ngModel]="fLocation()" (ngModelChange)="fLocation.set($event); onColumnFilter()" aria-label="Filtrar por ubicación" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -160,9 +176,11 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron eventos</p>
-                  <p class="empty-state__desc">Crea el primer evento para comenzar.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o crea el primer evento para comenzar.</p>
                 </div>
-                @if (!search()) {
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                } @else {
                   <p-button icon="pi pi-plus" label="Crear evento" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>

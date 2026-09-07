@@ -71,27 +71,6 @@
     <span>El backend notifica 7 días antes del vencimiento de cada cuota.</span>
   </div>
 
-  <!-- Toolbar -->
-  <div class="payments__toolbar">
-    <div class="payments__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Buscar por concepto..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar planes"
-      />
-    </div>
-    <div class="payments__toolbar-actions">
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
-      }
-    </div>
-  </div>
-
   <!-- Vista: Todos / Pendientes -->
   <div class="tabs-control-wrapper">
     <div class="tabs-container">
@@ -108,11 +87,17 @@
   <div class="payments__table-card">
     <div class="payments__table-header">
       <h3 class="payments__table-title"><i class="fa-solid fa-table-list"></i> Planes de pago</h3>
-      <span class="payments__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="payments__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : plans()"
         [lazy]="true"
         [paginator]="viewMode() === 'all'"
@@ -120,18 +105,49 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '60rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Concepto</th>
-            <th style="width: 140px">Total</th>
-            <th style="width: 110px">Cuotas</th>
-            <th style="width: 120px">Estado</th>
-            <th style="width: 112px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Concepto</span></th>
+            <th style="width: 140px"><span class="erp-col-head">Total</span></th>
+            <th style="width: 110px"><span class="erp-col-head">Cuotas</span></th>
+            <th style="width: 120px"><span class="erp-col-head">Estado</span></th>
+            <th style="width: 112px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter type="text" field="concept" [showMenu]="false" matchMode="contains" placeholder="Filtrar concepto">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar concepto" [ngModel]="fConcept()" (ngModelChange)="fConcept.set($event); onColumnFilter()" aria-label="Filtrar por concepto" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="numeric" field="totalAmount" [showMenu]="false" matchMode="equals" placeholder="Monto">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText type="number" class="erp-filter-input" placeholder="Monto" [ngModel]="fTotal()" (ngModelChange)="fTotal.set($event); onColumnFilter()" aria-label="Filtrar por monto" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="numeric" field="installments" [showMenu]="false" matchMode="equals" placeholder="Cuotas">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText type="number" class="erp-filter-input" placeholder="Cuotas" [ngModel]="fQuotas()" (ngModelChange)="fQuotas.set($event); onColumnFilter()" aria-label="Filtrar por cuotas" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -168,9 +184,11 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron planes</p>
-                  <p class="empty-state__desc">Crea el primer plan para comenzar.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o crea el primer plan.</p>
                 </div>
-                @if (viewMode() === 'all' && !search()) {
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+                } @else {
                   <p-button icon="pi pi-plus" label="Crear plan" size="small" (onClick)="openCreateModal()"></p-button>
                 }
               </div>

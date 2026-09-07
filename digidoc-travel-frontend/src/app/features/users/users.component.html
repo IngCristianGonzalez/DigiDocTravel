@@ -67,36 +67,21 @@
     </div>
   }
 
-  <!-- Toolbar Buscar -->
-  <div class="users__toolbar">
-    <div class="users__search">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input
-        pInputText
-        placeholder="Buscar por email o nombre..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
-        (keyup.enter)="resetAndLoad()"
-        aria-label="Buscar usuarios"
-      />
-    </div>
-    <div class="users__toolbar-actions">
-      <p-button icon="pi pi-search" label="Buscar" size="small" (onClick)="resetAndLoad()"></p-button>
-      @if (search()) {
-        <p-button icon="pi pi-filter-slash" label="Limpiar" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
-      }
-    </div>
-  </div>
-
-  <!-- Tabla -->
+  <!-- Tabla (filtros por columna ERP — sin búsqueda global) -->
   <div class="users__table-card">
     <div class="users__table-header">
       <h3 class="users__table-title"><i class="fa-solid fa-table-list"></i> Usuarios</h3>
-      <span class="users__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+      <span class="erp-table-meta">
+        <span class="users__table-count">{{ total() }} registros · Pág {{ page() }} / {{ totalPages() }}</span>
+        @if (hasActiveFilters()) {
+          <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
+        }
+      </span>
     </div>
 
     <div class="table-wrapper">
       <p-table
+        #dt
         [value]="loading() ? skeletonRows : users()"
         [lazy]="true"
         [paginator]="true"
@@ -104,18 +89,49 @@
         [totalRecords]="total()"
         (onPage)="onPageChange($event)"
         [rowsPerPageOptions]="[10, 25, 50]"
-        styleClass="p-datatable-sm"
+        styleClass="p-datatable-sm erp-table"
         [scrollable]="true"
         scrollHeight="flex"
         [tableStyle]="{ 'min-width': '64rem' }"
       >
         <ng-template pTemplate="header">
           <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th style="width: 200px">Roles</th>
-            <th style="width: 110px">Estado</th>
-            <th style="width: 176px; text-align: center">Acciones</th>
+            <th><span class="erp-col-head">Nombre</span></th>
+            <th><span class="erp-col-head">Email</span></th>
+            <th style="width: 200px"><span class="erp-col-head">Roles</span></th>
+            <th style="width: 150px"><span class="erp-col-head">Estado</span></th>
+            <th style="width: 176px; text-align: center"><span class="erp-col-head" style="justify-content: center">Acciones</span></th>
+          </tr>
+          <tr class="erp-filter-row">
+            <th>
+              <p-columnFilter type="text" field="firstName" [showMenu]="false" matchMode="contains" placeholder="Filtrar nombre">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar nombre" [ngModel]="fName()" (ngModelChange)="fName.set($event); onColumnFilter()" aria-label="Filtrar por nombre" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter type="text" field="email" [showMenu]="false" matchMode="contains" placeholder="Filtrar email">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar email" [ngModel]="fEmail()" (ngModelChange)="fEmail.set($event); onColumnFilter()" aria-label="Filtrar por email" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="roles" [showMenu]="false" matchMode="contains" placeholder="Filtrar rol">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <input pInputText class="erp-filter-input" placeholder="Filtrar rol" [ngModel]="fRole()" (ngModelChange)="fRole.set($event); onColumnFilter()" aria-label="Filtrar por rol" />
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th>
+              <p-columnFilter field="status" [showMenu]="false" matchMode="equals" placeholder="Estado">
+                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                  <p-dropdown [options]="statusOptions" [ngModel]="fStatus()" (ngModelChange)="fStatus.set($event ?? ''); onColumnFilter()" placeholder="Todos" [showClear]="true" styleClass="w-full" appendTo="body" ariaLabel="Filtrar por estado"></p-dropdown>
+                </ng-template>
+              </p-columnFilter>
+            </th>
+            <th></th>
           </tr>
         </ng-template>
 
@@ -172,10 +188,10 @@
                 <div class="empty-state__icon"><i class="fa-solid fa-inbox"></i></div>
                 <div>
                   <p class="empty-state__title">No se encontraron usuarios</p>
-                  <p class="empty-state__desc">Prueba con otro término de búsqueda o registra el primer usuario.</p>
+                  <p class="empty-state__desc">Prueba con otros filtros por columna o registra el primer usuario.</p>
                 </div>
-                @if (search()) {
-                  <p-button icon="pi pi-filter-slash" label="Limpiar búsqueda" severity="secondary" [outlined]="true" size="small" (onClick)="search.set(''); resetAndLoad()"></p-button>
+                @if (hasActiveFilters()) {
+                  <p-button icon="pi pi-filter-slash" label="Limpiar filtros" severity="secondary" [outlined]="true" size="small" (onClick)="clearColumnFilters(dt)"></p-button>
                 } @else {
                   <p-button icon="pi pi-user-plus" label="Registrar usuario" size="small" (onClick)="openCreateModal()"></p-button>
                 }
