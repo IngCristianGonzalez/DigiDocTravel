@@ -32,11 +32,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./digidoc-travel-frontend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
-      - name: Lint
+      - name: Typecheck
         working-directory: ./digidoc-travel-frontend
-        run: npm run lint
+        run: npx tsc --noEmit -p tsconfig.app.json
 
       - name: Build
         working-directory: ./digidoc-travel-frontend
@@ -44,7 +44,7 @@ jobs:
 
       - name: Test
         working-directory: ./digidoc-travel-frontend
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
+        run: npx vitest run
 
   build-and-push:
     needs: test
