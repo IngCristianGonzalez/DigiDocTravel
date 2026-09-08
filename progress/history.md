@@ -43,3 +43,12 @@
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 - **Resumen:** causa raíz = datos, no código. feature_list.json ahora tiene module (backend/frontend), priority (alta/media), type y 14 dependencias acíclicas; mensaje de error accionable si se abre sin servidor http.
 - **Evidencia:** smoke test jsdom (10 filas pág.1, 13 nodos árbol, 14 aristas, grafo 13 filas) → SMOKE_OK; node --check OK; http 200.
+---
+
+## 2026-09-08 — fix 2 árbol/dependencias con file:// (002)
+
+- **Rama:** feature/002_index_notebook (commit eac109f)
+- **Status:** done
+- **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
+- **Resumen:** el "sigue" era apertura con doble clic (file:// bloquea fetch → 0 nodos). JSON de 13 features embebido en index.html + init() con fallback + badge de fuente (en vivo/embebidos).
+- **Evidencia:** jsdom en ambos modos → 13 nodos, 14 aristas, badge correcto, sin errores JS.
