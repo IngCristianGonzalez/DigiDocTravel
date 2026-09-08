@@ -4,16 +4,20 @@
 
 ## Estado
 
-- **Feature en curso:** —
-- **Status:** —
-- **Inicio de sesión:** —
-- **Rama:** —
-- **Ejecutado por:** {nombre} ({email}) ← OBLIGATORIO antes de cualquier acción
+- **Feature en curso:** 002_index_notebook (fix) — datos de dependencias/módulos para árbol y grafo
+- **Status:** in_progress
+- **Inicio de sesión:** 2026-09-08
+- **Rama:** feature/002_index_notebook
+- **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 
 ## Plan (tasks de specs/{NNN}\_{name}/tasks.md)
 
-_Copia aquí las tasks de la feature en curso._
+_Fix dashboard: datos para árbol y dependencias._
+- [x] Diagnosticar: faltaban module/dependencies y priorities no coincidían (high vs alta)
+- [x] Enriquecer feature_list.json (module, priority alta/media, type, 14 dependencias acíclicas)
+- [x] Smoke test jsdom: 10 filas pág.1, 13 nodos, 14 aristas → SMOKE_OK
+- [x] Mensaje de error accionable si se abre sin servidor http
 
 ## Notas de bloqueo (si aplica)
 
-_Describe aquí cualquier bloqueo antes de parar la sesión._
+- Sin bloqueos. Causa raíz: datos, no código (el render ya funcionaba).

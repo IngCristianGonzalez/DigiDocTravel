@@ -302,7 +302,7 @@
         renderHistoryTimeline();
       } catch (e) {
         document.getElementById('empty').style.display = 'block';
-        document.getElementById('empty').textContent = 'Error al cargar feature_list.json';
+        document.getElementById('empty').textContent = '⚠ No se pudo cargar feature_list.json — abre esta página con un servidor local (ej: python3 -m http.server) en la raíz del repo, no con doble clic.';
       }
     }
 
