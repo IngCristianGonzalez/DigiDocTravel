@@ -14,3 +14,29 @@ digidoc-travel-frontend/.angular/
 digidoc-travel-frontend/coverage/
 digidoc-travel-docs/
 .opencode/
+
+# ─── Harness agnóstico ────────────────────────────────────────
+# kickstart.json contiene parámetros locales (incluye email del ejecutor).
+# NO debe trackearse en git.
+kickstart.json
+
+# ─── .NET (solo si el stack lo usa) ───────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# ─── Coverage y reports (genérico) ────────────────────────────
+TestResults/
+*.cobertura.xml
+*.opencover.xml
+CoverageReport/
+*.nupkg
+
+# ─── IDE / OS ─────────────────────────────────────────────────
+.idea/
+*.swp
+*.swo
+*~
+Thumbs.db
