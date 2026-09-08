@@ -25,3 +25,12 @@
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 - **Resumen:** feature_list.json v2.0.0 con 13 features reales auditadas de git (11 done fusionadas PR #1–#14 salvo #5 tooling, 1 pending i18n-enAU-es sin fusionar, 1 in_progress fix/backend-lint). Contadores verificados, init.sh verde.
 - **Evidencia:** python3 (13 features, ids únicos), `bash init.sh` exit 0.
+---
+
+## 2026-09-08 — index.html cuaderno didáctico (002)
+
+- **Rama:** feature/002_index_notebook (commit 903f13e)
+- **Status:** done (restyle visual, sin SDD)
+- **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
+- **Resumen:** dashboard standalone con tema cuaderno pastel (papel con renglones + margen, Caveat/Kalam, stickers, badges semánticos en pastel, modal con cinta, timeline con estrellas, tema 3D claro por defecto). JS intacto salvo 3 líneas (título con 📓, tema inicial, bg container) y valores hex inline.
+- **Evidencia:** node --check OK, http.server 200 para index.html (78KB) y feature_list.json.
