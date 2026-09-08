@@ -34,3 +34,12 @@
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 - **Resumen:** dashboard standalone con tema cuaderno pastel (papel con renglones + margen, Caveat/Kalam, stickers, badges semánticos en pastel, modal con cinta, timeline con estrellas, tema 3D claro por defecto). JS intacto salvo 3 líneas (título con 📓, tema inicial, bg container) y valores hex inline.
 - **Evidencia:** node --check OK, http.server 200 para index.html (78KB) y feature_list.json.
+---
+
+## 2026-09-08 — fix árbol/dependencias del dashboard (002)
+
+- **Rama:** feature/002_index_notebook (commit f249503)
+- **Status:** done
+- **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
+- **Resumen:** causa raíz = datos, no código. feature_list.json ahora tiene module (backend/frontend), priority (alta/media), type y 14 dependencias acíclicas; mensaje de error accionable si se abre sin servidor http.
+- **Evidencia:** smoke test jsdom (10 filas pág.1, 13 nodos árbol, 14 aristas, grafo 13 filas) → SMOKE_OK; node --check OK; http 200.
