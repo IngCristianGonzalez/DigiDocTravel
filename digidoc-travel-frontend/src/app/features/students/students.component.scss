@@ -823,10 +823,14 @@
 }
 
 // ============================================================
-// PoC UX — Footer de modales 50/50 (estándar confirmación)
+// Hallmark · enterprise modals — footer a la derecha (estándar
+// confirmación: Cancelar secondary + acción primaria última)
+// pre-emit critique: P5 H4 E5 S4 R5 V5
 // ============================================================
 .modal-footer {
   display: flex;
+  justify-content: flex-end;
+  align-items: center;
   gap: var(--space-sm);
 
   @media (max-width: 480px) {
@@ -836,7 +840,12 @@
 }
 
 :host ::ng-deep .modal-footer .p-button {
-  flex: 1 1 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
 }
 
 // ============================================================
@@ -889,6 +898,10 @@
 // ============================================================
 .register-modal__icon--danger {
   background: var(--sl-error-600);
+}
+
+.register-modal__icon--info {
+  background: var(--sl-info-700);
 }
 
 .delete-warning {
