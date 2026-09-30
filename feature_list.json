@@ -334,16 +334,41 @@
       "module": "frontend",
       "type": "feature",
       "dependencies": []
+    },
+    {
+      "acceptance": [
+        "Selector de asesor con solo elegibles (sin IDs libres)",
+        "Backend valida UUID, existencia y rol (400/404/422)",
+        "Auditoría ASSIGN_ADVISOR y suites en verde"
+      ],
+      "branch": "feature/015_asesor_estudiante",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Asesor asociable al estudiante: endpoint de elegibles, validación en assignAdvisor y selector buscable en el modal Editar en lugar del input crudo de Advisor ID.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 15,
+      "name": "asesor_estudiante",
+      "note": "Rama desde 014 c0026c6. Hoy: input crudo + save sin validar.",
+      "priority": "alta",
+      "sdd": true,
+      "spec_folder": "specs/015_asesor_estudiante",
+      "status": "spec_ready",
+      "title": "Asesor asociable al estudiante",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2
+      ]
     }
   ],
   "metadata": {
     "blocked_count": 0,
     "done_count": 11,
     "in_progress_count": 1,
-    "last_updated": "2026-09-08",
+    "last_updated": "2026-09-30",
     "note": "Contadores coherentes con features. Ramas legacy usan nomenclatura CU/RF (anterior a la convención feature/{NNN}_{name}); se conservan los nombres reales en 'branch'.",
     "pending_count": 1,
-    "total_features": 13,
+    "total_features": 15,
     "updated_by": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)"
   },
   "project": "DigiDocTravel",
