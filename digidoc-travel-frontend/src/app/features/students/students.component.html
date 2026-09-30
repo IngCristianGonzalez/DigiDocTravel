@@ -717,7 +717,7 @@
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
-      <span class="register-modal__icon"><i class="fa-solid fa-circle-question"></i></span>
+      <span class="register-modal__icon register-modal__icon--confirm"><i class="fa-solid fa-clipboard-check"></i></span>
       <span class="register-modal__titles">
         @if (confirmKind() === 'create') {
           <span class="register-modal__title">Confirmar registro</span>
@@ -733,14 +733,18 @@
     </div>
   </ng-template>
 
-  @if (confirmKind() === 'create') {
-    <p class="confirm-question">¿Estás seguro de registrar a <strong>{{ confirmLines()[0]?.value }}</strong> con estos datos?</p>
-  } @else if (confirmKind() === 'edit') {
-    <p class="confirm-question">¿Estás seguro de guardar los cambios de <strong>{{ confirmLines()[0]?.value }}</strong>?</p>
-  } @else {
-    <p class="confirm-question">¿Estás seguro de agregar esta observación?</p>
-  }
+  <div class="confirm-callout">
+    <i class="fa-solid fa-circle-question confirm-callout__icon" aria-hidden="true"></i>
+    @if (confirmKind() === 'create') {
+      <p class="confirm-question">¿Estás seguro de registrar a <strong>{{ confirmLines()[0]?.value }}</strong> con estos datos?</p>
+    } @else if (confirmKind() === 'edit') {
+      <p class="confirm-question">¿Estás seguro de guardar los cambios de <strong>{{ confirmLines()[0]?.value }}</strong>?</p>
+    } @else {
+      <p class="confirm-question">¿Estás seguro de agregar esta observación?</p>
+    }
+  </div>
 
+  <p class="confirm-summary-caption">Resumen de datos a guardar</p>
   <dl class="detail-list confirm-summary">
     @for (l of confirmLines(); track l.label) {
       <div class="detail-list__row">
