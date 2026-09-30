@@ -27,6 +27,7 @@ export const routes: Routes = [
       { path: 'payments', loadComponent: () => import('./features/payments/payments.component').then(m => m.PaymentsComponent) },
       { path: 'events', loadComponent: () => import('./features/events/events.component').then(m => m.EventsComponent) },
       { path: 'notifications', loadComponent: () => import('./features/notifications/notifications.component').then(m => m.NotificationsComponent) },
+      { path: 'advisors', loadComponent: () => import('./features/advisors/advisors.component').then(m => m.AdvisorsComponent), canActivate: [roleGuard(['admin','supervisor'])] },
       { path: 'reports', loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent), canActivate: [roleGuard(['admin','supervisor'])] },
       { path: 'unauthorized', loadComponent: () => import('./shared/components/unauthorized.component').then(m => m.UnauthorizedComponent) },
     ]

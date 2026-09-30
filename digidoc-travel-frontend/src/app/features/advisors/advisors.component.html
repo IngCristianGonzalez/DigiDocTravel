@@ -1,0 +1,275 @@
+<!-- Gestión de Asesores — tabla lazy + modales (convención register-modal) -->
+<div class="advisors">
+  <div class="advisors__header">
+    <div>
+      <h2 class="advisors__title">Gestión de Asesores</h2>
+      <p class="advisors__subtitle">Asesores activos y sus estudiantes asociados</p>
+    </div>
+    <p-button label="Registrar asesor" icon="fa-solid fa-user-plus" (onClick)="openCreateModal()"></p-button>
+  </div>
+
+  <div class="advisors__search">
+    <span class="p-input-icon-left advisors__search-box">
+      <i class="pi pi-search"></i>
+      <input pInputText placeholder="Buscar por nombre o email..." [ngModel]="search()" (ngModelChange)="search.set($event); resetAndLoad()" />
+    </span>
+  </div>
+
+  <app-loading [show]="loading()" message="Cargando asesores..."></app-loading>
+  <app-error [message]="error()" (retry)="load()"></app-error>
+
+  @if (!loading()) {
+    <p-table
+      [value]="advisors()"
+      [paginator]="true"
+      [rows]="limit()"
+      [totalRecords]="total()"
+      [lazy]="true"
+      (onPage)="onPageChange($event)"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      styleClass="advisors__table"
+      [tableStyle]="{ 'min-width': '48rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Asesor</th>
+          <th>Email</th>
+          <th>Estado</th>
+          <th class="advisors__actions-col">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-a>
+        <tr>
+          <td><span class="advisors__name">{{ fullName(a) }}</span></td>
+          <td class="advisors__break">{{ a.email }}</td>
+          <td><p-tag value="Activo" severity="success"></p-tag></td>
+          <td>
+            <div class="advisors__actions">
+              <p-button icon="pi pi-eye" [text]="true" [rounded]="true" size="small" (onClick)="openDetail(a)" pTooltip="Detalle" tooltipPosition="top" ariaLabel="Detalle de asesor"></p-button>
+              <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="openDelete(a)" pTooltip="Desactivar" tooltipPosition="top" ariaLabel="Desactivar asesor"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="4" class="advisors__empty">Sin asesores activos</td></tr>
+      </ng-template>
+    </p-table>
+  }
+</div>
+
+<!-- Modal Registrar asesor (rol preasignado) -->
+<p-dialog
+  [visible]="showCreateModal()"
+  (visibleChange)="showCreateModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="advisors-dialog register-modal"
+  aria-label="Registrar asesor"
+  (onHide)="closeCreateModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-user-plus"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Registrar asesor</span>
+        <span class="register-modal__subtitle">Se creará con rol asesor</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="advisors__form-grid">
+    <div class="field" [class.field--error]="formErrors().firstName">
+      <p-floatLabel>
+        <input pInputText id="a-firstName" [ngModel]="form().firstName" (ngModelChange)="onNameInput('firstName', $event)" [class.p-invalid]="!!formErrors().firstName" autocomplete="given-name" placeholder="Ej: María" />
+        <label for="a-firstName">Nombre *</label>
+      </p-floatLabel>
+      @if (formErrors().firstName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().firstName }}</small>
+      } @else {
+        <span class="field__hint">Mínimo 3 caracteres, solo letras</span>
+      }
+    </div>
+    <div class="field" [class.field--error]="formErrors().lastName">
+      <p-floatLabel>
+        <input pInputText id="a-lastName" [ngModel]="form().lastName" (ngModelChange)="onNameInput('lastName', $event)" [class.p-invalid]="!!formErrors().lastName" autocomplete="family-name" placeholder="Ej: García" />
+        <label for="a-lastName">Apellido *</label>
+      </p-floatLabel>
+      @if (formErrors().lastName) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().lastName }}</small>
+      } @else {
+        <span class="field__hint">Mínimo 3 caracteres, solo letras</span>
+      }
+    </div>
+    <div class="field" [class.field--error]="formErrors().email">
+      <p-floatLabel>
+        <input pInputText id="a-email" type="email" [ngModel]="form().email" (ngModelChange)="form.update(f => ({ ...f, email: $event }))" [class.p-invalid]="!!formErrors().email" autocomplete="email" placeholder="Ej: nombre@dominio.com" maxlength="255" />
+        <label for="a-email">Email *</label>
+      </p-floatLabel>
+      @if (formErrors().email) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().email }}</small>
+      } @else {
+        <span class="field__hint">Ej: nombre@dominio.com — sin caracteres especiales</span>
+      }
+    </div>
+    <div class="field" [class.field--error]="formErrors().password">
+      <p-floatLabel>
+        <input pInputText id="a-password" type="password" [ngModel]="form().password" (ngModelChange)="form.update(f => ({ ...f, password: $event }))" [class.p-invalid]="!!formErrors().password" autocomplete="new-password" />
+        <label for="a-password">Contraseña *</label>
+      </p-floatLabel>
+      @if (formErrors().password) {
+        <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().password }}</small>
+      } @else {
+        <span class="field__hint">8+ caracteres: mayúscula, minúscula, número y símbolo</span>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeCreateModal()" icon="pi pi-times"></p-button>
+      <p-button label="Registrar" icon="pi pi-check" type="button" (onClick)="create()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Detalle + estudiantes asociados -->
+<p-dialog
+  [visible]="showDetailModal()"
+  (visibleChange)="showDetailModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '560px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="advisors-dialog register-modal"
+  aria-label="Detalle de asesor"
+  (onHide)="closeDetailModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon"><i class="fa-solid fa-id-card"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Detalle de asesor</span>
+        <span class="register-modal__subtitle">{{ detailAdvisor()?.email }}</span>
+      </span>
+    </div>
+  </ng-template>
+
+  @if (detailAdvisor(); as d) {
+    <dl class="detail-list">
+      <div class="detail-list__row"><dt>Nombre</dt><dd>{{ fullName(d) }}</dd></div>
+      <div class="detail-list__row"><dt>Email</dt><dd class="detail-list__break">{{ d.email }}</dd></div>
+    </dl>
+    <p class="confirm-summary-caption advisors__list-caption">Estudiantes asociados ({{ advisedStudents().length }})</p>
+    <dl class="detail-list">
+      @for (s of advisedStudents(); track s.id) {
+        <div class="detail-list__row"><dt>{{ s.firstName }} {{ s.lastName }}</dt><dd class="detail-list__break">{{ s.email }}</dd></div>
+      } @empty {
+        <div class="detail-list__row"><dt>—</dt><dd>Sin estudiantes asociados</dd></div>
+      }
+    </dl>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" type="button" (onClick)="closeDetailModal()" icon="pi pi-times"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Desactivar con conteo -->
+<p-dialog
+  [visible]="showDeleteModal()"
+  (visibleChange)="showDeleteModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '480px', maxWidth: '95vw' }"
+  styleClass="advisors-dialog register-modal"
+  aria-label="Desactivar asesor"
+  (onHide)="closeDeleteModal()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--danger"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Desactivar asesor</span>
+        <span class="register-modal__subtitle">Esta acción cambia el estado del registro</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="delete-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>El asesor dejará de estar activo. Tiene <strong>{{ advisedCount() }}</strong> estudiante(s) asociado(s), cuya asociación histórica se conserva.</span>
+  </div>
+
+  @if (deleteTarget(); as t) {
+    <p class="delete-target">{{ fullName(t) }} · {{ t.email }}</p>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
+      <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Confirmar registro -->
+<p-dialog
+  [visible]="showConfirmModal()"
+  (visibleChange)="showConfirmModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  styleClass="advisors-dialog register-modal"
+  aria-label="Confirmar registro"
+  (onHide)="backToForm()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--confirm"><i class="fa-solid fa-clipboard-check"></i></span>
+      <span class="register-modal__titles">
+        <span class="register-modal__title">Confirmar registro</span>
+        <span class="register-modal__subtitle">Revisa los datos antes de guardar</span>
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="confirm-callout">
+    <i class="fa-solid fa-circle-question confirm-callout__icon" aria-hidden="true"></i>
+    <p class="confirm-question">¿Estás seguro de registrar a <strong>{{ confirmLines()[0]?.value }}</strong> como asesor?</p>
+  </div>
+
+  <p class="confirm-summary-caption">Resumen de datos a guardar</p>
+  <dl class="detail-list confirm-summary">
+    @for (l of confirmLines(); track l.label) {
+      <div class="detail-list__row"><dt>{{ l.label }}</dt><dd class="detail-list__break">{{ l.value }}</dd></div>
+    }
+  </dl>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Corregir" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="backToForm()" icon="pi pi-pencil"></p-button>
+      <p-button label="Sí, registrar" icon="pi pi-check" type="button" (onClick)="proceedConfirm()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
