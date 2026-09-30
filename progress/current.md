@@ -5,7 +5,7 @@
 ## Estado
 
 - **Feature en curso:** 014_hallmark_design
-- **Status:** pending (audit listo, puerta Hallmark: audience/use-case/tone)
+- **Status:** in_progress (redesign landing; audit aprobado por humano: "asesores y admins, avisar eventos, ajusta")
 - **Inicio de sesión:** 2026-09-30
 - **Rama:** feature/014_hallmark_design (base: feature/002_index_notebook ac934f5, incluye main 656b3f1)
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
