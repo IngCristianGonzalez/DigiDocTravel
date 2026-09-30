@@ -1,5 +1,5 @@
 {
-  "description": "DigiDocTravel (SL Global) — gestión documental para educación internacional. Backend NestJS + frontend Angular. Inventario real auditado 2026-09-08 desde ramas git y merges a main (PR #1–#14).",
+  "description": "DigiDocTravel (SL Global) — gestión documental para educación internacional. Backend NestJS + frontend Angular. Inventario auditado 2026-09-08 (PR #1–#14) + specs SDD 012/014/015 del 2026-09-30.",
   "features": [
     {
       "acceptance": [
@@ -277,14 +277,14 @@
       "completed_at": "",
       "created_at": "2026-09-06",
       "description": "Internacionalización ES + English (AU) en toda la app: selector pre-login como select nativo, autodetección por navegador, Vitest con plugin Angular zoneless y locale es en specs.",
-      "executor": "",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
       "id": 12,
       "name": "i18n-enAU-es",
-      "note": "NO fusionada (6 commits, 52 archivos, HEAD a6d2c68 2026-09-07). Commits 593eae6, e0ab5cc, 9ac0b03, f43ca71, 0c048db, a6d2c68.",
+      "note": "NO fusionada (6 commits, 52 archivos, HEAD a6d2c68 2026-09-07). Commits 593eae6, e0ab5cc, 9ac0b03, f43ca71, 0c048db, a6d2c68. Spec SDD en feature/012_i18n_enau_es (base 002+main 656b3f1).",
       "priority": "media",
-      "sdd": false,
+      "sdd": true,
       "spec_folder": "specs/012_i18n_enau_es",
-      "status": "pending",
+      "status": "spec_ready",
       "title": "Internacionalización ES + English (AU)",
       "module": "frontend",
       "type": "feature",
@@ -364,10 +364,11 @@
   "metadata": {
     "blocked_count": 0,
     "done_count": 11,
-    "in_progress_count": 1,
+    "in_progress_count": 2,
     "last_updated": "2026-09-30",
     "note": "Contadores coherentes con features. Ramas legacy usan nomenclatura CU/RF (anterior a la convención feature/{NNN}_{name}); se conservan los nombres reales en 'branch'.",
-    "pending_count": 1,
+    "pending_count": 0,
+    "spec_ready_count": 2,
     "total_features": 15,
     "updated_by": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)"
   },
