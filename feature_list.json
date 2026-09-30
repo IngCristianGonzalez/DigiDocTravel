@@ -384,6 +384,33 @@
       "dependencies": [
         2
       ]
+    },
+    {
+      "acceptance": [
+        "Ruta /advisors solo admin/supervisor con tabla lazy de asesores",
+        "Detalle con estudiantes asociados y crear con rol preasignado",
+        "Desactivar con confirmación y conteo, sin borrar historial"
+      ],
+      "branch": "feature/017_modulo_asesores",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Módulo de asesores: pantalla propia sobre endpoints users/students existentes (sin migraciones), con patrón de estudiantes y confirmación previa.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 17,
+      "name": "modulo_asesores",
+      "note": "Rama desde 016 404ee9a. Requiere confirmar nombre exacto del rol (asesor vs consultor) en T1.",
+      "priority": "alta",
+      "sdd": true,
+      "spec_folder": "specs/017_modulo_asesores",
+      "status": "spec_ready",
+      "title": "Módulo de asesores",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2,
+        4,
+        15
+      ]
     }
   ],
   "metadata": {
@@ -393,8 +420,8 @@
     "last_updated": "2026-09-30",
     "note": "Contadores coherentes con features. Ramas legacy usan nomenclatura CU/RF (anterior a la convención feature/{NNN}_{name}); se conservan los nombres reales en 'branch'.",
     "pending_count": 0,
-    "spec_ready_count": 2,
-    "total_features": 16,
+    "spec_ready_count": 3,
+    "total_features": 17,
     "updated_by": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)"
   },
   "project": "DigiDocTravel",
