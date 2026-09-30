@@ -359,17 +359,42 @@
       "dependencies": [
         2
       ]
+    },
+    {
+      "acceptance": [
+        "Nombres: bloqueo de dígitos, tildes/apóstrofe/guion, error solo con 1-2 chars",
+        "Confirmación previa con resumen para registrar/guardar/observar",
+        "Listado solo activos y X de universidades sin desborde"
+      ],
+      "branch": "feature/016_registro_estudiante",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Endurecimiento del registro de estudiantes: validación live, modal de confirmación previa con resumen y listado solo de activos.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 16,
+      "name": "registro_estudiante",
+      "note": "Rama desde 015 d8488e6. Backend: filtro activos por defecto.",
+      "priority": "alta",
+      "sdd": false,
+      "spec_folder": "specs/016_registro_estudiante",
+      "status": "in_progress",
+      "title": "Registro de estudiante endurecido",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2
+      ]
     }
   ],
   "metadata": {
     "blocked_count": 0,
     "done_count": 11,
-    "in_progress_count": 2,
+    "in_progress_count": 3,
     "last_updated": "2026-09-30",
     "note": "Contadores coherentes con features. Ramas legacy usan nomenclatura CU/RF (anterior a la convención feature/{NNN}_{name}); se conservan los nombres reales en 'branch'.",
     "pending_count": 0,
     "spec_ready_count": 2,
-    "total_features": 15,
+    "total_features": 16,
     "updated_by": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)"
   },
   "project": "DigiDocTravel",
