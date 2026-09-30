@@ -96,4 +96,37 @@ describe('StudentsComponent - OWASP', () => {
     expect(component.showDeleteModal()).toBe(false);
     expect(component.deleteTarget()).toBeNull();
   });
+
+  it('should strip digits on name input but keep tildes, ñ, apostrophe and hyphen', () => {
+    component.onNameInput('firstName', "Mar1ía-Jo2sé D'X3");
+    expect(component.form().firstName).toBe("María-José D'X");
+  });
+
+  it('should show min-length error only with 1-2 chars typed', () => {
+    component.onNameInput('firstName', 'Ju');
+    expect(component.formErrors().firstName).toContain('Mínimo 3');
+    component.onNameInput('firstName', '');
+    expect(component.formErrors().firstName).toBeFalsy();
+    component.onNameInput('firstName', 'Juan');
+    expect(component.formErrors().firstName).toBeFalsy();
+  });
+
+  it('should flag invalid email live', () => {
+    component.updateForm('email', 'mal-formato');
+    expect(component.formErrors().email).toBeTruthy();
+    component.updateForm('email', 'nombre@dominio.com');
+    expect(component.formErrors().email).toBeFalsy();
+  });
+
+  it('should open confirm modal with summary instead of saving directly', () => {
+    component.form.set({ firstName: 'Ana', lastName: 'Paz', identification: 'AB-123', email: 'ana@x.com', countryOrigin: 'Colombia', phone: '', university: '' });
+    component.create();
+    expect(component.showConfirmModal()).toBe(true);
+    expect(component.confirmKind()).toBe('create');
+    expect(component.confirmLines().length).toBeGreaterThan(0);
+    // Corregir no persiste ni pierde datos
+    component.backToForm();
+    expect(component.showConfirmModal()).toBe(false);
+    expect(component.form().firstName).toBe('Ana');
+  });
 });
