@@ -30,7 +30,12 @@ export class StudentsService {
 
     if (query.search) qb.andWhere('(student.firstName ILIKE :search OR student.lastName ILIKE :search OR student.email ILIKE :search OR student.identification ILIKE :search)', { search: `%${query.search}%` });
     if (query.countryOrigin) qb.andWhere('student.countryOrigin = :country', { country: query.countryOrigin });
-    if (query.status !== undefined) qb.andWhere('student.status = :status', { status: query.status === 'true' || query.status === true });
+    // Por defecto el listado solo trae activos; 'all' muestra todos, 'false' solo inactivos
+    if (query.status === undefined || query.status === '' || query.status === 'all') {
+      if (query.status !== 'all') qb.andWhere('student.status = :status', { status: true });
+    } else {
+      qb.andWhere('student.status = :status', { status: query.status === 'true' || query.status === true });
+    }
     if (query.advisorId) qb.andWhere('student.advisorId = :advisorId', { advisorId: query.advisorId });
 
     qb.orderBy('student.createdAt', 'DESC');

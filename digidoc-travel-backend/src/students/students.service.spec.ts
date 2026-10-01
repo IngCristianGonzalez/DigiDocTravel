@@ -86,4 +86,32 @@ describe('StudentsService', () => {
     const res = await service.getObservations('1');
     expect(res).toHaveLength(1);
   });
+
+  it('Listar solo activos por defecto', async () => {
+    const andWhere = jest.fn().mockReturnThis();
+    const qb: any = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      andWhere, orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(), take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    studentRepo.createQueryBuilder.mockReturnValue(qb);
+    await service.findAll({});
+    const conds = andWhere.mock.calls.map((c: any[]) => String(c[0]));
+    expect(conds.some((c: string) => c.includes('student.status'))).toBe(true);
+  });
+
+  it('Listar asociados por advisorId', async () => {
+    const andWhere = jest.fn().mockReturnThis();
+    const qb: any = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      andWhere, orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(), take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+    };
+    studentRepo.createQueryBuilder.mockReturnValue(qb);
+    await service.findAll({ advisorId: 'adv-1' });
+    const conds = andWhere.mock.calls.map((c: any[]) => String(c[0]));
+    expect(conds.some((c: string) => c.includes('student.advisorId'))).toBe(true);
+  });
 });

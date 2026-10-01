@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@a
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
+import { UsersService, AppUser } from '../users/users.service';
 import { CatalogService } from './catalog.service';
 import { Student } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
@@ -58,8 +59,21 @@ export class StudentsComponent implements OnInit {
   msg = signal('');
   selected = signal<Student | null>(null);
   advisorId = signal('');
+  // Asesores elegibles para el selector (nombre + apellido) — spec 015
+  advisors = signal<AppUser[]>([]);
+  advisorOptions = computed(() =>
+    this.advisors().map(a => {
+      const label = `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || a.email;
+      const initials = label.split(/\s+/).map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+      return { value: a.id, label, email: a.email, initials };
+    })
+  );
   obsText = signal('');
   observations = signal<any[]>([]);
+  // Confirmación previa: ninguna acción (registrar, guardar, observar) persiste sin confirmar
+  showConfirmModal = signal(false);
+  confirmKind = signal<'create' | 'edit' | 'obs' | null>(null);
+  confirmLines = signal<{ label: string; value: string }[]>([]);
   page = signal(1);
   total = signal(0);
   totalPages = signal(1);
@@ -90,8 +104,10 @@ export class StudentsComponent implements OnInit {
   readonly skeletonRows = Array.from({ length: 8 }, () => ({} as Student));
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // Solo letras (incluye acentos), espacios, apóstrofe y guion. Bloquea @ * { } [ ] etc.
+  // Nombres: letras con tildes (áéíóúñü), espacios, apóstrofe y guion
+  // (D'Angelo, María-José). Sin dígitos ni caracteres especiales.
   private nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$/;
+  private nameInputFilter = /[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]/g;
   private forbiddenCharsRegex = /[@*{}[\]#\$%\^&+=\|~`<>]/;
 
   // Convención formularios de registro: nombres y apellidos mínimo 3 caracteres
@@ -102,7 +118,7 @@ export class StudentsComponent implements OnInit {
   readonly MAX_ID_LENGTH = 50;
   private identificationRegex = /^[A-Za-z0-9.\-]+$/;
 
-  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService) {}
+  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService, private users: UsersService) {}
 
   ngOnInit() {
     this.load();
@@ -143,6 +159,8 @@ export class StudentsComponent implements OnInit {
     this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
     this.phoneNumber.set('');
     this.formErrors.set({});
+    this.advisorId.set('');
+    this.loadAdvisors();
     this.showCreateModal.set(true);
   }
 
@@ -187,7 +205,23 @@ export class StudentsComponent implements OnInit {
     const dial = (match?.dialCode ?? this.dialCode()).replace(/\D/g, '');
     this.phoneNumber.set(digits.startsWith(dial) && dial ? digits.slice(dial.length) : digits);
     this.advisorId.set((s as any).advisorId ?? '');
+    this.loadAdvisors();
     this.showEditModal.set(true);
+  }
+
+  // Catálogo de asesores activos para el selector (015 R1/R4)
+  loadAdvisors() {
+    this.users.list({ role: 'asesor', status: 'true', limit: 100 } as any).subscribe({
+      next: (r: any) => this.advisors.set(r?.data ?? (Array.isArray(r) ? r : [])),
+      error: () => this.advisors.set([]),
+    });
+  }
+
+  // Nombre + apellido del asesor en tabla y detalle (nunca el id crudo)
+  advisorName(s: any): string {
+    const a = s?.advisor;
+    const full = `${a?.firstName ?? ''} ${a?.lastName ?? ''}`.trim();
+    return full || a?.email || s?.advisorId || '—';
   }
 
   closeEditModal() {
@@ -266,9 +300,25 @@ export class StudentsComponent implements OnInit {
 
   updateForm(field: string, value: string) {
     this.form.update(f => ({ ...f, [field]: value }));
+    // Validación live: el error de longitud solo aparece con 1-2 caracteres
+    // escritos (no en vacío/prístino); el detalle de formato se valida al enviar.
+    const v = (value ?? '').trim();
+    if ((field === 'firstName' || field === 'lastName') && v.length > 0 && v.length < this.MIN_NAME_LENGTH) {
+      this.formErrors.update(e => ({ ...e, [field]: `Mínimo ${this.MIN_NAME_LENGTH} caracteres, solo letras` } as any));
+      return;
+    }
+    if (field === 'email' && v && !this.emailRegex.test(v)) {
+      this.formErrors.update(e => ({ ...e, email: 'Formato inválido — Ej: nombre@dominio.com' } as any));
+      return;
+    }
     if ((this.formErrors() as any)[field]) {
       this.formErrors.update(e => ({ ...e, [field]: undefined } as any));
     }
+  }
+
+  // Nombres: bloquea dígitos y especiales al teclear (permite tildes, ñ, ' y -)
+  onNameInput(field: 'firstName' | 'lastName', value: string) {
+    this.updateForm(field, (value ?? '').replace(this.nameInputFilter, ''));
   }
 
   private sanitize(value: string): string {
@@ -361,7 +411,8 @@ export class StudentsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     const searchParts = [this.fName().trim(), this.fIdent().trim(), this.fEmail().trim(), this.fAdvisor().trim(), this.search().trim()].filter(Boolean);
-    const params: any = { page: this.page(), limit: this.limit() };
+    // La lista solo muestra estudiantes activos (los desactivados salen del listado)
+    const params: any = { page: this.page(), limit: this.limit(), status: 'true' };
     if (searchParts.length) params.search = searchParts.join(' ');
     if (this.fCountry().trim()) {
       params.countryOrigin = this.fCountry().trim();
@@ -436,10 +487,20 @@ export class StudentsComponent implements OnInit {
       this.toast.error('Corrige los errores del formulario');
       return;
     }
+    const payload = this.buildStudentPayload();
+    if (!this.emailRegex.test(payload['email'] as string)) {
+      this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
+      this.toast.error('Email inválido');
+      return;
+    }
+    // Confirmación previa: muestra los datos antes de persistir
+    this.openConfirm('create', payload);
+  }
 
-    // Payload estrictamente whitelisteado (backend: whitelist + forbidNonWhitelisted).
-    // Normaliza: trim, email en minúsculas, opcionales vacíos se omiten (undefined)
-    // para que el registro efectivamente persista en el sistema.
+  // Payload estrictamente whitelisteado (backend: whitelist + forbidNonWhitelisted).
+  // Normaliza: trim, email en minúsculas, opcionales vacíos se omiten (undefined)
+  // para que el registro efectivamente persista en el sistema.
+  private buildStudentPayload(): Record<string, unknown> {
     const raw = this.form();
     const dial = this.dialCode();
     const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
@@ -454,21 +515,74 @@ export class StudentsComponent implements OnInit {
     };
     if (fullPhone) payload['phone'] = fullPhone;
     if (university) payload['university'] = this.sanitize(university);
+    return payload;
+  }
 
-    if (!this.emailRegex.test(payload['email'] as string)) {
-      this.formErrors.update(e => ({ ...e, email: 'Formato de email inválido' }));
-      this.toast.error('Email inválido');
-      return;
+  // ---- Confirmación previa a persistir (registrar / guardar / observar) ----
+  private confirmSummaryLines(payload: Record<string, unknown>): { label: string; value: string }[] {
+    const line = (label: string, v: unknown) => ({ label, value: String(v ?? '—') || '—' });
+    const lines = [
+      line('Nombre', `${payload['firstName'] ?? ''} ${payload['lastName'] ?? ''}`.trim()),
+      line('Identificación', payload['identification']),
+      line('Email', payload['email']),
+      line('País origen', payload['countryOrigin']),
+      line('Universidad', payload['university']),
+      line('Teléfono', payload['phone']),
+    ];
+    const advId = (this.advisorId() ?? '').trim();
+    if (advId) {
+      const found = this.advisorOptions().find(o => o.value === advId);
+      lines.push(line('Asesor', found ? `${found.label} · ${found.email}` : advId));
     }
+    return lines;
+  }
 
-    this.loading.set(true);
+  private openConfirm(kind: 'create' | 'edit' | 'obs', payload?: Record<string, unknown>, obsText?: string) {
+    this.confirmKind.set(kind);
+    if (kind === 'obs') {
+      this.confirmLines.set([{ label: 'Observación', value: obsText ?? '' }]);
+    } else {
+      this.confirmLines.set(this.confirmSummaryLines(payload ?? {}));
+    }
+    (this as any).pendingPayload = payload;
+    (this as any).pendingObs = obsText;
+    this.showConfirmModal.set(true);
+  }
+
+  backToForm() {
+    // Corregir: cierra la confirmación sin perder lo digitado
+    this.showConfirmModal.set(false);
+    this.confirmKind.set(null);
+  }
+
+  proceedConfirm() {
+    const kind = this.confirmKind();
+    this.showConfirmModal.set(false);
+    if (kind === 'create') this.doCreate((this as any).pendingPayload);
+    else if (kind === 'edit') this.doSaveEdit((this as any).pendingPayload);
+    else if (kind === 'obs') this.doAddObs((this as any).pendingObs);
+    this.confirmKind.set(null);
+  }
+
+  private doCreate(payload: Record<string, unknown>) {
     this.error.set(null);
+    // Si se eligió asesor en el registro, se asocia tras crear (015 R3)
+    const advisorToAssign = (this.advisorId() ?? '').trim() || null;
     this.svc.create(payload).subscribe({
-      next: () => {
-        this.msg.set('Estudiante registrado');
-        this.toast.success('Estudiante registrado correctamente');
+      next: (created: any) => {
+        const newId = created?.id ?? created?.data?.id;
+        if (advisorToAssign && newId) {
+          this.svc.assignAdvisor(newId, advisorToAssign).subscribe({
+            next: () => this.toast.success('Estudiante registrado y asesor asociado'),
+            error: (e2) => this.toast.error(e2.error?.message || 'Registrado sin asesor: reintenta la asociación desde Editar'),
+          });
+        } else {
+          this.msg.set('Estudiante registrado');
+          this.toast.success('Estudiante registrado correctamente');
+        }
         this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
         this.phoneNumber.set('');
+        this.advisorId.set('');
         this.formErrors.set({});
         this.loading.set(false);
         this.showCreateModal.set(false);
@@ -507,20 +621,13 @@ export class StudentsComponent implements OnInit {
       this.toast.error('Corrige los errores del formulario');
       return;
     }
-    const raw = this.form();
-    const dial = this.dialCode();
-    const phoneDigits = this.phoneNumber().replace(/\D/g, '').slice(0, 15);
-    const fullPhone = phoneDigits ? `${dial} ${phoneDigits}`.trim() : undefined;
-    const university = (raw.university ?? '').trim() || undefined;
-    const payload: Record<string, unknown> = {
-      firstName: this.sanitize(raw.firstName ?? '').trim(),
-      lastName: this.sanitize(raw.lastName ?? '').trim(),
-      identification: this.sanitize(raw.identification ?? '').trim(),
-      email: this.sanitize(raw.email ?? '').trim().toLowerCase(),
-      countryOrigin: this.selectedCountry()?.name ?? this.sanitize(raw.countryOrigin ?? '').trim(),
-    };
-    if (fullPhone) payload['phone'] = fullPhone;
-    if (university) payload['university'] = this.sanitize(university);
+    // Confirmación previa con el resumen de cambios
+    this.openConfirm('edit', this.buildStudentPayload());
+  }
+
+  private doSaveEdit(payload: Record<string, unknown>) {
+    const target = this.editingStudent();
+    if (!target) return;
 
     this.loading.set(true);
     this.svc.update(target.id, payload).subscribe({
@@ -561,9 +668,10 @@ export class StudentsComponent implements OnInit {
   assignAdvisor() {
     const id = this.editingStudent()?.id ?? this.detailStudent()?.id ?? this.selected()?.id;
     if (!id) return;
-    const sanitizedAdvisorId = this.sanitize(this.advisorId());
+    // El asesor sale del selector (solo elegibles), no de texto libre (015 R4)
+    const sanitizedAdvisorId = (this.advisorId() ?? '').trim();
     if (!sanitizedAdvisorId) {
-      this.toast.error('Advisor ID es obligatorio');
+      this.toast.error('Selecciona un asesor de la lista');
       return;
     }
     this.svc.assignAdvisor(id, sanitizedAdvisorId).subscribe({
@@ -601,6 +709,14 @@ export class StudentsComponent implements OnInit {
       this.obsError.set('La observación no puede estar vacía');
       return;
     }
+
+    // Confirmación previa también para observaciones
+    this.openConfirm('obs', undefined, sanitized);
+  }
+
+  private doAddObs(sanitized: string) {
+    const id = this.obsStudent()?.id ?? this.selected()?.id;
+    if (!id || !sanitized) return;
 
     this.svc.addObservation(id, sanitized).subscribe({
       next: () => {
