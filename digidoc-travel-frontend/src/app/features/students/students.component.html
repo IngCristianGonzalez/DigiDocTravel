@@ -258,6 +258,31 @@
     <ng-container *ngTemplateOutlet="studentFormFields"></ng-container>
   </div>
 
+  <!-- Asesor opcional al registrar (015 R3): se asocia tras crear -->
+  <div class="field field--full create-advisor">
+    <p-floatLabel>
+      <p-dropdown
+        inputId="create-advisor"
+        [options]="advisorOptions()"
+        [ngModel]="advisorId()"
+        (ngModelChange)="advisorId.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label,email"
+        filterPlaceholder="Buscar asesor..."
+        [showClear]="true"
+        placeholder="Sin asesor"
+        styleClass="w-full"
+        appendTo="body"
+        [emptyMessage]="'Sin asesores activos'"
+      >
+      </p-dropdown>
+      <label for="create-advisor">Asesor <span class="field__optional">(opcional)</span></label>
+    </p-floatLabel>
+    <span class="field__hint">Nombre + apellido · se asocia al registrar</span>
+  </div>
+
   <!-- Campos del formulario compartidos por los modales Crear y Editar
     (mismo form() signal; solo un modal se abre a la vez). -->
   <ng-template #studentFormFields>
@@ -567,15 +592,26 @@
     <div class="detail-block__row">
       <div class="detail-block__field field">
         <p-floatLabel>
-          <input
-            pInputText
-            id="edit-advisorId"
+          <p-dropdown
+            inputId="edit-advisor"
+            [options]="advisorOptions()"
             [ngModel]="advisorId()"
             (ngModelChange)="advisorId.set($event)"
-            autocomplete="off"
-          />
-          <label for="edit-advisorId">Advisor ID</label>
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+            filterBy="label,email"
+            filterPlaceholder="Buscar asesor..."
+            [showClear]="true"
+            placeholder="Selecciona un asesor"
+            styleClass="w-full"
+            appendTo="body"
+            [emptyMessage]="'Sin asesores activos'"
+          >
+          </p-dropdown>
+          <label for="edit-advisor">Asesor</label>
         </p-floatLabel>
+        <span class="field__hint">Nombre + apellido de asesores activos</span>
       </div>
       <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
     </div>

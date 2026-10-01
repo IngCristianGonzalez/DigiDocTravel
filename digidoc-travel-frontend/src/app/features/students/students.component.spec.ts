@@ -129,4 +129,21 @@ describe('StudentsComponent - OWASP', () => {
     expect(component.showConfirmModal()).toBe(false);
     expect(component.form().firstName).toBe('Ana');
   });
+
+  it('should map advisors to nombre+apellido options', () => {
+    component.advisors.set([{ id: 'a1', firstName: 'Luz', lastName: 'Díaz', email: 'luz@x.com' }] as any);
+    expect(component.advisorOptions()).toEqual([{ value: 'a1', label: 'Luz Díaz', email: 'luz@x.com' }]);
+  });
+
+  it('should preselect current advisor when opening edit', () => {
+    const s: any = { id: '9', firstName: 'Juan', lastName: 'Pérez', identification: '1234', email: 'j@x.com', countryOrigin: 'Colombia', advisorId: 'a1' };
+    component.openEdit(s);
+    expect(component.advisorId()).toBe('a1');
+  });
+
+  it('should require selecting an advisor before associating', () => {
+    component.advisorId.set('');
+    component.editingStudent.set({ id: '9' } as any);
+    expect(() => component.assignAdvisor()).not.toThrow();
+  });
 });

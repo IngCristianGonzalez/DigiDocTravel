@@ -614,6 +614,12 @@
   max-width: none;
 }
 
+// Asesor opcional en Registrar (fuera del grid compartido)
+.create-advisor {
+  margin-top: var(--space-md);
+  max-width: 720px;
+}
+
 // ============================================================
 // Convención modales de registro (reutilizable: .register-modal)
 // Header con icono + títulos · intro · grid 2→1 cols · footer

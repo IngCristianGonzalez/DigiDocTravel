@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@a
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentsService } from './students.service';
+import { UsersService, AppUser } from '../users/users.service';
 import { CatalogService } from './catalog.service';
 import { Student } from '../../shared/interfaces/api.interface';
 import { LoadingComponent } from '../../shared/components/loading.component';
@@ -58,6 +59,15 @@ export class StudentsComponent implements OnInit {
   msg = signal('');
   selected = signal<Student | null>(null);
   advisorId = signal('');
+  // Asesores elegibles para el selector (nombre + apellido) — spec 015
+  advisors = signal<AppUser[]>([]);
+  advisorOptions = computed(() =>
+    this.advisors().map(a => ({
+      value: a.id,
+      label: `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || a.email,
+      email: a.email,
+    }))
+  );
   obsText = signal('');
   observations = signal<any[]>([]);
   // Confirmación previa: ninguna acción (registrar, guardar, observar) persiste sin confirmar
@@ -108,7 +118,7 @@ export class StudentsComponent implements OnInit {
   readonly MAX_ID_LENGTH = 50;
   private identificationRegex = /^[A-Za-z0-9.\-]+$/;
 
-  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService) {}
+  constructor(private svc: StudentsService, private catalog: CatalogService, private toast: ToastService, private users: UsersService) {}
 
   ngOnInit() {
     this.load();
@@ -149,6 +159,8 @@ export class StudentsComponent implements OnInit {
     this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
     this.phoneNumber.set('');
     this.formErrors.set({});
+    this.advisorId.set('');
+    this.loadAdvisors();
     this.showCreateModal.set(true);
   }
 
@@ -193,7 +205,16 @@ export class StudentsComponent implements OnInit {
     const dial = (match?.dialCode ?? this.dialCode()).replace(/\D/g, '');
     this.phoneNumber.set(digits.startsWith(dial) && dial ? digits.slice(dial.length) : digits);
     this.advisorId.set((s as any).advisorId ?? '');
+    this.loadAdvisors();
     this.showEditModal.set(true);
+  }
+
+  // Catálogo de asesores activos para el selector (015 R1/R4)
+  loadAdvisors() {
+    this.users.list({ role: 'asesor', status: 'true', limit: 100 } as any).subscribe({
+      next: (r: any) => this.advisors.set(r?.data ?? (Array.isArray(r) ? r : [])),
+      error: () => this.advisors.set([]),
+    });
   }
 
   closeEditModal() {
@@ -493,7 +514,7 @@ export class StudentsComponent implements OnInit {
   // ---- Confirmación previa a persistir (registrar / guardar / observar) ----
   private confirmSummaryLines(payload: Record<string, unknown>): { label: string; value: string }[] {
     const line = (label: string, v: unknown) => ({ label, value: String(v ?? '—') || '—' });
-    return [
+    const lines = [
       line('Nombre', `${payload['firstName'] ?? ''} ${payload['lastName'] ?? ''}`.trim()),
       line('Identificación', payload['identification']),
       line('Email', payload['email']),
@@ -501,6 +522,12 @@ export class StudentsComponent implements OnInit {
       line('Universidad', payload['university']),
       line('Teléfono', payload['phone']),
     ];
+    const advId = (this.advisorId() ?? '').trim();
+    if (advId) {
+      const found = this.advisorOptions().find(o => o.value === advId);
+      lines.push(line('Asesor', found ? `${found.label} · ${found.email}` : advId));
+    }
+    return lines;
   }
 
   private openConfirm(kind: 'create' | 'edit' | 'obs', payload?: Record<string, unknown>, obsText?: string) {
@@ -532,12 +559,23 @@ export class StudentsComponent implements OnInit {
 
   private doCreate(payload: Record<string, unknown>) {
     this.error.set(null);
+    // Si se eligió asesor en el registro, se asocia tras crear (015 R3)
+    const advisorToAssign = (this.advisorId() ?? '').trim() || null;
     this.svc.create(payload).subscribe({
-      next: () => {
-        this.msg.set('Estudiante registrado');
-        this.toast.success('Estudiante registrado correctamente');
+      next: (created: any) => {
+        const newId = created?.id ?? created?.data?.id;
+        if (advisorToAssign && newId) {
+          this.svc.assignAdvisor(newId, advisorToAssign).subscribe({
+            next: () => this.toast.success('Estudiante registrado y asesor asociado'),
+            error: (e2) => this.toast.error(e2.error?.message || 'Registrado sin asesor: reintenta la asociación desde Editar'),
+          });
+        } else {
+          this.msg.set('Estudiante registrado');
+          this.toast.success('Estudiante registrado correctamente');
+        }
         this.form.set({ firstName: '', lastName: '', identification: '', email: '', countryOrigin: this.selectedCountry()?.name ?? 'Colombia', phone: '', university: '' });
         this.phoneNumber.set('');
+        this.advisorId.set('');
         this.formErrors.set({});
         this.loading.set(false);
         this.showCreateModal.set(false);
@@ -623,9 +661,10 @@ export class StudentsComponent implements OnInit {
   assignAdvisor() {
     const id = this.editingStudent()?.id ?? this.detailStudent()?.id ?? this.selected()?.id;
     if (!id) return;
-    const sanitizedAdvisorId = this.sanitize(this.advisorId());
+    // El asesor sale del selector (solo elegibles), no de texto libre (015 R4)
+    const sanitizedAdvisorId = (this.advisorId() ?? '').trim();
     if (!sanitizedAdvisorId) {
-      this.toast.error('Advisor ID es obligatorio');
+      this.toast.error('Selecciona un asesor de la lista');
       return;
     }
     this.svc.assignAdvisor(id, sanitizedAdvisorId).subscribe({
