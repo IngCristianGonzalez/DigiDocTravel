@@ -4,18 +4,18 @@
 
 ## Estado
 
-- **Feature en curso:** 014_hallmark_design
-- **Status:** in_progress (redesign landing; audit aprobado por humano: "asesores y admins, avisar eventos, ajusta")
+- **Feature en curso:** 017_modulo_asesores
+- **Status:** spec_ready (pausa humana: aprobar spec antes de implementar)
 - **Inicio de sesión:** 2026-09-30
-- **Rama:** feature/014_hallmark_design (base: feature/002_index_notebook ac934f5, incluye main 656b3f1)
+- **Rama:** feature/017_modulo_asesores (base: feature/016_registro_estudiante 404ee9a, incluye main 656b3f1)
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 
 ## Plan (tasks de specs/{NNN}_{name}/tasks.md)
 
-- Audit Hallmark `specs/014_hallmark_design/audit.md` creado (solo lectura, 0 edits producto).
-- feature_list.json id 14 `hallmark_design` → `pending`, `sdd:true`.
-- ⏸ Puerta Hallmark: responder Audience / Use case / Tone o "go ahead" antes de `redesign`.
-- Nota: spec 012 commiteado en su rama (048f63f, spec_ready); WIP 013 stasheado (WIP-013-requirements).
+- Spec 017 creado en `specs/017_modulo_asesores/` (8R EARS, 3 ADRs, T1-T12).
+- feature_list.json id 17 → `spec_ready`, `sdd:true`; contadores 17 totales.
+- ⏸ Puerta humana: aprobar spec 017 antes de implementar.
+- Nota: 015 `spec_ready` (sin PR aún); 016 `in_progress` implementada sin cerrar; 012 `spec_ready` (PR #17); 014 `in_progress` (PR #18); WIP 013 stasheado.
 
 ## Notas de bloqueo (si aplica)
 

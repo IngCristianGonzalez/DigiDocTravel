@@ -73,6 +73,22 @@ describe('AuthService', () => {
     expect(service.hasRole('asesor')).toBe(false);
   });
 
+  it('should hasRole with string roles from login payload', () => {
+    // El backend /auth/login devuelve roles como string[] (['admin'])
+    (service as any)._user.set({ id: '1', email: 'a@a.com', roles: ['admin'] } as any);
+    expect(service.hasRole('admin')).toBe(true);
+    expect(service.hasRole('supervisor')).toBe(false);
+  });
+
+  it('should normalize string roles on login', () => {
+    service.login({ email: 'admin@x.com', password: 'Password123!' }).subscribe();
+    const req = httpMock.expectOne('/api/auth/login');
+    req.flush({ accessToken: 'a', refreshToken: 'r', user: { id: '1', email: 'admin@x.com', roles: ['admin', 'supervisor'] } } as any);
+    expect(service.hasRole('admin')).toBe(true);
+    expect(service.hasRole('supervisor')).toBe(true);
+    expect(service.user()?.roles?.[0]).toEqual({ id: 'admin', name: 'admin', permissions: [] });
+  });
+
   it('should sanitize XSS in login (OWASP A03)', () => {    // service sanitizes via component, but here test that login still works with sanitized
     const spy = vi.spyOn(service as any, 'setSession');
     service.login({ email: '<script>alert(1)</script>a@a.com', password: 'Password123!' }).subscribe();

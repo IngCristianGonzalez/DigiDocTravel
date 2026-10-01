@@ -1,5 +1,5 @@
 {
-  "description": "DigiDocTravel (SL Global) — gestión documental para educación internacional. Backend NestJS + frontend Angular. Inventario real auditado 2026-09-08 desde ramas git y merges a main (PR #1–#14).",
+  "description": "DigiDocTravel (SL Global) — gestión documental para educación internacional. Backend NestJS + frontend Angular. Inventario auditado 2026-09-08 (PR #1–#14) + specs SDD 012/014/015 del 2026-09-30.",
   "features": [
     {
       "acceptance": [
@@ -334,16 +334,94 @@
       "module": "frontend",
       "type": "feature",
       "dependencies": []
+    },
+    {
+      "acceptance": [
+        "Selector de asesor con solo elegibles (sin IDs libres)",
+        "Backend valida UUID, existencia y rol (400/404/422)",
+        "Auditoría ASSIGN_ADVISOR y suites en verde"
+      ],
+      "branch": "feature/015_asesor_estudiante",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Asesor asociable al estudiante: endpoint de elegibles, validación en assignAdvisor y selector buscable en el modal Editar en lugar del input crudo de Advisor ID.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 15,
+      "name": "asesor_estudiante",
+      "note": "Rama desde 014 c0026c6. Frontend selector implementado en 017 (dropdown nombre+apellido en Editar/Crear); pendiente backend T2-T5 (endpoint elegibles + validación).",
+      "priority": "alta",
+      "sdd": true,
+      "spec_folder": "specs/015_asesor_estudiante",
+      "status": "in_progress",
+      "title": "Asesor asociable al estudiante",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "acceptance": [
+        "Nombres: bloqueo de dígitos, tildes/apóstrofe/guion, error solo con 1-2 chars",
+        "Confirmación previa con resumen para registrar/guardar/observar",
+        "Listado solo activos y X de universidades sin desborde"
+      ],
+      "branch": "feature/016_registro_estudiante",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Endurecimiento del registro de estudiantes: validación live, modal de confirmación previa con resumen y listado solo de activos.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 16,
+      "name": "registro_estudiante",
+      "note": "Rama desde 015 d8488e6. Backend: filtro activos por defecto.",
+      "priority": "alta",
+      "sdd": false,
+      "spec_folder": "specs/016_registro_estudiante",
+      "status": "in_progress",
+      "title": "Registro de estudiante endurecido",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "acceptance": [
+        "Ruta /advisors solo admin/supervisor con tabla lazy de asesores",
+        "Detalle con estudiantes asociados y crear con rol preasignado",
+        "Desactivar con confirmación y conteo, sin borrar historial"
+      ],
+      "branch": "feature/017_modulo_asesores",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Módulo de asesores: pantalla propia sobre endpoints users/students existentes (sin migraciones), con patrón de estudiantes y confirmación previa.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 17,
+      "name": "modulo_asesores",
+      "note": "Implementado en esta rama (tabla, detalle, crear, desactivar + fix roles + selector 015). Pendiente validación en local.",
+      "priority": "alta",
+      "sdd": true,
+      "spec_folder": "specs/017_modulo_asesores",
+      "status": "in_progress",
+      "title": "Módulo de asesores",
+      "module": "fullstack",
+      "type": "feature",
+      "dependencies": [
+        2,
+        4,
+        15
+      ]
     }
   ],
   "metadata": {
     "blocked_count": 0,
     "done_count": 11,
-    "in_progress_count": 1,
-    "last_updated": "2026-09-08",
+    "in_progress_count": 5,
+    "last_updated": "2026-09-30",
     "note": "Contadores coherentes con features. Ramas legacy usan nomenclatura CU/RF (anterior a la convención feature/{NNN}_{name}); se conservan los nombres reales en 'branch'.",
-    "pending_count": 1,
-    "total_features": 13,
+    "pending_count": 0,
+    "spec_ready_count": 1,
+    "total_features": 17,
     "updated_by": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)"
   },
   "project": "DigiDocTravel",
