@@ -176,8 +176,8 @@
                 <p-tag [value]="s.countryOrigin" severity="secondary"></p-tag>
               </td>
               <td>
-                <span class="td-ellipsis" [pTooltip]="s.advisor?.email || s.advisorId || ''" tooltipPosition="top">
-                  {{ s.advisor?.email || s.advisorId || '—' }}
+                <span class="td-ellipsis" [pTooltip]="s.advisor?.email || ''" tooltipPosition="top">
+                  {{ advisorName(s) }}
                 </span>
               </td>
               <td>
@@ -260,34 +260,44 @@
 
   <!-- Asesor opcional al registrar (015 R3): se asocia tras crear -->
   <div class="field field--full create-advisor">
-    <label class="field__label-static">Asesor <span class="field__optional">(opcional)</span></label>
     <ng-container *ngTemplateOutlet="advisorList"></ng-container>
-    <span class="field__hint">Selecciona un asesor · se asocia al registrar</span>
+    <span class="field__hint">Opcional · se asocia al registrar</span>
   </div>
 
-  <!-- Lista visible de asesores activos (reutilizada en Editar y Crear) -->
+  <!-- Selector de asesores con autocomplete (reutilizado en Editar y Crear) -->
   <ng-template #advisorList>
-    <div class="advisor-list" role="listbox" aria-label="Asesores activos">
-      @for (o of advisorOptions(); track o.value) {
-        <button
-          type="button"
-          class="advisor-list__item"
-          [class.advisor-list__item--selected]="advisorId() === o.value"
-          (click)="advisorId.set(o.value)"
-          role="option"
-          [attr.aria-selected]="advisorId() === o.value"
-        >
-          <span class="advisor-list__avatar" aria-hidden="true">{{ o.initials }}</span>
-          <span class="advisor-list__texts">
-            <span class="advisor-list__name">{{ o.label }}</span>
-            <span class="advisor-list__email">{{ o.email }}</span>
-          </span>
-          <i class="fa-solid fa-check advisor-list__check" aria-hidden="true"></i>
-        </button>
-      } @empty {
-        <div class="advisor-list__empty"><i class="fa-regular fa-circle-user"></i> Sin asesores activos</div>
-      }
-    </div>
+    <p-floatLabel>
+      <p-dropdown
+        inputId="advisor-select"
+        [options]="advisorOptions()"
+        [ngModel]="advisorId()"
+        (ngModelChange)="advisorId.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label,email"
+        filterPlaceholder="Buscar por nombre o email..."
+        [showClear]="true"
+        placeholder="Selecciona un asesor"
+        styleClass="w-full"
+        appendTo="body"
+        [emptyMessage]="'Sin asesores activos'"
+      >
+        <ng-template let-o pTemplate="selectedItem">
+          <span>{{ o.label }}</span>
+        </ng-template>
+        <ng-template let-o pTemplate="item">
+          <div class="advisor-option">
+            <span class="advisor-option__avatar" aria-hidden="true">{{ o.initials }}</span>
+            <span class="advisor-option__texts">
+              <span class="advisor-option__name">{{ o.label }}</span>
+              <span class="advisor-option__email">{{ o.email }}</span>
+            </span>
+          </div>
+        </ng-template>
+      </p-dropdown>
+      <label for="advisor-select">Asesor</label>
+    </p-floatLabel>
   </ng-template>
 
   <!-- Campos del formulario compartidos por los modales Crear y Editar
@@ -545,8 +555,10 @@
         <dd>{{ d.university || '—' }}</dd>
       </div>
       <div class="detail-list__row">
+      <div class="detail-list__row">
         <dt>Asesor</dt>
-        <dd class="detail-list__break">{{ d.advisor?.email || d.advisorId || '—' }}</dd>
+        <dd class="detail-list__break">{{ advisorName(d) }}</dd>
+      </div>
       </div>
     </dl>
   }

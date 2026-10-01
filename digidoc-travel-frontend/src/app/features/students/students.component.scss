@@ -507,66 +507,36 @@
 }
 
 // ============================================================
-// Lista visible de asesores (selección con radio visual)
+// Opción del selector de asesores (nombre + apellido + email)
 // ============================================================
-.advisor-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  max-height: 190px;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-xs);
-  background: var(--color-bg-card);
-}
-
-.advisor-list__item {
+:host ::ng-deep .advisor-option {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  padding: var(--space-xs) var(--space-sm);
-  cursor: pointer;
-  transition: border-color var(--duration-fast) ease, background var(--duration-fast) ease;
-
-  &:hover {
-    background: var(--color-bg-surface);
-    border-color: var(--color-border);
-  }
+  min-width: 0;
 }
 
-.advisor-list__item--selected {
-  background: var(--color-bg-surface);
-  border-color: var(--color-text-primary);
-}
-
-.advisor-list__avatar {
-  width: 32px;
-  height: 32px;
+:host ::ng-deep .advisor-option__avatar {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--color-text-primary);
   color: var(--color-bg-card);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 700;
   flex-shrink: 0;
 }
 
-.advisor-list__texts {
+:host ::ng-deep .advisor-option__texts {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  flex: 1;
 }
 
-.advisor-list__name {
+:host ::ng-deep .advisor-option__name {
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -575,32 +545,12 @@
   white-space: nowrap;
 }
 
-.advisor-list__email {
+:host ::ng-deep .advisor-option__email {
   font-size: 0.6875rem;
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.advisor-list__check {
-  color: var(--sl-success-600);
-  font-size: 0.875rem;
-  opacity: 0;
-  flex-shrink: 0;
-}
-
-.advisor-list__item--selected .advisor-list__check {
-  opacity: 1;
-}
-
-.advisor-list__empty {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
-  padding: var(--space-sm);
 }
 
 .detail-block__field {

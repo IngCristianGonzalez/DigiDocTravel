@@ -217,6 +217,13 @@ export class StudentsComponent implements OnInit {
     });
   }
 
+  // Nombre + apellido del asesor en tabla y detalle (nunca el id crudo)
+  advisorName(s: any): string {
+    const a = s?.advisor;
+    const full = `${a?.firstName ?? ''} ${a?.lastName ?? ''}`.trim();
+    return full || a?.email || s?.advisorId || '—';
+  }
+
   closeEditModal() {
     this.showEditModal.set(false);
     this.editingStudent.set(null);

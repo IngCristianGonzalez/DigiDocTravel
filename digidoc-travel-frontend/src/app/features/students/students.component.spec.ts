@@ -146,4 +146,11 @@ describe('StudentsComponent - OWASP', () => {
     component.editingStudent.set({ id: '9' } as any);
     expect(() => component.assignAdvisor()).not.toThrow();
   });
+
+  it('should show advisor nombre+apellido instead of raw id', () => {
+    expect(component.advisorName({ advisor: { firstName: 'Luz', lastName: 'Díaz', email: 'l@x.com' }, advisorId: 'a1' })).toBe('Luz Díaz');
+    expect(component.advisorName({ advisor: { email: 'l@x.com' }, advisorId: 'a1' })).toBe('l@x.com');
+    expect(component.advisorName({ advisorId: 'a1' })).toBe('a1');
+    expect(component.advisorName({})).toBe('—');
+  });
 });
