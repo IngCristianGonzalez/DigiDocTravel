@@ -311,6 +311,29 @@
       "module": "backend",
       "type": "feature",
       "dependencies": []
+    },
+    {
+      "acceptance": [
+        "Audit Hallmark sin edits con punch list rankeada",
+        "Redesign landing sin ritmo template ni métricas inventadas",
+        "Tokens via var(--sl-*), headers roman, responsive 320/375/414/768"
+      ],
+      "branch": "feature/014_hallmark_design",
+      "completed_at": "",
+      "created_at": "2026-09-30",
+      "description": "Ajuste visual con skill Hallmark (nutlope/hallmark): audit anti-slop del frontend Angular + redesign de landing dentro de límites existentes.",
+      "executor": "Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)",
+      "id": 14,
+      "name": "hallmark_design",
+      "note": "Rama creada desde 002 ac934f5 (incluye main 656b3f1). Audit en specs/014_hallmark_design/audit.md. Redesign landing en curso.",
+      "priority": "media",
+      "sdd": true,
+      "spec_folder": "specs/014_hallmark_design",
+      "status": "in_progress",
+      "title": "Rediseño Hallmark anti-slop",
+      "module": "frontend",
+      "type": "feature",
+      "dependencies": []
     }
   ],
   "metadata": {

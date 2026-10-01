@@ -4,19 +4,18 @@
 
 ## Estado
 
-- **Feature en curso:** 012_i18n_enau_es
-- **Status:** spec_ready (pausa humana pendiente)
+- **Feature en curso:** 014_hallmark_design
+- **Status:** in_progress (redesign landing; audit aprobado por humano: "asesores y admins, avisar eventos, ajusta")
 - **Inicio de sesión:** 2026-09-30
-- **Rama:** feature/012_i18n_enau_es (base: feature/002_index_notebook ac934f5, incluye main 656b3f1)
+- **Rama:** feature/014_hallmark_design (base: feature/002_index_notebook ac934f5, incluye main 656b3f1)
 - **Ejecutado por:** Cristian Alarcon Gonzalez (cristianjussepalarcongonzalez@gmail.com)
 
 ## Plan (tasks de specs/{NNN}_{name}/tasks.md)
 
-Specs 012 creados en `specs/012_i18n_enau_es/` (requirements 7R EARS, design 4 ADRs, tasks T1-T12).
-Base incluye main 656b3f1 (merge-base verificado, 0 commits de main pendientes).
-Estado feature_list.json id 12 → `spec_ready`, `sdd:true`.
-⏸ Puerta humana: pendiente aprobación del spec 012 antes de implementar.
-Siguiente: spec 013 en su propia rama `feature/013_backend_lint`.
+- Audit Hallmark `specs/014_hallmark_design/audit.md` creado (solo lectura, 0 edits producto).
+- feature_list.json id 14 `hallmark_design` → `pending`, `sdd:true`.
+- ⏸ Puerta Hallmark: responder Audience / Use case / Tone o "go ahead" antes de `redesign`.
+- Nota: spec 012 commiteado en su rama (048f63f, spec_ready); WIP 013 stasheado (WIP-013-requirements).
 
 ## Notas de bloqueo (si aplica)
 
