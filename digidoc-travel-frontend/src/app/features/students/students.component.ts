@@ -62,11 +62,11 @@ export class StudentsComponent implements OnInit {
   // Asesores elegibles para el selector (nombre + apellido) — spec 015
   advisors = signal<AppUser[]>([]);
   advisorOptions = computed(() =>
-    this.advisors().map(a => ({
-      value: a.id,
-      label: `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || a.email,
-      email: a.email,
-    }))
+    this.advisors().map(a => {
+      const label = `${a.firstName ?? ''} ${a.lastName ?? ''}`.trim() || a.email;
+      const initials = label.split(/\s+/).map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+      return { value: a.id, label, email: a.email, initials };
+    })
   );
   obsText = signal('');
   observations = signal<any[]>([]);

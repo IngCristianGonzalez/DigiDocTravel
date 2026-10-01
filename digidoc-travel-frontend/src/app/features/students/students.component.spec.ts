@@ -132,7 +132,7 @@ describe('StudentsComponent - OWASP', () => {
 
   it('should map advisors to nombre+apellido options', () => {
     component.advisors.set([{ id: 'a1', firstName: 'Luz', lastName: 'Díaz', email: 'luz@x.com' }] as any);
-    expect(component.advisorOptions()).toEqual([{ value: 'a1', label: 'Luz Díaz', email: 'luz@x.com' }]);
+    expect(component.advisorOptions()).toEqual([{ value: 'a1', label: 'Luz Díaz', email: 'luz@x.com', initials: 'LD' }]);
   });
 
   it('should preselect current advisor when opening edit', () => {
