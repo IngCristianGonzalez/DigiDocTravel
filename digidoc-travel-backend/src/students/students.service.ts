@@ -1,16 +1,21 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { isUUID } from 'class-validator';
 import { Student } from './entities/student.entity.js';
 import { StudentObservation } from './entities/student-observation.entity.js';
+import { User } from '../users/entities/user.entity.js';
 import { CreateStudentDto } from './dto/create-student.dto.js';
 import { UpdateStudentDto } from './dto/update-student.dto.js';
+
+export const ADVISOR_ROLES = ['asesor', 'consultor'] as const;
 
 @Injectable()
 export class StudentsService {
   constructor(
     @InjectRepository(Student) private readonly studentRepo: Repository<Student>,
     @InjectRepository(StudentObservation) private readonly obsRepo: Repository<StudentObservation>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
   async create(dto: CreateStudentDto): Promise<Student> {
@@ -70,7 +75,27 @@ export class StudentsService {
     await this.studentRepo.save(student);
   }
 
+  async getEligibleAdvisors(): Promise<Pick<User, 'id' | 'firstName' | 'lastName' | 'email'>[]> {
+    const advisors = await this.userRepo.createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'role')
+      .where('user.status = :status', { status: true })
+      .andWhere('role.name IN (:...roles)', { roles: [...ADVISOR_ROLES] })
+      .orderBy('user.firstName', 'ASC')
+      .addOrderBy('user.lastName', 'ASC')
+      .getMany();
+    return advisors.map(u => ({ id: u.id, firstName: u.firstName, lastName: u.lastName, email: u.email } as any));
+  }
+
   async assignAdvisor(id: string, advisorId: string): Promise<Student> {
+    if (!isUUID(advisorId)) throw new BadRequestException('advisorId must be a valid UUID');
+    const advisor = await this.userRepo.findOne({ where: { id: advisorId } } as any);
+    if (!advisor) throw new NotFoundException('Advisor user not found');
+    // roles eager; ensure loaded
+    const roles: string[] = (advisor as any).roles?.map((r: any) => r.name) ?? [];
+    const hasEligibleRole = roles.some(r => (ADVISOR_ROLES as readonly string[]).includes(r));
+    if (!hasEligibleRole) throw new UnprocessableEntityException('User is not an eligible advisor (requires asesor/consultor role)');
+    if ((advisor as any).status === false) throw new UnprocessableEntityException('Advisor is deactivated');
+
     const student = await this.findOne(id);
     student.advisorId = advisorId;
     return this.studentRepo.save(student);

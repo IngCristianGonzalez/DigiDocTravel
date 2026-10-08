@@ -209,11 +209,17 @@ export class StudentsComponent implements OnInit {
     this.showEditModal.set(true);
   }
 
-  // Catálogo de asesores activos para el selector (015 R1/R4)
+  // Catálogo de asesores elegibles (015 R1) — endpoint dedicado con fallback a Users
   loadAdvisors() {
-    this.users.list({ role: 'asesor', status: 'true', limit: 100 } as any).subscribe({
-      next: (r: any) => this.advisors.set(r?.data ?? (Array.isArray(r) ? r : [])),
-      error: () => this.advisors.set([]),
+    this.svc.getEligibleAdvisors().subscribe({
+      next: (list: any[]) => this.advisors.set(Array.isArray(list) ? list : []),
+      error: () => {
+        // fallback silencioso a Users por rol si el endpoint no está disponible
+        this.users.list({ role: 'asesor', status: 'true', limit: 100 } as any).subscribe({
+          next: (r: any) => this.advisors.set(r?.data ?? (Array.isArray(r) ? r : [])),
+          error: () => this.advisors.set([]),
+        });
+      },
     });
   }
 
