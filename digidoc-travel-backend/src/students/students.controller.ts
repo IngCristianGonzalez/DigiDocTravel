@@ -22,6 +22,12 @@ export class StudentsController {
     return student;
   }
 
+  @Get('advisors/eligible')
+  @Roles('admin', 'supervisor')
+  async getEligibleAdvisors() {
+    return this.studentsService.getEligibleAdvisors();
+  }
+
   @Get()
   @Roles('admin', 'supervisor', 'consultor', 'asesor')
   async findAll(@Query() query: any) {
