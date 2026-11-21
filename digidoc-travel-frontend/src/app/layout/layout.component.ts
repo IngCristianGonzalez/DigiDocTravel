@@ -80,6 +80,11 @@ import { ToastComponent } from '../shared/components/toast.component';
                 </a>
               }
               @if (canAccessReports()) {
+                <a routerLink="/advisors" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Asesores' : ''">
+                  <i class="fa-solid fa-user-tie w-5 text-center"></i> <span class="nav-label">Asesores (Admin/Sup)</span>
+                </a>
+              }
+              @if (canAccessReports()) {
                 <a routerLink="/reports" routerLinkActive="active" class="nav-link nav-link--sub" [title]="collapsed() ? 'Reportes' : ''">
                   <i class="fa-solid fa-chart-bar w-5 text-center"></i> <span class="nav-label">Reportes (Admin/Sup)</span>
                 </a>

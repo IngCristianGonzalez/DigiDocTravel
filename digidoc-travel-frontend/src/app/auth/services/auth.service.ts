@@ -13,6 +13,20 @@ function unwrap<T>(res: any): T {
   return res?.data ?? res;
 }
 
+// El login devuelve roles como string[] (['admin']); el perfil como objetos.
+// Se normaliza a objetos para que hasRole y la UI funcionen en ambos casos.
+function normalizeUser(user: any): User {
+  if (!user) return user;
+  const roles = Array.isArray(user.roles)
+    ? user.roles.map((r: any) => (typeof r === 'string' ? { id: r, name: r, permissions: [] } : r))
+    : [];
+  return { ...user, roles };
+}
+
+function roleName(r: any): string {
+  return typeof r === 'string' ? r : (r?.name ?? '');
+}
+
 export interface RegisterRequest {
   fullName: string;
   email: string;
@@ -122,7 +136,7 @@ export class AuthService {
 
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.API_URL}/profile`).pipe(
-      map((res: any) => unwrap<User>(res)),
+      map((res: any) => normalizeUser(unwrap<User>(res))),
       tap((user) => {
         this._user.set(user);
         this.getStorage()?.setItem('user', JSON.stringify(user));
@@ -165,14 +179,14 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const user = this._user();
-    return user?.roles?.some((r) => r.name === role) ?? false;
+    return user?.roles?.some((r) => roleName(r) === role) ?? false;
   }
 
   hasPermission(module: string, action: string): boolean {
     const user = this._user();
     return (
       user?.roles?.some((r) =>
-        r.permissions?.some((p) => p.module === module && p.action === action),
+        (typeof r === 'string' ? [] : (r.permissions ?? []))?.some((p) => p.module === module && p.action === action),
       ) ?? false
     );
   }
@@ -190,13 +204,14 @@ export class AuthService {
   private setSession(response: LoginResponse): void {
     this._token.set(response.accessToken);
     this._refreshToken.set(response.refreshToken);
-    this._user.set(response.user);
+    const user = normalizeUser(response.user);
+    this._user.set(user);
 
     const storage = this.getStorage();
     if (storage) {
       storage.setItem('access_token', response.accessToken);
       storage.setItem('refresh_token', response.refreshToken);
-      storage.setItem('user', JSON.stringify(response.user));
+      storage.setItem('user', JSON.stringify(user));
     }
   }
 
@@ -225,7 +240,8 @@ export class AuthService {
       this._token.set(token);
       this._refreshToken.set(refreshToken);
       try {
-        this._user.set(JSON.parse(user));
+        // Normaliza sesiones guardadas con roles string[] (formato del login)
+        this._user.set(normalizeUser(JSON.parse(user)));
       } catch {
         this.clearSession();
       }

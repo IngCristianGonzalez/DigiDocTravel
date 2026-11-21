@@ -176,8 +176,8 @@
                 <p-tag [value]="s.countryOrigin" severity="secondary"></p-tag>
               </td>
               <td>
-                <span class="td-ellipsis" [pTooltip]="s.advisor?.email || s.advisorId || ''" tooltipPosition="top">
-                  {{ s.advisor?.email || s.advisorId || '—' }}
+                <span class="td-ellipsis" [pTooltip]="s.advisor?.email || ''" tooltipPosition="top">
+                  {{ advisorName(s) }}
                 </span>
               </td>
               <td>
@@ -258,6 +258,48 @@
     <ng-container *ngTemplateOutlet="studentFormFields"></ng-container>
   </div>
 
+  <!-- Asesor opcional al registrar (015 R3): se asocia tras crear -->
+  <div class="field field--full create-advisor">
+    <ng-container *ngTemplateOutlet="advisorList"></ng-container>
+    <span class="field__hint">Opcional · se asocia al registrar</span>
+  </div>
+
+  <!-- Selector de asesores con autocomplete (reutilizado en Editar y Crear) -->
+  <ng-template #advisorList>
+    <p-floatLabel>
+      <p-dropdown
+        inputId="advisor-select"
+        [options]="advisorOptions()"
+        [ngModel]="advisorId()"
+        (ngModelChange)="advisorId.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        filterBy="label,email"
+        filterPlaceholder="Buscar por nombre o email..."
+        [showClear]="true"
+        placeholder="Selecciona un asesor"
+        styleClass="w-full"
+        appendTo="body"
+        [emptyMessage]="'Sin asesores activos'"
+      >
+        <ng-template let-o pTemplate="selectedItem">
+          <span>{{ o.label }}</span>
+        </ng-template>
+        <ng-template let-o pTemplate="item">
+          <div class="advisor-option">
+            <span class="advisor-option__avatar" aria-hidden="true">{{ o.initials }}</span>
+            <span class="advisor-option__texts">
+              <span class="advisor-option__name">{{ o.label }}</span>
+              <span class="advisor-option__email">{{ o.email }}</span>
+            </span>
+          </div>
+        </ng-template>
+      </p-dropdown>
+      <label for="advisor-select">Asesor</label>
+    </p-floatLabel>
+  </ng-template>
+
   <!-- Campos del formulario compartidos por los modales Crear y Editar
     (mismo form() signal; solo un modal se abre a la vez). -->
   <ng-template #studentFormFields>
@@ -268,7 +310,7 @@
           pInputText
           id="m-firstName"
           [ngModel]="form().firstName"
-          (ngModelChange)="updateForm('firstName', $event)"
+          (ngModelChange)="onNameInput('firstName', $event)"
           [class.p-invalid]="!!formErrors().firstName"
           autocomplete="given-name"
           placeholder="Ej: Juan"
@@ -292,7 +334,7 @@
           pInputText
           id="m-lastName"
           [ngModel]="form().lastName"
-          (ngModelChange)="updateForm('lastName', $event)"
+          (ngModelChange)="onNameInput('lastName', $event)"
           [class.p-invalid]="!!formErrors().lastName"
           autocomplete="family-name"
           placeholder="Ej: Pérez"
@@ -329,7 +371,7 @@
       @if (formErrors().identification) {
         <small class="field__error"><i class="fa-solid fa-circle-exclamation"></i> {{ formErrors().identification }}</small>
       } @else {
-        <span class="field__hint" id="m-identification-hint">Mínimo 4 caracteres, sin espacios</span>
+        <span class="field__hint" id="m-identification-hint">Mínimo 4 caracteres: letras, números y guiones</span>
       }
     </div>
 
@@ -513,8 +555,10 @@
         <dd>{{ d.university || '—' }}</dd>
       </div>
       <div class="detail-list__row">
+      <div class="detail-list__row">
         <dt>Asesor</dt>
-        <dd class="detail-list__break">{{ d.advisor?.email || d.advisorId || '—' }}</dd>
+        <dd class="detail-list__break">{{ advisorName(d) }}</dd>
+      </div>
       </div>
     </dl>
   }
@@ -545,7 +589,7 @@
 
   <ng-template pTemplate="header">
     <div class="register-modal__header">
-      <span class="register-modal__icon"><i class="fa-solid fa-pen-to-square"></i></span>
+      <span class="register-modal__icon register-modal__icon--info"><i class="fa-solid fa-pen-to-square"></i></span>
       <span class="register-modal__titles">
         <span class="register-modal__title">Editar estudiante</span>
         <span class="register-modal__subtitle">{{ editingStudent()?.email }}</span>
@@ -564,20 +608,9 @@
 
   <div class="detail-block detail-block--spaced">
     <h4 class="detail-block__title"><i class="fa-solid fa-user-tie"></i> Asociar asesor</h4>
-    <div class="detail-block__row">
-      <div class="detail-block__field field">
-        <p-floatLabel>
-          <input
-            pInputText
-            id="edit-advisorId"
-            [ngModel]="advisorId()"
-            (ngModelChange)="advisorId.set($event)"
-            autocomplete="off"
-          />
-          <label for="edit-advisorId">Advisor ID</label>
-        </p-floatLabel>
-      </div>
-      <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()"></p-button>
+    <ng-container *ngTemplateOutlet="advisorList"></ng-container>
+    <div class="detail-block__row detail-block__row--action">
+      <p-button icon="pi pi-link" label="Asociar" severity="success" size="small" (onClick)="assignAdvisor()" [disabled]="!advisorId()"></p-button>
     </div>
   </div>
 
@@ -695,6 +728,75 @@
     <div class="modal-footer">
       <p-button label="Cancelar" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="closeDeleteModal()" icon="pi pi-times"></p-button>
       <p-button label="Desactivar" severity="danger" icon="pi pi-trash" type="button" (onClick)="confirmDelete()" [loading]="loading()" [disabled]="loading()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Modal Confirmar acción — resumen antes de persistir (registrar / guardar / observar) -->
+<p-dialog
+  [visible]="showConfirmModal()"
+  (visibleChange)="showConfirmModal.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '520px', maxWidth: '95vw' }"
+  [breakpoints]="{ '768px': '92vw', '480px': '96vw' }"
+  styleClass="students-dialog register-modal"
+  aria-label="Confirmar acción"
+  (onHide)="backToForm()">
+
+  <ng-template pTemplate="header">
+    <div class="register-modal__header">
+      <span class="register-modal__icon register-modal__icon--confirm"><i class="fa-solid fa-clipboard-check"></i></span>
+      <span class="register-modal__titles">
+        @if (confirmKind() === 'create') {
+          <span class="register-modal__title">Confirmar registro</span>
+          <span class="register-modal__subtitle">Revisa los datos antes de guardar</span>
+        } @else if (confirmKind() === 'edit') {
+          <span class="register-modal__title">Confirmar cambios</span>
+          <span class="register-modal__subtitle">Revisa los datos antes de guardar</span>
+        } @else {
+          <span class="register-modal__title">Confirmar observación</span>
+          <span class="register-modal__subtitle">Revisa el texto antes de agregar</span>
+        }
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="confirm-callout">
+    <i class="fa-solid fa-circle-question confirm-callout__icon" aria-hidden="true"></i>
+    @if (confirmKind() === 'create') {
+      <p class="confirm-question">¿Estás seguro de registrar a <strong>{{ confirmLines()[0]?.value }}</strong> con estos datos?</p>
+    } @else if (confirmKind() === 'edit') {
+      <p class="confirm-question">¿Estás seguro de guardar los cambios de <strong>{{ confirmLines()[0]?.value }}</strong>?</p>
+    } @else {
+      <p class="confirm-question">¿Estás seguro de agregar esta observación?</p>
+    }
+  </div>
+
+  <p class="confirm-summary-caption">Resumen de datos a guardar</p>
+  <dl class="detail-list confirm-summary">
+    @for (l of confirmLines(); track l.label) {
+      <div class="detail-list__row">
+        <dt>{{ l.label }}</dt>
+        <dd class="detail-list__break">{{ l.value }}</dd>
+      </div>
+    }
+  </dl>
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <p-button label="Corregir" severity="secondary" [outlined]="true" type="button" [disabled]="loading()" (onClick)="backToForm()" icon="pi pi-pencil"></p-button>
+      @if (confirmKind() === 'create') {
+        <p-button label="Sí, registrar" icon="pi pi-check" type="button" (onClick)="proceedConfirm()" [loading]="loading()" [disabled]="loading()"></p-button>
+      } @else if (confirmKind() === 'edit') {
+        <p-button label="Sí, guardar" icon="pi pi-check" type="button" (onClick)="proceedConfirm()" [loading]="loading()" [disabled]="loading()"></p-button>
+      } @else {
+        <p-button label="Sí, agregar" icon="pi pi-check" type="button" (onClick)="proceedConfirm()" [disabled]="loading()"></p-button>
+      }
     </div>
   </ng-template>
 </p-dialog>

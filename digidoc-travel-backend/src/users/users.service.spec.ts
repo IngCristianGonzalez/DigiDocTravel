@@ -104,5 +104,21 @@ describe('UsersService', () => {
       expect(res.total).toBe(1);
       expect(res.data).toHaveLength(1);
     });
+
+    it('debe filtrar solo asesores con role=asesor', async () => {
+      const andWhere = jest.fn().mockReturnThis();
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere,
+        orderBy: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+      };
+      userRepo.createQueryBuilder.mockReturnValue(qb);
+      await service.findAll({ page: 1, limit: 10, role: 'asesor' } as any);
+      const conds = andWhere.mock.calls.map((c: any[]) => String(c[0]));
+      expect(conds.some((c: string) => c.includes('role.name'))).toBe(true);
+    });
   });
 });

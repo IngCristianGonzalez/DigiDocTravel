@@ -22,6 +22,14 @@ export class StudentsService {
   update(id: string, body: any): Observable<Student> { return this.api.patch(`/students/${id}`, body); }
   remove(id: string): Observable<{ message: string }> { return this.api.delete(`/students/${id}`); }
   assignAdvisor(id: string, advisorId: string): Observable<Student> { return this.api.post(`/students/${id}/advisor`, { advisorId }); }
+  getEligibleAdvisors(): Observable<any[]> {
+    return this.api.get<any>('/students/advisors/eligible').pipe(
+      map((res: any) => {
+        if (res && typeof res === 'object' && 'success' in res && 'data' in res) return res.data as any[];
+        return (Array.isArray(res) ? res : res?.data ?? []) as any[];
+      })
+    );
+  }
   addObservation(id: string, observation: string): Observable<any> { return this.api.post(`/students/${id}/observations`, { observation }); }
   getObservations(id: string): Observable<any> {
     return this.api.get<any>(`/students/${id}/observations`).pipe(

@@ -1,0 +1,347 @@
+// ============================================================
+// Advisors — convención register-modal + footer derecha (016/017)
+// Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5 · tokens SL, sin hex
+// ============================================================
+
+.advisors__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.advisors__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-text-primary);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.advisors__subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin: var(--space-xxs) 0 0;
+}
+
+.advisors__search {
+  margin-bottom: var(--space-md);
+}
+
+.advisors__search-box {
+  width: 100%;
+  max-width: 420px;
+  display: inline-flex;
+
+  input {
+    width: 100%;
+  }
+}
+
+.advisors__name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.advisors__break {
+  word-break: break-all;
+}
+
+.advisors__actions {
+  display: flex;
+  gap: var(--space-xxs);
+  justify-content: flex-end;
+}
+
+.advisors__actions-col {
+  text-align: right;
+}
+
+.advisors__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  padding: var(--space-md);
+}
+
+.advisors__form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.advisors__list-caption {
+  margin-top: var(--space-md);
+}
+
+// --- Convención modal (paridad con estudiantes) ---
+.register-modal__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.register-modal__icon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-text-primary);
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-bg-card);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.register-modal__icon--danger {
+  background: var(--sl-error-600);
+}
+
+.register-modal__icon--confirm {
+  background: var(--sl-black);
+  color: var(--sl-orange-500);
+  border: 1px solid var(--sl-gray-800);
+}
+
+.register-modal__titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.register-modal__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+}
+
+.register-modal__subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.field__error {
+  font-size: 0.75rem;
+  color: var(--sl-error-600);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  margin-top: var(--space-xxs);
+}
+
+.field--error {
+  :host ::ng-deep input[pInputText] {
+    border-color: var(--sl-error-600) !important;
+  }
+}
+
+.field__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host ::ng-deep .field p-floatLabel,
+:host ::ng-deep .field p-floatlabel {
+  width: 100%;
+  display: block;
+}
+
+:host ::ng-deep .field input[pInputText] {
+  width: 100%;
+  min-height: 42px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-sm);
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
+
+:host ::ng-deep .modal-footer .p-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+}
+
+.detail-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.detail-list__row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8125rem;
+
+  &:nth-child(even) {
+    background: var(--color-bg-surface);
+  }
+
+  dt {
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text-primary);
+    word-break: break-word;
+  }
+}
+
+.detail-list__break {
+  word-break: break-all;
+}
+
+.delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  background: var(--sl-error-50);
+  border: 1px solid var(--color-border);
+  color: var(--sl-error-600);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.8125rem;
+  margin-bottom: var(--space-md);
+
+  i { margin-top: 2px; }
+}
+
+.delete-target {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin: 0;
+  word-break: break-all;
+}
+
+.confirm-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--sl-orange-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.confirm-callout__icon {
+  color: var(--sl-orange-600);
+  font-size: 1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.confirm-question {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+
+  strong {
+    color: var(--color-text-primary);
+  }
+}
+
+.confirm-summary-caption {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-xs);
+}
+
+.confirm-summary {
+  margin-bottom: var(--space-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  .detail-list__row {
+    &:first-child {
+      background: var(--color-bg-card);
+    }
+
+    &:first-child dd {
+      font-weight: 700;
+      font-size: 0.9375rem;
+    }
+  }
+}
+
+// Dialog theming (paridad SL Global)
+:host ::ng-deep .advisors-dialog {
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+
+  .p-dialog-header {
+    background: var(--color-bg-card) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    padding: var(--space-md) var(--space-md) !important;
+    flex-shrink: 0;
+  }
+
+  .p-dialog-content {
+    padding: var(--space-md) !important;
+    background: var(--color-bg-card) !important;
+    overflow-y: auto !important;
+    flex: 1 1 auto !important;
+  }
+
+  .p-dialog-footer {
+    border-top: 1px solid var(--color-bg-surface) !important;
+    padding: var(--space-md) var(--space-md) !important;
+    background: var(--color-bg-surface) !important;
+    flex-shrink: 0;
+  }
+}
+
+:host {
+  display: block;
+  overflow-x: clip;
+}

@@ -1,0 +1,53 @@
+{
+  "_readme": "=== ARCHIVO DE EJEMPLO (harness agnóstico) ===",
+  "_readme2": "Copia este archivo como 'kickstart.json' (sin .example) y rellena los valores de tu proyecto.",
+  "_readme3": "kickstart.json está en .gitignore — no se trackea. Este .example sí está trackeado.",
+  "_readme4": "El harness es AGNÓSTICO de stack: el campo project.stack declara la tecnología y verification.steps define cómo se compila y verifica. init.sh lee este archivo; no hay comandos hardcodeados por stack.",
+  "_fieldGuide": {
+    "project.name": "Nombre del proyecto. Ej: 'DigiDocTravel'",
+    "project.stack": "Stack tecnológico. Valores libres, ej: 'node' | 'dotnet' | 'python'. init.sh verifica el runtime correspondiente.",
+    "project.type": "Tipo de proyecto. Valores libres, ej: 'WebApi' | 'Fullstack' | 'Worker' | 'Library'",
+    "project.version": "Versión del proyecto (semver). Ej: '1.0.0'",
+    "runtime.tool": "Comando del runtime a verificar en PATH. Ej: 'node' | 'dotnet' | 'python3'",
+    "runtime.minVersion": "Versión mínima (se compara prefijo major.minor). Ej: '20'. Vacío = no se exige.",
+    "verification.steps": "Lista ORDENADA de pasos de verificación. El implementer/reviewer los ejecuta; 'init.sh --full' también. Cada paso: name, workdir (relativo a la raíz, '.' = raíz) y run (comando shell).",
+    "repository.url": "URL del repositorio remoto (opcional). Si tiene valor, al cerrar se sugiere Pull Request en vez de merge directo.",
+    "team.executorName": "Nombre de quien ejecuta. Ej: 'Cristian Alarcon Gonzalez'",
+    "team.executorEmail": "Email del ejecutor para tracking en progress/"
+  },
+  "project": {
+    "name": "DigiDocTravel",
+    "stack": "node",
+    "type": "Fullstack",
+    "version": "1.0.0"
+  },
+  "runtime": {
+    "tool": "node",
+    "minVersion": "20"
+  },
+  "verification": {
+    "steps": [
+      {
+        "name": "backend-build",
+        "workdir": "digidoc-travel-backend",
+        "run": "npm run build"
+      },
+      {
+        "name": "frontend-build",
+        "workdir": "digidoc-travel-frontend",
+        "run": "npm run build"
+      }
+    ]
+  },
+  "repository": {
+    "url": "https://github.com/tu-organizacion/tu-repo"
+  },
+  "team": {
+    "executorName": "Tu Nombre",
+    "executorEmail": "tu@email.com"
+  },
+  "_examples": {
+    "_dotnet": "stack 'dotnet': runtime.tool='dotnet', steps=[{'name':'build','workdir':'.','run':'dotnet build /warnaserror'},{'name':'test','workdir':'.','run':'dotnet test'}]",
+    "_python": "stack 'python': runtime.tool='python3', steps=[{'name':'test','workdir':'.','run':'pytest'}]"
+  }
+}
