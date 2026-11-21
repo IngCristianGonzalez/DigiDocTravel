@@ -40,3 +40,11 @@ CoverageReport/
 *.swo
 *~
 Thumbs.db
+
+# --- PRIVADO: cotizaciones y docs cliente (no subir al repo) ---
+Cotizaciones/
+cotizaciones/
+03-Cotizaciones/
+02-Docs/
+CLIENTES/
+*.xlsx
